@@ -1,0 +1,31 @@
+a.btn-lg
+{
+   font-size: 1.25em;
+   font-weight: bold;
+}
+
+.nav-tabs > li > a:hover {
+   background-color: #CCCCCC;
+   color: #000000;
+   border-color: #999999 #999999 #dddddd;
+}
+
+.nav-tabs
+{
+   border-bottom: 2px solid #dddddd;
+}
+
+.nav-tabs > li.active > a, 
+.nav-tabs > li.active > a:hover, 
+.nav-tabs > li.active > a:focus {
+   border-color: #ccc #ccc;
+   border-width: 2px;
+   border-bottom-style: none;
+}
+
+/*
+.nav-tabs > li > a {
+   border: 2px solid transparent;
+   border-bottom: 2px solid #ccc;
+}
+*/
