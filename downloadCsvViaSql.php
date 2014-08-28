@@ -20,8 +20,8 @@ require_once( "lib/errorReporting.php");
 // connect to the REDCap database
 require_once('../redcap_connect.php');
 
-// only allow super users to download this information
-if (!SUPER_USER) die("Access denied! Only super users can access this page.");
+// define all the SQL statements that are used
+require_once('lib/variableLookup.php');
 
 header('Content-type: text/csv');
 header("Content-Description: File Transfer");
@@ -29,11 +29,11 @@ header( sprintf( "Content-Disposition: attachment; filename=%s", $_REQUEST['file
 header('Expires: 0');
 header('Pragma: no-cache');
 
-// $csv = "First,Last,Email\nFred,McClurg,frmcclurg@gmail.com";
-// echo $csv;
+$pageInfo = GetPageDetails( $_REQUEST['tab'] );
 
-$sql = $_REQUEST['sql'];
-$query = mysql_query( $sql );
+// Note: $sql is defined from $_REQUEST['tab'] within file
+//       include/sqlQueries.php
+$query = mysql_query( $pageInfo['sql'] );
 
 if ( ! $query )  // sql failed
 {
@@ -42,6 +42,7 @@ if ( ! $query )  // sql failed
          mysql_error() );
 }
 
+// initialize variables
 $isFirstRow = TRUE;
 
 while ( $row = mysql_fetch_assoc($query) )

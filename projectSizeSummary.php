@@ -28,6 +28,18 @@ if (!SUPER_USER) die("Access denied! Only super users can access this page.");
 $title = "REDCap Admin Dashboard";
 $projectTable = "projectTable";
 
+/**
+ * @brief For reference: short version for capturing number
+ *        of fields in a project
+ * SELECT
+ *    project_id,
+ *    COUNT( project_id ) AS 'Field Count'
+ * FROM redcap_metadata
+ * -- WHERE project_id = 15
+ * GROUP BY project_id
+ * ORDER BY project_id";
+ */
+
 // capture the number of fields in a project
 $fieldCountSql = "
 SELECT
@@ -142,6 +154,9 @@ $HtmlPage->PrintHeaderExt();
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+<!-- Font Awesome fonts -->
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 
 <script>
    document.title = "<?= $title ?>";
@@ -296,7 +311,8 @@ $HtmlPage->PrintHeaderExt();
 
    // printf( "<pre>%s</pre>\n", var_export( $combinedData, true ) );
 
-   $redcapProjects = GetRedcapProjectNames();
+   // $redcapProjects = GetRedcapProjectNames();  // not needed for table
+   $redcapProjects = null;
 
    // must match SQL field aliases
    // $headers = array( "PID", "Project Name", "Records", "Fields", "Users", "Category",
@@ -334,3 +350,4 @@ $HtmlPage->PrintHeaderExt();
    // Display the REDCap footer
    $HtmlPage->PrintFooterExt();
 ?>
+

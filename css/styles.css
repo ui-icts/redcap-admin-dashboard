@@ -29,3 +29,8 @@ a.btn-lg
    border-bottom: 2px solid #ccc;
 }
 */
+
+div#outer
+{
+   width: 100%;
+}
