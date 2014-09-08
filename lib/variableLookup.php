@@ -1,12 +1,14 @@
 <?php
 /**
- * @brief Defines a number of variables like SQL queries that are referenced by
- *        this program in one place
- *
  * @file variableLookup.php
  * @author Fred R. McClurg, University of Iowa
  * @date September 5, 2014
  * @version 1.0
+ */
+
+/**
+ * @brief Defines a number of variables like SQL queries that are referenced by
+ *        this program in one place
  */
 
 // set standard error reporting
@@ -121,7 +123,7 @@ function GetPageDetails( $tabNumber )
       $fileName = "powerUserSummary";
       $description = "Listing of REDCap users and a summation
                       of events they have performed in the last
-                      6 months. An event represents a specific
+                      12 months. An event represents a specific
                       operation within REDCap like creating,
                       modifying, or removing a record.";
 
@@ -134,7 +136,7 @@ function GetPageDetails( $tabNumber )
           COUNT( user ) AS 'Event Count'
       FROM redcap_log_event AS logs,
            redcap_user_information AS info
-      WHERE ts BETWEEN DATE_FORMAT( SUBDATE( NOW(), 180 ), '%Y%m%d%H%i%s' ) AND DATE_FORMAT( NOW(), '%Y%m%d%H%i%s' ) AND
+      WHERE ts BETWEEN DATE_FORMAT( SUBDATE( NOW(), 365 ), '%Y%m%d%H%i%s' ) AND DATE_FORMAT( NOW(), '%Y%m%d%H%i%s' ) AND
             logs.user = info.username
       GROUP BY user
       ORDER BY info.user_lastname, info.user_firstname";
@@ -145,7 +147,7 @@ function GetPageDetails( $tabNumber )
       $fileName = "powerUserDetails";
       $description = "Listing of REDCap users and the specific
                       events they have performed in the last
-                      6 months. An event represents a specific
+                      12 months. An event represents a specific
                       operation within REDCap like creating,
                       modifying, or removing a record.";
 
@@ -158,7 +160,7 @@ function GetPageDetails( $tabNumber )
           COUNT( event ) AS 'Event Count'
       FROM redcap_log_event AS logs,
            redcap_user_information AS info
-      WHERE ts BETWEEN DATE_FORMAT( SUBDATE( NOW(), 180 ), '%Y%m%d%H%i%s' ) AND DATE_FORMAT( NOW(), '%Y%m%d%H%i%s' ) AND
+      WHERE ts BETWEEN DATE_FORMAT( SUBDATE( NOW(), 365 ), '%Y%m%d%H%i%s' ) AND DATE_FORMAT( NOW(), '%Y%m%d%H%i%s' ) AND
             logs.user = info.username
       GROUP BY user, event
       ORDER BY info.user_lastname, info.user_firstname, event DESC";

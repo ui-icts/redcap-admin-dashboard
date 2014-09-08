@@ -1,14 +1,18 @@
 <?php
 /**
- * @brief Downloads a CSV from the passed SQL
- *
  * @file downloadCsvViaSql.php
- * @version 1.0
  * @author Fred R. McClurg, University of Iowa
  * @date August 14, 2014
+ * @version 1.0
+ */
+
+/**
+ * @brief Downloads a CSV from the passed SQL
  *
- * @param file  Name of the download
- * @param sql   SQL code
+ * @param file  File name of the download
+ * @param tab   Corresponds to the tab number selected.  Also
+ *              determines the SQL, the page title, and the page
+ *              description.
  */
 
 // set standard error reporting
