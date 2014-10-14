@@ -13,6 +13,8 @@
  * @param tab   Corresponds to the tab number selected.  Also
  *              determines the SQL, the page title, and the page
  *              description.
+ *
+ * @example https://www-dev.icts.uiowa.edu/redcap/adminDash/downloadCsvViaSql.php?file=usersByProject.2014-10-14_085438.csv&tab=1
  */
 
 // set standard error reporting

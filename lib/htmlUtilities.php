@@ -1,9 +1,13 @@
 <?php
 /**
  * @file htmlUtilities.php
+ * @author Fred R. McClurg, University of Iowa
+ * @date October 14, 2014
+ * @version 1.0
  *
  * @brief Library of HTML convenience utilities
  */
+
 
 /**
  * @brief Displays a table header
@@ -238,5 +242,39 @@ function ConvertProjectPurpose2List( $purposeList )
 
    return( $purposeStr );
 }  // function ConvertProjectPurpose2List();
+
+
+/**
+ * @brief Functions like a stopwatch and displays time elapsed time
+ *
+ *         Executing the function the first time starts the clock.
+ *         When the function is executed after the first time,
+ *         the function returns the elapsed time as a string.
+ *
+ * @return $elapsedTimeStr  Elapsed time in hours, minutes, seconds
+ */
+function ElapsedTime()
+{
+   // intialize variables
+   static $startTime = null;
+   $elapseTimeStr = "";
+
+   if ( $startTime == null )  // start the clock
+   {
+      $startTime = round( microtime( true ) );
+      // printf( "\$startTime: %f<br />", $startTime );
+   }
+   else
+   {
+      $endTime = round( microtime( true ) );
+      // printf( "\$endTime: %f<br />", $endTime );
+      $elapseTime = $endTime - $startTime;
+      // printf( "\$elapsedTime: %f<br />", $elapsedTime );
+
+      $elapseTimeStr = date( "i:s", $elapseTime );
+   }
+
+   return( $elapseTimeStr );
+}  // function ElapsedTime();
 
 ?>

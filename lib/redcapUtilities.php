@@ -1,11 +1,11 @@
 <?php
 /**
- * @brief REDCap specific utilities
- *
  * @file redcapFunctions.php
- * @version 1.0
  * @author Fred R. McClurg, University of Iowa
  * @date July 31, 2014
+ * @version 1.0
+ *
+ * @brief REDCap specific utilities
  */
 
 // set standard error reporting

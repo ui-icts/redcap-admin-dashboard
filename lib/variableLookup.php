@@ -3,10 +3,8 @@
  * @file variableLookup.php
  * @author Fred R. McClurg, University of Iowa
  * @date September 5, 2014
- * @version 1.0
- */
-
-/**
+ * @version 1.1
+ *
  * @brief Defines a number of variables like SQL queries that are referenced by
  *        this program in one place
  */
@@ -92,7 +90,11 @@ function GetPageDetails( $tabNumber )
       project_irb_number AS 'IRB Number',
       CONCAT( user_lastname, ', ', user_firstname ) AS 'Owner Name',
       user_email AS 'Owner Email',  -- FROM redcap_user_information
-      username AS 'Owner HawkID'  -- FROM redcap_user_information
+      username AS 'Owner HawkID',  -- FROM redcap_user_information
+      DATE_FORMAT( creation_time, '%Y-%m-%d' ) AS 'Creation Date',
+      DATEDIFF( NOW(), creation_time ) AS 'Days Old',
+      DATE_FORMAT( last_logged_event, '%Y-%m-%d' ) AS 'Last Event Date',
+      DATEDIFF( now(), last_logged_event ) AS 'Event Days'
       FROM redcap_projects, redcap_user_information
       WHERE ui_id = created_by AND
             purpose = 2  -- 'Research'
@@ -202,9 +204,9 @@ function GetPageDetails( $tabNumber )
             -- 6 = Repository (developing a data or specimen repository for future use by investigators)
             -- 7 = Other
          purpose_other AS 'Purpose Specified',
-         CONCAT( project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi ) AS 'PI Name',
-         project_pi_email AS 'PI Email',
-         project_irb_number AS 'IRB Number',
+         -- CONCAT( project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi ) AS 'PI Name',
+         -- project_pi_email AS 'PI Email',
+         -- project_irb_number AS 'IRB Number',
          info.username AS 'Owner HawkID',
          CONCAT( user_lastname, ', ', user_firstname ) AS 'Owner Name',
          info.user_email AS 'Owner Email',

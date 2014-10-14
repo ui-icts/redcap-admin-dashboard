@@ -1,13 +1,11 @@
 <?php
 /**
- * @brief Turn on verbose error message reporting
- *
  * @file errorReporting.php
- * $Revision: 254 $
  * $Author: fmcclurg $
  * @author Fred R. McClurg, University of Iowa
- * $Date:: 2013-10-10 16:36:41 #$
- * $URL: https://srcvault.icts.uiowa.edu/repos/REDCap/REDCap/trunk/geoflag/lib/errorReporting.php $
+ * @date July 24, 2014
+ *
+ * @brief Turn on verbose error message reporting
  */
 
    // Turn off all error reporting

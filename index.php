@@ -3,14 +3,9 @@
  * @file index.php
  * @author Fred R. McClurg, University of Iowa
  * @date July 24, 2014
- * @version 1.0
- */
-
-/**
- * @brief An application that displays project and Principal Investigator information.
+ * @version 1.1
  *
- * @remarks An example of a bookmark using this plugin might be the following:
- *             https://www-dev.icts.uiowa.edu/redcap/redirector/index.php?url=https%3A%2F%2Fredcap.icts.uiowa.edu%2Fredcap%2Fredcap_v5.10.0%2FDataEntry%2Findex.php%3Fpid%3D20%26page%3Ddemographics
+ * @brief An application that displays project and Principal Investigator information.
  */
 
 // set error reporting for debugging
@@ -30,6 +25,9 @@ require_once('../redcap_connect.php');
 
 // only allow super users to view this information
 if (!SUPER_USER) die("Access denied! Only super users can access this page.");
+
+// start the stopwatch ...
+ElapsedTime();
 
 // define variables
 $title = "REDCap Admin Dashboard";
@@ -166,6 +164,14 @@ $HtmlPage->PrintHeaderExt();
    printf( "   </tbody>\n" );
    printf( "</table>\n" );  // <table> created by PrintTableHeader
    printf( "<p /> <br />\n" );
+
+   $load = sys_getloadavg();
+   printf( "<div id='elapsedTime'>
+            Elapsed Execution Time: %s<br />
+            System load avg last minute: %d%%<br />
+            System load avg last 5 mins: %d%%<br />
+            System load avg last 15 min: %d%%</div>",
+            ElapsedTime(), $load[0] * 100, $load[1] * 100, $load[2] * 100 );
 
    // Display the footer
    $HtmlPage->PrintFooterExt();
