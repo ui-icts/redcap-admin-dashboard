@@ -3,7 +3,7 @@
  * @file navigationTabs.php
  * @author Fred R. McClurg, University of Iowa
  * @date August 28, 2014
- * @version 1.1
+ * @version 1.2
  *
  * @brief Displays the navigation tabs consistantly across all applications in suite
  */
@@ -54,5 +54,20 @@
   <li class="disabled">
      <a href="#" title="Not Implemented">
         <span class="fa fa-envelope-o"></span>&nbsp; Email External Users</a>
+  </li>
+
+  <li <?= $_REQUEST['tab'] == 8 ? "class=\"active\"" : "" ?> >
+     <a href="index.php?tab=8">
+        <span class="fa fa-key"></span>&nbsp; Password in Project</a>
+  </li>
+
+  <li <?= $_REQUEST['tab'] == 9 ? "class=\"active\"" : "" ?> >
+     <a href="index.php?tab=9">
+        <span class="fa fa-key"></span>&nbsp; Password in Instrument</a>
+  </li>
+
+  <li <?= $_REQUEST['tab'] == 10 ? "class=\"active\"" : "" ?> >
+     <a href="index.php?tab=10">
+        <span class="fa fa-key"></span>&nbsp; Password in Field</a>
   </li>
 </ul>

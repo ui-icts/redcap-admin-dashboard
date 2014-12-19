@@ -3,7 +3,7 @@
  * @file index.php
  * @author Fred R. McClurg, University of Iowa
  * @date July 24, 2014
- * @version 1.1
+ * @version 1.2
  *
  * @brief An application that displays project and Principal Investigator information.
  */

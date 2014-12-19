@@ -3,7 +3,7 @@
  * @file variableLookup.php
  * @author Fred R. McClurg, University of Iowa
  * @date September 5, 2014
- * @version 1.1
+ * @version 1.2
  *
  * @brief Defines a number of variables like SQL queries that are referenced by
  *        this program in one place
@@ -167,7 +167,95 @@ function GetPageDetails( $tabNumber )
       GROUP BY user, event
       ORDER BY info.user_lastname, info.user_firstname, event DESC";
    }
-   else  // if ( ! isset( $_REQUEST['tab'] ) )  // Project by Owners
+   elseif ( $tabNumber == 8 )  // Project Title Password
+   {
+      $projectTitle = "Project Password";
+      $fileName = "projectPassword";
+      $description = "Listing of projects that contain the string \"password\" in the project title.";
+
+      $sql = "
+      SELECT projects.project_id AS 'PID',
+         app_title AS 'Project Name',
+         users.username AS 'Owner HawkID',
+         CONCAT( users.user_lastname, ', ', users.user_firstname ) AS 'Owner Name',
+         users.user_email AS 'Owner Email'
+      FROM redcap_projects AS projects,
+           redcap_user_information AS users
+      WHERE (projects.created_by = users.ui_id) AND
+            ( (app_title LIKE '%pass%word%') OR
+            (app_title LIKE '%hawk%id%') OR
+            (app_title LIKE '%user%name%' ) );";
+   }
+   elseif ( $tabNumber == 9 )  // Instrument Password
+   {
+      $projectTitle = "Instrument Password";
+      $fileName = "instrumentPassword";
+      $description = "Listing of projects that contain the string \"password\" in the instrument or form name.";
+
+      $sql = "
+      SELECT projects.project_id AS 'PID',
+         projects.app_title AS 'Project Name',
+         meta.form_menu_description AS 'Instrument Name',
+         CONCAT( users.user_lastname, ', ', users.user_firstname ) AS 'Owner Name',
+         users.user_email AS 'Owner Email'
+      FROM redcap_projects AS projects,
+           redcap_metadata AS meta,
+           redcap_user_information AS users
+      WHERE  (projects.created_by = users.ui_id) AND
+             (projects.project_id = meta.project_id) AND
+             (meta.form_menu_description IS NOT NULL) AND
+             ( (meta.form_menu_description LIKE '%pass%word%') OR
+               (meta.form_menu_description LIKE '%hawk%id%') OR
+               (meta.form_menu_description LIKE '%user%name%' ) );";
+   }
+   elseif ( $tabNumber == 10 )  // Field Password
+   {
+      $projectTitle = "Field Password";
+      $fileName = "fieldPassword";
+      $description = "Listing of projects that contain the string \"password\" in one of the fields.";
+
+      $sql = "
+      SELECT projects.project_id AS 'PID',
+         projects.app_title AS 'Project Name',
+         meta.form_name AS 'Form Name',
+         meta.field_name AS 'Field Name',
+         meta.element_label AS 'Field Label',
+         meta.element_note AS 'Field Note',
+         users.username AS 'Owner HawkID',
+         CONCAT( users.user_lastname, ', ', users.user_firstname ) AS 'Owner Name',
+         users.user_email AS 'Owner Email'
+      FROM redcap_projects AS projects,
+         redcap_metadata AS meta,
+         redcap_user_information AS users
+      WHERE (projects.created_by = users.ui_id) AND
+         (projects.project_id = meta.project_id) AND
+         ( (field_name LIKE '%pass%word%') OR
+         (field_name LIKE '%pass%wd%') OR
+         (field_name LIKE '%hawk%id%') OR
+         (field_name LIKE '%hwk%id%') OR
+         (field_name LIKE '%user%name%') OR
+         (field_name LIKE '%user%id%') OR
+         (field_name LIKE '%usr%name%') OR
+         (field_name LIKE '%usr%id%') OR
+         (element_label LIKE '%pass%word%') OR
+         (element_label LIKE '%pass%wd%') OR
+         (element_label LIKE '%hawk%id%') OR
+         (element_label LIKE '%hwk%id%') OR
+         (element_label LIKE '%user%name%') OR
+         (element_label LIKE '%user%id%') OR
+         (element_label LIKE '%usr%name%') OR
+         (element_label LIKE '%usr%id%') OR
+         (element_note LIKE '%pass%word%') OR
+         (element_note LIKE '%pass%wd%') OR
+         (element_note LIKE '%hawk%id%') OR
+         (element_note LIKE '%hwk%id%') OR
+         (element_note LIKE '%user%name%') OR
+         (element_note LIKE '%user%id%') OR
+         (element_note LIKE '%usr%name%') OR
+         (element_note LIKE '%usr%id%') )
+      ORDER BY projects.project_id, form_name, field_name;";
+   }
+   else  // if ( ! isset( $_REQUEST['tab'] ) )  // Project by Owners (default tab)
    {
       $projectTitle = "Project by Owner";
       $fileName = "projectByOwner";
