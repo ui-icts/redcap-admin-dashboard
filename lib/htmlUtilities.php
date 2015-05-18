@@ -18,7 +18,7 @@
 function PrintTableHeader( $tableId, $columns )
 {
    printf( "
-<table id='%s' class='tablesorter'>
+<table id='%s' class='tablesorter table-condensed table-hover'>
    <thead>
       <tr>\n", $tableId );
 
@@ -75,6 +75,13 @@ function WebifyDataRow( $row, &$projectTitles )
          $hrefStr = $row['Project Name'];
 
          $webified[$key] = ConvertPid2Link( $pid, $hrefStr );
+      }
+      elseif ( $key == "Name of Project" )
+      {
+         $pid = $row['PID'];
+         $hrefStr = $row['Name of Project'];
+
+         $webified[$key] = ConvertPid2AdminLink( $pid, $hrefStr );
       }
       elseif ( $key == "Project Titles" )
       {
@@ -135,6 +142,31 @@ function ConvertPid2Link( $pid, $hrefStr )
    // https://www-dev.icts.uiowa.edu/redcap/redcap_v5.10.0/ProjectSetup/index.php?pid=15
    $urlString =
       sprintf( "https://%s%sProjectSetup/index.php?pid=%d",  // Project Setup page
+                  SERVER_NAME,  // www-dev.icts.uiowa.edu
+                  APP_PATH_WEBROOT, // /redcap/redcap_v5.10.0/
+                  $pid );  // 15
+
+   $pidLink = sprintf( "<a href=\"%s\"
+                          target=\"_blank\">%s</a>",
+                            $urlString, $hrefStr );
+
+   return( $pidLink );
+}  // function ConvertPid2Link();
+
+
+/**
+ * @brief Converts a Project ID into a HTML link to the
+ *        REDCap Project
+ *
+ * @param  $pid      Project Identifier Number
+ * @param  $hrefStr  Text string of the link
+ * @return $pidLink  HTML link to REDCap project
+ */
+function ConvertPid2AdminLink( $pid, $hrefStr )
+{
+   // https://www-dev.icts.uiowa.edu/redcap/redcap_v6.1.4/ControlCenter/edit_project.php?project=15
+   $urlString =
+      sprintf( "https://%s%sControlCenter/edit_project.php?project=%d",  // Project Setup page
                   SERVER_NAME,  // www-dev.icts.uiowa.edu
                   APP_PATH_WEBROOT, // /redcap/redcap_v5.10.0/
                   $pid );  // 15
@@ -276,5 +308,72 @@ function ElapsedTime()
 
    return( $elapseTimeStr );
 }  // function ElapsedTime();
+
+
+/**
+ * @brief Creates a checkbox with a specified name, value, and label
+ *
+ * @param  $checkBoxName   Name of the HTML checkbox array
+ * @param  $checkBoxValue  Value associated with enabled checkbox
+ * @param  $checkBoxLabel  Label displayed with the checkbox
+ * @return $checkBoxHtml   HTML of the checkbox
+ */
+function GenerateCheckBox( $checkBoxName, $checkBoxValue, $checkBoxLabel )
+{
+   $html = "";
+
+   /*
+        <div class="checkbox">
+           <?= GenerateCheckBox( "field_type", "field_name", "Variable Name" ); ?>
+           <label>
+              <input type="checkbox" name="field_type[]" value="field_name" /> Variable Name
+           </label> <br />
+
+           <label>
+              <input type="checkbox" name="field_type[]" value="element_label" /> Field Label
+           </label> <br />
+           <label>
+              <input type="checkbox" name="field_type[]" value="element_note" /> Field Note
+           </label> <br />
+         </div>
+         */
+
+   // intialize variables
+   static $startTime = null;
+   $elapseTimeStr = "";
+
+   if ( $startTime == null )  // start the clock
+   {
+      $startTime = round( microtime( true ) );
+      // printf( "\$startTime: %f<br />", $startTime );
+   }
+   else
+   {
+      $endTime = round( microtime( true ) );
+      // printf( "\$endTime: %f<br />", $endTime );
+      $elapseTime = $endTime - $startTime;
+      // printf( "\$elapsedTime: %f<br />", $elapsedTime );
+
+      $elapseTimeStr = date( "i:s", $elapseTime );
+   }
+
+   return( $checkboxHtml );
+}  // function GenerateCheckBox();
+
+
+/**
+ * @brief Calls GenerateCheckBox in order to create multiple checkboxes
+ *
+ * @param  $checkBoxName      Name of the HTML checkbox array
+ * @param  $checkBoxKeyLabel  Associative array with the key as the checkbox value and the value as the checkbox label
+ */
+function GenerateCheckBoxes( $checkBoxName, $checkBoxKeyLabel )
+{
+   foreach ( $checkBoxKeyLabel as $key => $label )
+   {
+      GenerateCheckBox( $checkBoxName, $checkBoxValue, $checkBoxLabel );
+   }
+
+}  // function GenerateCheckBoxes();
 
 ?>

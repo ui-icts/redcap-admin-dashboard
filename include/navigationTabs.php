@@ -58,16 +58,21 @@
 
   <li <?= $_REQUEST['tab'] == 8 ? "class=\"active\"" : "" ?> >
      <a href="index.php?tab=8">
-        <span class="fa fa-key"></span>&nbsp; Password in Project</a>
+        <span class="fa fa-key"></span>&nbsp; Password in Projects</a>
   </li>
 
   <li <?= $_REQUEST['tab'] == 9 ? "class=\"active\"" : "" ?> >
      <a href="index.php?tab=9">
-        <span class="fa fa-key"></span>&nbsp; Password in Instrument</a>
+        <span class="fa fa-key"></span>&nbsp; Password in Instruments</a>
   </li>
 
   <li <?= $_REQUEST['tab'] == 10 ? "class=\"active\"" : "" ?> >
      <a href="index.php?tab=10">
-        <span class="fa fa-key"></span>&nbsp; Password in Field</a>
+        <span class="fa fa-key"></span>&nbsp; Password in Fields</a>
+  </li>
+
+  <li <?= $_REQUEST['tab'] == 11 ? "class=\"active\"" : "" ?> >
+     <a href="index.php?tab=11">
+        <span class="fa fa-check-square-o"></span>&nbsp; Project Contact & Approval</a>
   </li>
 </ul>

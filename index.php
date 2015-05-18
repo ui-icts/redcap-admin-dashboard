@@ -70,7 +70,7 @@ $HtmlPage->PrintHeaderExt();
    // sort table when document is loaded
    $(document).ready(function() {
          $("#<?= $projectTable ?>").tablesorter({
-            widgets: ['zebra']
+            // widgets: ['zebra']
          });
       }
    );

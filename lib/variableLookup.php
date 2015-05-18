@@ -183,8 +183,10 @@ function GetPageDetails( $tabNumber )
            redcap_user_information AS users
       WHERE (projects.created_by = users.ui_id) AND
             ( (app_title LIKE '%pass%word%') OR
-            (app_title LIKE '%hawk%id%') OR
-            (app_title LIKE '%user%name%' ) );";
+              (app_title LIKE '%pass%wd%') OR
+              (app_title LIKE '%hawk%id%') OR
+              (app_title LIKE '%user%name%' ) OR
+              (app_title LIKE '%user%id%' ) );";
    }
    elseif ( $tabNumber == 9 )  // Instrument Password
    {
@@ -201,12 +203,14 @@ function GetPageDetails( $tabNumber )
       FROM redcap_projects AS projects,
            redcap_metadata AS meta,
            redcap_user_information AS users
-      WHERE  (projects.created_by = users.ui_id) AND
-             (projects.project_id = meta.project_id) AND
-             (meta.form_menu_description IS NOT NULL) AND
-             ( (meta.form_menu_description LIKE '%pass%word%') OR
-               (meta.form_menu_description LIKE '%hawk%id%') OR
-               (meta.form_menu_description LIKE '%user%name%' ) );";
+      WHERE (projects.created_by = users.ui_id) AND
+            (projects.project_id = meta.project_id) AND
+            (meta.form_menu_description IS NOT NULL) AND
+            ( (app_title LIKE '%pass%word%') OR
+              (app_title LIKE '%pass%wd%') OR
+              (app_title LIKE '%hawk%id%') OR
+              (app_title LIKE '%user%name%' ) OR
+              (app_title LIKE '%user%id%' ) );";
    }
    elseif ( $tabNumber == 10 )  // Field Password
    {
@@ -254,6 +258,23 @@ function GetPageDetails( $tabNumber )
          (element_note LIKE '%usr%name%') OR
          (element_note LIKE '%usr%id%') )
       ORDER BY projects.project_id, form_name, field_name;";
+   }
+   elseif ( $tabNumber == 11 )  // Users by Project
+   {
+      $projectTitle = "Project Contact & Approval";
+      $fileName = "projectContactApproval";
+      $description = "Listing of projects, project contact and approval person.";
+
+      $sql = "
+      SELECT
+         project.project_id AS 'PID',
+         TRIM( project.app_title ) AS 'Name of Project',
+         project_contact_name AS 'Project Contact',
+      	project_contact_email AS 'Project Email',
+      	project_contact_prod_changes_name AS 'Approver Name',
+      	project_contact_prod_changes_email AS 'Approver Email'
+      FROM redcap_projects AS project
+      ORDER BY TRIM( project.app_title )";
    }
    else  // if ( ! isset( $_REQUEST['tab'] ) )  // Project by Owners (default tab)
    {
