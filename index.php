@@ -86,7 +86,7 @@ $HtmlPage->PrintHeaderExt();
 
 <?php
    // display navigation tabs
-   require_once( 'include/navigationTabs.php' );
+   require_once('include/navigationTabs.php');
 ?>
 
 <p />
@@ -120,8 +120,7 @@ $HtmlPage->PrintHeaderExt();
 
 <?php
    // execute the SQL statement
-   // $result = mysqli_query( $conn, $sql );
-   $result = mysql_query( $pageInfo['sql'] );
+   $result = mysqli_query($conn,  $pageInfo['sql'] );
 
    if ( ! $result )  // sql failed
    {
@@ -132,23 +131,20 @@ $HtmlPage->PrintHeaderExt();
                           Error Msg: %s",
                           __LINE__,
                           $sql,
-                          // mysqli_errno( $conn ),
-                          // mysqli_error( $conn ) );
-                          mysql_errno( $conn ),
-                          mysql_error( $conn ) );
+                          mysqli_errno( $conn ),
+                          mysqli_error( $conn ) );
       die( $message );
    }
 
-   $redcapProjects = GetRedcapProjectNames();
+   $redcapProjects = GetRedcapProjectNames($conn);
    $isFirstRow = TRUE;
 
-   // while ( $row = mysqli_fetch_assoc( $result ) )
-   while ( $dbData = mysql_fetch_assoc( $result ) )
+   while ( $row = mysqli_fetch_assoc( $result ) )
    {
       if ( $isFirstRow )
       {
          // use column aliases for column headers
-         $headers = array_keys( $dbData );
+         $headers = array_keys( $row );
 
          // print table header
          PrintTableHeader( $projectTable, $headers );
@@ -157,7 +153,7 @@ $HtmlPage->PrintHeaderExt();
          $isFirstRow = FALSE;  // toggle flag
       }
 
-      $webData = WebifyDataRow( $dbData, $redcapProjects );
+      $webData = WebifyDataRow( $row, $redcapProjects );
       PrintTableRow( $webData );
    }
 

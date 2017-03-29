@@ -181,7 +181,7 @@ $HtmlPage->PrintHeaderExt();
 
 <?php
    // display navigation tabs
-   require_once( 'include/navigationTabs.php' );
+   require_once('include/navigationTabs.php');
 ?>
 
 <p />

@@ -21,7 +21,7 @@
  * @retval $projectNameStr  Returns a hash of project names
  *                          with the id as the keys.
  */
-function GetRedcapProjectNames()
+function GetRedcapProjectNames($conn)
 {
    if ( SUPER_USER )
    {
@@ -40,18 +40,18 @@ function GetRedcapProjectNames()
                        ORDER BY pid", USERID );
    }
 
-   $query = mysql_query($sql);
+    $query = mysqli_query($conn,  $sql );
 
    if ( ! $query )  // sql failed
    {
       die( "Could not execute SQL:
             <pre>$sql</pre> <br />" .
-            mysql_error() );
+            mysqli_error($conn) );
    }
 
    $projectNameHash = array();
 
-   while ( $row = mysql_fetch_assoc($query) )
+   while ( $row = mysqli_fetch_assoc($query) )
    {
       // $value = strip_tags( $row['app_title'] );
       $key = $row['pid'];

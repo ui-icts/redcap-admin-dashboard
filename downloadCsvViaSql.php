@@ -18,10 +18,10 @@
  */
 
 // set standard error reporting
-require_once( "lib/errorReporting.php");
+require_once("lib/errorReporting.php");
 
 // debugging functions
-// require_once( "debugFunctions.php" );
+require_once("lib/debugFunctions.php");
 
 // connect to the REDCap database
 require_once('../redcap_connect.php');
@@ -38,20 +38,20 @@ header('Pragma: no-cache');
 $pageInfo = GetPageDetails( $_REQUEST['tab'] );
 
 // Note: $sql is defined from $_REQUEST['tab'] within file
-//       include/sqlQueries.php
-$query = mysql_query( $pageInfo['sql'] );
+//       variableLookup.php
+$query = mysqli_query($conn,  $pageInfo['sql'] );
 
 if ( ! $query )  // sql failed
 {
    die( "Could not execute SQL:
          <pre>$sql</pre> <br />" .
-         mysql_error() );
+         mysqli_error($conn) );
 }
 
 // initialize variables
 $isFirstRow = TRUE;
 
-while ( $row = mysql_fetch_assoc($query) )
+while ( $row = mysqli_fetch_assoc($query) )
 {
    if ( $isFirstRow )
    {

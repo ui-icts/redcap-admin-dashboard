@@ -175,7 +175,7 @@ $HtmlPage->PrintHeaderExt();
 
 <?php
    // display navigation tabs
-   require_once( 'include/navigationTabs.php' );
+   require_once('include/navigationTabs.php');
 ?>
 
 <p />
@@ -304,7 +304,7 @@ $HtmlPage->PrintHeaderExt();
 <?php
    // execute the SQL statement
    // $result = mysqli_query( $conn, $sql );
-   $result = mysql_query( $fieldCountSql );
+   $result = mysqli_query($GLOBALS["___mysqli_ston"],  $fieldCountSql );
 
    if ( ! $result )  // sql failed
    {
@@ -317,13 +317,13 @@ $HtmlPage->PrintHeaderExt();
                           $sql,
                           // mysqli_errno( $conn ),
                           // mysqli_error( $conn ) );
-                          mysql_errno( $conn ),
-                          mysql_error( $conn ) );
+                          mysqli_errno( $conn ),
+                          mysqli_error( $conn ) );
       die( $message );
    }
 
    // while ( $row = mysqli_fetch_assoc( $result ) )
-   while ( $dbData = mysql_fetch_assoc( $result ) )
+   while ( $dbData = mysqli_fetch_assoc( $result ) )
    {
       $pid = $dbData['PID'];
 
@@ -336,7 +336,7 @@ $HtmlPage->PrintHeaderExt();
 
    // execute the SQL statement
    // $result = mysqli_query( $conn, $sql );
-   $result = mysql_query( $recordCountSql );
+   $result = mysqli_query($GLOBALS["___mysqli_ston"],  $recordCountSql );
 
    if ( ! $result )  // sql failed
    {
@@ -349,13 +349,13 @@ $HtmlPage->PrintHeaderExt();
                           $sql,
                           // mysqli_errno( $conn ),
                           // mysqli_error( $conn ) );
-                          mysql_errno( $conn ),
-                          mysql_error( $conn ) );
+                          mysqli_errno( $conn ),
+                          mysqli_error( $conn ) );
       die( $message );
    }
 
    // while ( $row = mysqli_fetch_assoc( $result ) )
-   while ( $dbData = mysql_fetch_assoc( $result ) )
+   while ( $dbData = mysqli_fetch_assoc( $result ) )
    {
       $pid = $dbData['PID'];
 
@@ -368,7 +368,7 @@ $HtmlPage->PrintHeaderExt();
 
    // execute the SQL statement
    // $result = mysqli_query( $conn, $sql );
-   $result = mysql_query( $userCountSql );
+   $result = mysqli_query($GLOBALS["___mysqli_ston"],  $userCountSql );
 
    if ( ! $result )  // sql failed
    {
@@ -381,13 +381,13 @@ $HtmlPage->PrintHeaderExt();
                           $sql,
                           // mysqli_errno( $conn ),
                           // mysqli_error( $conn ) );
-                          mysql_errno( $conn ),
-                          mysql_error( $conn ) );
+                          mysqli_errno( $conn ),
+                          mysqli_error( $conn ) );
       die( $message );
    }
 
    // while ( $row = mysqli_fetch_assoc( $result ) )
-   while ( $dbData = mysql_fetch_assoc( $result ) )
+   while ( $dbData = mysqli_fetch_assoc( $result ) )
    {
       $pid = $dbData['PID'];
 

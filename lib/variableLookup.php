@@ -27,7 +27,7 @@
  */
 function GetPageDetails( $tabNumber )
 {
-   if ( $tabNumber == 1 )  // Users by Project
+   if ( $tabNumber == 0 )  // Users by Project
    {
       $projectTitle = "Users by Project";
       $fileName = "usersByProject";
@@ -60,10 +60,10 @@ function GetPageDetails( $tabNumber )
                       Investigator (PIs) and project owner (creator).";
 
       $sql = "
+
    SELECT
       project_id AS PID,
       app_title AS 'Project Name',
-      -- 0 = development  1 = production  3 = archive
       CAST( CASE status
          WHEN 0 THEN 'Development'
          WHEN 1 THEN 'Production'
@@ -76,29 +76,28 @@ function GetPageDetails( $tabNumber )
       -- 2 = Research
       -- 3 = Quality Improvement
       -- 4 = Other
-      purpose_other AS 'Purpose Specified',
-                      -- 0 = Basic or bench research
-                      -- 1 = Clinical research study or trial
-                      -- 2 = Translational research 1 (applying discoveries to the development of trials and studies in humans)
-                      -- 3 = Translational research 2 (enhancing adoption of research findings and best practices into the community)
-                      -- 4 = Behavioral or psychosocial research study
-                      -- 5 = Epidemiology
-                      -- 6 = Repository (developing a data or specimen repository for future use by investigators)
-                      -- 7 = Other
+      CAST( CASE status
+         WHEN 0 THEN 'Basic or bench research'
+         WHEN 1 THEN 'Clinical research study or trial'
+         WHEN 2 THEN 'Translational research 1'
+         WHEN 3 THEN 'Translational research 2'
+         WHEN 4 THEN 'Behavioral or psychosocial research study'
+         WHEN 5 THEN 'Epidemiology'
+         WHEN 6 THEN 'Repository (developing a data or specimen repository for future use by investigators)'
+         WHEN 7 THEN 'Other'
+         ELSE status
+      END AS CHAR(50) ) AS 'Category',
+      -- purpose_other AS 'Purpose Specified',
       CONCAT( project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi ) AS 'PI Name',
       project_pi_email AS 'PI Email',
-      project_irb_number AS 'IRB Number',
-      CONCAT( user_lastname, ', ', user_firstname ) AS 'Owner Name',
-      user_email AS 'Owner Email',  -- FROM redcap_user_information
-      username AS 'Owner HawkID',  -- FROM redcap_user_information
-      DATE_FORMAT( creation_time, '%Y-%m-%d' ) AS 'Creation Date',
-      DATEDIFF( NOW(), creation_time ) AS 'Days Old',
       DATE_FORMAT( last_logged_event, '%Y-%m-%d' ) AS 'Last Event Date',
       DATEDIFF( now(), last_logged_event ) AS 'Event Days'
       FROM redcap_projects, redcap_user_information
       WHERE ui_id = created_by AND
             purpose = 2  -- 'Research'
-      ORDER BY app_title";
+      ORDER BY app_title
+
+      ";
    }
    elseif ( $tabNumber == 3 )  // Owner Project Summary
    {
@@ -224,10 +223,7 @@ function GetPageDetails( $tabNumber )
          meta.form_name AS 'Form Name',
          meta.field_name AS 'Field Name',
          meta.element_label AS 'Field Label',
-         meta.element_note AS 'Field Note',
-         users.username AS 'Owner HawkID',
-         CONCAT( users.user_lastname, ', ', users.user_firstname ) AS 'Owner Name',
-         users.user_email AS 'Owner Email'
+         meta.element_note AS 'Field Note'
       FROM redcap_projects AS projects,
          redcap_metadata AS meta,
          redcap_user_information AS users
