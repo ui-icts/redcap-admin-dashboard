@@ -7,12 +7,15 @@
  * @brief Controls style of interface
  */
 
+/* Download CSV File button styling */
 a.btn-lg
 {
    font-size: 1.25em;
    font-weight: bold;
+
 }
 
+/* Navigation tabs styling */
 .nav-tabs > li > a:hover {
    background-color: #CCCCCC;
    color: #000000;
@@ -24,26 +27,20 @@ a.btn-lg
    border-bottom: 2px solid #dddddd;
 }
 
-.nav-tabs > li.active > a, 
-.nav-tabs > li.active > a:hover, 
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
    border-color: #ccc #ccc;
    border-width: 2px;
    border-bottom-style: none;
 }
 
-/*
-.nav-tabs > li > a {
-   border: 2px solid transparent;
-   border-bottom: 2px solid #ccc;
-}
-*/
-
 /* make the display the full width */
 div#outer
 {
-   width: 100%;
+   width: 50%;
 }
+
 
 /* display elapsed time at the bottom of the page */
 div#elapsedTime
@@ -52,4 +49,10 @@ div#elapsedTime
    text-align: center;
    padding: 10px;
    border-radius: 5px;
+}
+
+#pagecontainer
+{
+   max-width: 80%;
+
 }

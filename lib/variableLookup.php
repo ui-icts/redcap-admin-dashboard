@@ -54,10 +54,8 @@ function GetPageDetails( $tabNumber )
    {
       $projectTitle = "Research Projects";
       $fileName = "researchProjects";
-      $description = "Listing of only REDCap Projects that are
-                      identified as Research Projects.  Also
-                      includes the associated Principal
-                      Investigator (PIs) and project owner (creator).";
+      $description = "Listing of projects that are
+                      identified as being used for research purposes.";
 
       $sql = "
 
@@ -168,16 +166,13 @@ function GetPageDetails( $tabNumber )
    }
    elseif ( $tabNumber == 8 )  // Project Title Password
    {
-      $projectTitle = "Project Password";
+      $projectTitle = "Passwords in Projects";
       $fileName = "projectPassword";
-      $description = "Listing of projects that contain the string \"password\" in the project title.";
+      $description = "Listing of projects that contain strings related to passwords/HawkIDs in the project title.";
 
       $sql = "
       SELECT projects.project_id AS 'PID',
-         app_title AS 'Project Name',
-         users.username AS 'Owner HawkID',
-         CONCAT( users.user_lastname, ', ', users.user_firstname ) AS 'Owner Name',
-         users.user_email AS 'Owner Email'
+         app_title AS 'Project Name'
       FROM redcap_projects AS projects,
            redcap_user_information AS users
       WHERE (projects.created_by = users.ui_id) AND
@@ -189,16 +184,14 @@ function GetPageDetails( $tabNumber )
    }
    elseif ( $tabNumber == 9 )  // Instrument Password
    {
-      $projectTitle = "Instrument Password";
+      $projectTitle = "Passwords in Instruments";
       $fileName = "instrumentPassword";
-      $description = "Listing of projects that contain the string \"password\" in the instrument or form name.";
+      $description = "Listing of projects that contain strings related to passwords/HawkIDs in the instrument or form name.";
 
       $sql = "
       SELECT projects.project_id AS 'PID',
          projects.app_title AS 'Project Name',
-         meta.form_menu_description AS 'Instrument Name',
-         CONCAT( users.user_lastname, ', ', users.user_firstname ) AS 'Owner Name',
-         users.user_email AS 'Owner Email'
+         meta.form_menu_description AS 'Instrument Name'
       FROM redcap_projects AS projects,
            redcap_metadata AS meta,
            redcap_user_information AS users
@@ -213,9 +206,9 @@ function GetPageDetails( $tabNumber )
    }
    elseif ( $tabNumber == 10 )  // Field Password
    {
-      $projectTitle = "Field Password";
+      $projectTitle = "Passwords in Fields";
       $fileName = "fieldPassword";
-      $description = "Listing of projects that contain the string \"password\" in one of the fields.";
+      $description = "Listing of projects that contain strings related to passwords/HawkIDs in one of the fields.";
 
       $sql = "
       SELECT projects.project_id AS 'PID',

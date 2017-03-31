@@ -18,7 +18,7 @@
 function PrintTableHeader( $tableId, $columns )
 {
    printf( "
-<table id='%s' class='tablesorter table-condensed table-hover'>
+<table id='%s' class='tablesorter'>
    <thead>
       <tr>\n", $tableId );
 

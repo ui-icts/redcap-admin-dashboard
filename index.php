@@ -39,48 +39,39 @@ $HtmlPage->PrintHeaderExt();
 
 ?>
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!-- tablesorter -->
+<link href="css/tablesorter/theme.blue.min.css" rel="stylesheet">
+<script src="js/jquery.tablesorter.min.js"></script>
+<script src="js/jquery.tablesorter.widgets.min.js"></script>
 
-<!-- tablesorter plugin -->
-<script src="js/jquery_tablesorter/jquery.tablesorter.js"></script>
-
-<!-- tablesorter CSS -->
-<link rel="stylesheet" href="js/jquery_tablesorter/themes/blue/style.css" type="text/css" media="print, projection, screen" />
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
-<!-- Optional theme -->
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-
-<!-- local customizations CSS -->
+<!-- local CSS-->
 <link rel="stylesheet" href="css/styles.css" type="text/css" />
 
-<!-- Latest compiled and minified JavaScript -->
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-
-<!-- Font Awesome fonts -->
+<!-- Font Awesome fonts (for tab icons)-->
 <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
 
 <script>
    // set the window title
    document.title = "<?= $title ?>";
 
    // sort table when document is loaded
-   $(document).ready(function() {
-         $("#<?= $projectTable ?>").tablesorter({
-            // widgets: ['zebra']
-         });
-      }
-   );
+   $(document).ready(function(){
+      $("#<?= $projectTable ?>").tablesorter({
+         theme : 'blue',
+         widgets        : ['zebra', 'resizable', 'stickyHeaders'],
+         usNumberFormat : false,
+         sortReset      : false,
+         sortRestart    : true
+      });
+   });
 </script>
 
-<h3 style="text-align: center;
+<h2 style="text-align: center;
     color: #800000;
     font-weight: bold;">
    <?= $title ?>
-</h3>
+</h2>
 
 <p />
 
@@ -102,21 +93,19 @@ $HtmlPage->PrintHeaderExt();
 <div style="text-align: right; width: 100%">
    <a href="downloadCsvViaSql.php?file=<?= $csvFileName; ?>&tab=<?= $_REQUEST['tab'] ?>"
       class="btn btn-default btn-lg">
-      <!-- <span class="glyphicon glyphicon-download"></span> -->
       <span class="fa fa-download"></span>&nbsp;
       Download CSV File</a>
 </div>
 
 <p />
 
-<h4 style="text-align: center;
-    font-weight: bold;">
+<h3 style="text-align: center">
    <?= $pageInfo['subtitle'] ?>
-</h4>
+</h3>
 
-<p>
+<h5 style="text-align: center">
    <?= $pageInfo['summary'] ?>
-</p>
+</h5>
 
 <?php
    // execute the SQL statement
