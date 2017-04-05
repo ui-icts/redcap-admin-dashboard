@@ -29,6 +29,9 @@ require_once('../redcap_connect.php');
 // define all the SQL statements that are used
 require_once('lib/variableLookup.php');
 
+// handy html utilities
+require_once('lib/htmlUtilities.php');
+
 header('Content-type: text/csv');
 header("Content-Description: File Transfer");
 header( sprintf( "Content-Disposition: attachment; filename=%s", $_REQUEST['file'] ) );
@@ -64,6 +67,8 @@ while ( $row = mysqli_fetch_assoc($query) )
       $isFirstRow = FALSE;  // toggle flag
    }
 
-   $rowStr = implode( "\",\"", $row );
+    $row['Purpose Specified'] = ConvertProjectPurpose2List($row['Purpose Specified']);
+
+    $rowStr = implode( "\",\"", $row );
    printf( "\"%s\"\n", $rowStr );
 }

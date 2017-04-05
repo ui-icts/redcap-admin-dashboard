@@ -217,7 +217,7 @@ function ConvertPidList2Links( $pidStr, &$pidTitles )
 function ConvertHawkId2Link( $hawkIDs )
 {
    // convert comma delimited string to array
-   $hawkIDList = explode( ",", $hawkIDs );
+   $hawkIDList = explode( ", ", $hawkIDs );
    $linkList = array();
 
    foreach ( $hawkIDList as $hawkID )
@@ -237,7 +237,7 @@ function ConvertHawkId2Link( $hawkIDs )
    }
 
    // convert array to comma delimited string
-   $linkStr = implode( ", ", $linkList );
+   $linkStr = implode(  "<br>", $linkList );
 
    return( $linkStr );
 }  // function ConvertHawkId2Link();
