@@ -91,7 +91,7 @@ $HtmlPage->PrintHeaderExt();
 
             // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
             // table row set to a height to compensate; default is false
-            pager_fixedHeight: true,
+            pager_fixedHeight: false,
 
             // remove rows from the table to speed up the sort of large tables.
             // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
@@ -303,6 +303,7 @@ $HtmlPage->PrintHeaderExt();
       <img src="css/tablesorter/images/icons/next.png" class="next"/>
       <img src="css/tablesorter/images/icons/last.png" class="last"/>
       <select class="pagesize">
+         <option value="10">10</option>
          <option value="25">25</option>
          <option value="50">50</option>
          <option value="100">100</option>
@@ -356,7 +357,6 @@ $HtmlPage->PrintHeaderExt();
 
    $load = sys_getloadavg();
    printf( "<div id='elapsedTime'>
-            Returned $result->num_rows rows<br />
             Elapsed Execution Time: %s<br />
             System load avg last minute: %d%%<br />
             System load avg last 5 mins: %d%%<br />
