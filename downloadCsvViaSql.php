@@ -17,20 +17,9 @@
  * @example https://www-dev.icts.uiowa.edu/redcap/adminDash/downloadCsvViaSql.php?file=usersByProject.2014-10-14_085438.csv&tab=1
  */
 
-// set standard error reporting
-require_once("lib/errorReporting.php");
+require_once('resources/config.php');
 
-// debugging functions
-require_once("lib/debugFunctions.php");
-
-// connect to the REDCap database
 require_once('../redcap_connect.php');
-
-// define all the SQL statements that are used
-require_once('lib/variableLookup.php');
-
-// handy html utilities
-require_once('lib/htmlUtilities.php');
 
 header('Content-type: text/csv');
 header("Content-Description: File Transfer");
@@ -38,23 +27,12 @@ header( sprintf( "Content-Disposition: attachment; filename=%s", $_REQUEST['file
 header('Expires: 0');
 header('Pragma: no-cache');
 
-$pageInfo = GetPageDetails( $_REQUEST['tab'] );
-
-// Note: $sql is defined from $_REQUEST['tab'] within file
-//       variableLookup.php
-$query = mysqli_query($conn,  $pageInfo['sql'] );
-
-if ( ! $query )  // sql failed
-{
-   die( "Could not execute SQL:
-         <pre>$sql</pre> <br />" .
-         mysqli_error($conn) );
-}
-
 // initialize variables
+$pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
+$result = sqlQuery($conn, $pageInfo);
 $isFirstRow = TRUE;
 
-while ( $row = mysqli_fetch_assoc($query) )
+while ( $row = mysqli_fetch_assoc($result) )
 {
    if ( $isFirstRow )
    {

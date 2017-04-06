@@ -60,7 +60,7 @@ function PrintTableRow( $row )
  */
 function WebifyDataRow( $row, &$projectTitles )
 {
-   // intialize value
+   // initialize value
    $webified = array();
 
    foreach ( $row as $key => $value )
@@ -252,8 +252,7 @@ function ConvertHawkId2Link( $hawkIDs )
  */
 function ConvertProjectPurpose2List( $purposeList )
 {
-   // intialize variables
-   $purposeStr = "";
+   // initialize variables
    $purposeResults = array();
    $purposeParts = explode( ",", $purposeList );
    $purposeMaster = array( "Basic or Bench Research",
@@ -287,7 +286,7 @@ function ConvertProjectPurpose2List( $purposeList )
  */
 function ElapsedTime()
 {
-   // intialize variables
+   // initialize variables
    static $startTime = null;
    $elapseTimeStr = "";
 
@@ -308,72 +307,3 @@ function ElapsedTime()
 
    return( $elapseTimeStr );
 }  // function ElapsedTime();
-
-
-/**
- * @brief Creates a checkbox with a specified name, value, and label
- *
- * @param  $checkBoxName   Name of the HTML checkbox array
- * @param  $checkBoxValue  Value associated with enabled checkbox
- * @param  $checkBoxLabel  Label displayed with the checkbox
- * @return $checkBoxHtml   HTML of the checkbox
- */
-function GenerateCheckBox( $checkBoxName, $checkBoxValue, $checkBoxLabel )
-{
-   $html = "";
-
-   /*
-        <div class="checkbox">
-           <?= GenerateCheckBox( "field_type", "field_name", "Variable Name" ); ?>
-           <label>
-              <input type="checkbox" name="field_type[]" value="field_name" /> Variable Name
-           </label> <br />
-
-           <label>
-              <input type="checkbox" name="field_type[]" value="element_label" /> Field Label
-           </label> <br />
-           <label>
-              <input type="checkbox" name="field_type[]" value="element_note" /> Field Note
-           </label> <br />
-         </div>
-         */
-
-   // intialize variables
-   static $startTime = null;
-   $elapseTimeStr = "";
-
-   if ( $startTime == null )  // start the clock
-   {
-      $startTime = round( microtime( true ) );
-      // printf( "\$startTime: %f<br />", $startTime );
-   }
-   else
-   {
-      $endTime = round( microtime( true ) );
-      // printf( "\$endTime: %f<br />", $endTime );
-      $elapseTime = $endTime - $startTime;
-      // printf( "\$elapsedTime: %f<br />", $elapsedTime );
-
-      $elapseTimeStr = date( "i:s", $elapseTime );
-   }
-
-   return( $checkboxHtml );
-}  // function GenerateCheckBox();
-
-
-/**
- * @brief Calls GenerateCheckBox in order to create multiple checkboxes
- *
- * @param  $checkBoxName      Name of the HTML checkbox array
- * @param  $checkBoxKeyLabel  Associative array with the key as the checkbox value and the value as the checkbox label
- */
-function GenerateCheckBoxes( $checkBoxName, $checkBoxKeyLabel )
-{
-   foreach ( $checkBoxKeyLabel as $key => $label )
-   {
-      GenerateCheckBox( $checkBoxName, $checkBoxValue, $checkBoxLabel );
-   }
-
-}  // function GenerateCheckBoxes();
-
-?>

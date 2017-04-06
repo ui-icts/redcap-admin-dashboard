@@ -1,26 +1,7 @@
 <?php
-/**
- * @file index.php
- * @author Fred R. McClurg, University of Iowa
- * @date July 24, 2014
- * @version 1.2
- *
- * @brief An application that displays project and Principal Investigator information.
- */
 
-// set error reporting for debugging
-require_once('lib/errorReporting.php');
+require_once('resources/config.php');
 
-// handy html utilities
-require_once('lib/htmlUtilities.php');
-
-// handy html utilities
-require_once('lib/redcapUtilities.php');
-
-// define all the SQL statements that are used
-require_once('lib/variableLookup.php');
-
-// connect to the REDCap database
 require_once('../redcap_connect.php');
 
 // only allow super users to view this information
@@ -40,13 +21,13 @@ $HtmlPage->PrintHeaderExt();
 ?>
 
 <!-- tablesorter -->
-<script src="js/tablesorter/jquery.tablesorter.min.js"></script>
-<script src="js/tablesorter/jquery.tablesorter.widgets.min.js"></script>
-<script src="js/tablesorter/widgets/widget-pager.min.js"></script>
+<script src="resources/tablesorter/jquery.tablesorter.min.js"></script>
+<script src="resources/tablesorter/jquery.tablesorter.widgets.min.js"></script>
+<script src="resources/tablesorter/widgets/widget-pager.min.js"></script>
 
 <!-- tablesorter CSS-->
-<link href="css/tablesorter/theme.blue.min.css" rel="stylesheet">
-<link href="css/tablesorter/jquery.tablesorter.pager.min.css" rel="stylesheet">
+<link href="resources/tablesorter/tablesorter/theme.blue.min.css" rel="stylesheet">
+<link href="resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css" rel="stylesheet">
 
 <!-- local CSS-->
 <link rel="stylesheet" href="css/styles.css" type="text/css" />
@@ -261,18 +242,22 @@ $HtmlPage->PrintHeaderExt();
 
 <p />
 
-<?php
-   // display navigation tabs
-   require_once('include/navigationTabs.php');
-?>
+<ul class='nav nav-tabs' role='tablist'>
+        <?php foreach($reportReference as $report => $pageInfo ): ?>
+   <li <?= $_REQUEST['tab'] == $report ? "class=\"active\"" : "" ?> >
+      <a href="index.php?tab=<?= $report ?>">
+         <span class="<?= $pageInfo['tabIcon'] ?>"></span>&nbsp; <?= $pageInfo['reportName'] ?></a>
+   </li>
+<?php endforeach; ?>
+</ul>
 
 <p />
 
 <?php
-   $pageInfo = GetPageDetails( $_REQUEST['tab'] );
+   $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
 
    $csvFileName = sprintf( "%s.%s.csv",
-                           $pageInfo['file'],
+                           $pageInfo['fileName'],
                            date( "Y-m-d_His" ) );
 ?>
 
@@ -286,22 +271,22 @@ $HtmlPage->PrintHeaderExt();
 <p />
 
 <h3 style="text-align: center">
-   <?= $pageInfo['subtitle'] ?>
+   <?= $pageInfo['reportName'] ?>
 </h3>
 
 <h5 style="text-align: center">
-   <?= $pageInfo['summary'] ?>
+   <?= $pageInfo['description'] ?>
 </h5>
 
-<!-- pager -->
+<!-- tablesorter pager buttons -->
 <div id="pager" class="pager">
    <form>
-      <img src="css/tablesorter/images/icons/first.png" class="first"/>
-      <img src="css/tablesorter/images/icons/prev.png" class="prev"/>
+      <img src="resources/tablesorter/tablesorter/images/icons/first.png" class="first"/>
+      <img src="resources/tablesorter/tablesorter/images/icons/prev.png" class="prev"/>
       <!-- the "pagedisplay" can be any element, including an input -->
       <span class="pagedisplay" data-pager-output-filtered="{startRow:input} &ndash; {endRow} / {filteredRows} of {totalRows} total rows"></span>
-      <img src="css/tablesorter/images/icons/next.png" class="next"/>
-      <img src="css/tablesorter/images/icons/last.png" class="last"/>
+      <img src="resources/tablesorter/tablesorter/images/icons/next.png" class="next"/>
+      <img src="resources/tablesorter/tablesorter/images/icons/last.png" class="last"/>
       <select class="pagesize">
          <option value="10">10</option>
          <option value="25">25</option>
@@ -314,21 +299,7 @@ $HtmlPage->PrintHeaderExt();
 
 <?php
    // execute the SQL statement
-   $result = mysqli_query($conn,  $pageInfo['sql'] );
-
-   if ( ! $result )  // sql failed
-   {
-      $message = printf( "Line: %d<br />
-                          Could not execute SQL:
-                          <pre>%s</pre> <br />
-                          Error #: %d<br />
-                          Error Msg: %s",
-                          __LINE__,
-                          $sql,
-                          mysqli_errno( $conn ),
-                          mysqli_error( $conn ) );
-      die( $message );
-   }
+   $result = sqlQuery($conn, $pageInfo);
 
    $redcapProjects = GetRedcapProjectNames($conn);
    $isFirstRow = TRUE;
@@ -355,13 +326,7 @@ $HtmlPage->PrintHeaderExt();
    printf( "</table>\n" );  // <table> created by PrintTableHeader
    printf( "<p /> <br />\n" );
 
-   $load = sys_getloadavg();
-   printf( "<div id='elapsedTime'>
-            Elapsed Execution Time: %s<br />
-            System load avg last minute: %d%%<br />
-            System load avg last 5 mins: %d%%<br />
-            System load avg last 15 min: %d%%</div>",
-            ElapsedTime(), $load[0] * 100, $load[1] * 100, $load[2] * 100 );
+   displayElapsedTime();
 
    // Display the footer
    $HtmlPage->PrintFooterExt();
