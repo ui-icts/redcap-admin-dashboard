@@ -187,6 +187,13 @@ WHERE (projects.created_by = users.ui_id) AND
         (element_note LIKE '%usr%id%') )
 ORDER BY projects.project_id, form_name, field_name;
       "
+    ),
+    array // Graphs
+    (
+        "reportName" => "Graphs",
+        "fileName" => "graphs",
+        "description" => "Additional data presented in graph form.",
+        "tabIcon" => "fa fa-pie-chart"
     )
 );
 
