@@ -8,10 +8,10 @@ function LogToConsole( $data ) {
     echo "<script>console.log( 'Debug Objects: " . $output . "' );</script>";
 }
 
-function SqlQuery($conn, $pageInfo)
+function SqlQuery($conn, $queryInfo)
 {
 // execute the SQL statement
-    $result = mysqli_query($conn,  $pageInfo['sql'] );
+    $result = mysqli_query($conn,  $queryInfo['sql'] );
 
     if ( ! $result )  // sql failed
     {
@@ -27,6 +27,51 @@ function SqlQuery($conn, $pageInfo)
     else
     {
         return $result;
+    }
+}
+
+function FormatQueryResults($conn, $result, $format)
+{
+    $redcapProjects = GetRedcapProjectNames($conn);
+    $isFirstRow = TRUE;
+
+    while ( $row = mysqli_fetch_assoc( $result ) )
+    {
+        if ( $format == 'html' ) {
+            if ( $isFirstRow )
+            {
+                // use column aliases for column headers
+                $headers = array_keys( $row );
+                // print table header
+                PrintTableHeader( $headers );
+                printf( "   <tbody>\n" );
+                $isFirstRow = FALSE;  // toggle flag
+            }
+
+            $webData = WebifyDataRow( $row, $redcapProjects );
+            PrintTableRow( $webData );
+            }
+        elseif ( $format == 'csv' ) {
+            if ( $isFirstRow )
+            {
+                // use column aliases for column headers
+                $headers = array_keys( $row );
+
+                $headerStr = implode( "\",\"", $headers );
+                printf( "\"%s\"\n", $headerStr );
+
+                $isFirstRow = FALSE;  // toggle flag
+            }
+
+            $row['Purpose Specified'] = ConvertProjectPurpose2List($row['Purpose Specified']);
+
+            $rowStr = implode( "\",\"", $row );
+            printf( "\"%s\"\n", $rowStr );
+        }
+        elseif ( $format == 'text' ) {
+            $rowStr = implode( "\",\"", $row );
+            return $rowStr;
+            }
     }
 }
 

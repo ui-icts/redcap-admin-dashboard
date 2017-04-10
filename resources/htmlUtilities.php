@@ -12,15 +12,14 @@
 /**
  * @brief Displays a table header
  *
- * @param $tableId ID of of the table
  * @param $columns Array of table headings
  */
-function PrintTableHeader( $tableId, $columns )
+function PrintTableHeader( $columns )
 {
    printf( "
-<table id='%s' class='tablesorter'>
+<table id='reportTable' class='tablesorter'>
    <thead>
-      <tr>\n", $tableId );
+      <tr>\n", 'reportTable' );
 
    foreach ( $columns as $name )
       printf( "         <th> %s </th>\n", $name );

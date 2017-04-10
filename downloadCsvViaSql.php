@@ -32,21 +32,4 @@ $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
 $result = sqlQuery($conn, $pageInfo);
 $isFirstRow = TRUE;
 
-while ( $row = mysqli_fetch_assoc($result) )
-{
-   if ( $isFirstRow )
-   {
-      // use column aliases for column headers
-      $headers = array_keys( $row );
-
-      $headerStr = implode( "\",\"", $headers );
-      printf( "\"%s\"\n", $headerStr );
-
-      $isFirstRow = FALSE;  // toggle flag
-   }
-
-    $row['Purpose Specified'] = ConvertProjectPurpose2List($row['Purpose Specified']);
-
-    $rowStr = implode( "\",\"", $row );
-   printf( "\"%s\"\n", $rowStr );
-}
+FormatQueryResults($conn, $result, "csv");

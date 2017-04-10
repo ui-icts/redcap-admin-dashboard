@@ -50,7 +50,7 @@ SELECT
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archive'
         ELSE status
-    END AS CHAR(50) ) AS 'Category',
+    END AS CHAR(50) ) AS 'Status',
     record_count AS 'Record Count',
     CAST( CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
@@ -187,5 +187,16 @@ WHERE (projects.created_by = users.ui_id) AND
         (element_note LIKE '%usr%id%') )
 ORDER BY projects.project_id, form_name, field_name;
       "
+    )
+);
+
+$miscQueryReference = array
+(
+    array
+    (
+        "queryName" => "Suspended Users",
+        "sql" => "
+SELECT count(*) FROM redcap_user_information WHERE user_suspended_time IS NOT NULL
+        "
     )
 );

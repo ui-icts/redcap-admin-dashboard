@@ -12,7 +12,6 @@ ElapsedTime();
 
 // define variables
 $title = "REDCap Admin Dashboard";
-$projectTable = "projectTable";
 
 // Display the header
 $HtmlPage = new HtmlPage();
@@ -42,7 +41,7 @@ $HtmlPage->PrintHeaderExt();
 
    // sort table when document is loaded
    $(document).ready(function(){
-      $("#<?= $projectTable ?>")
+      $("#reportTable")
       .tablesorter({
          theme: 'blue',
          widthFixed: true,
@@ -275,7 +274,12 @@ $HtmlPage->PrintHeaderExt();
 </h3>
 
 <h5 style="text-align: center">
-   <?= $pageInfo['description'] ?>
+   <?=
+      $pageInfo['description'];
+
+
+
+   ?>
 </h5>
 
 <!-- tablesorter pager buttons -->
@@ -301,32 +305,17 @@ $HtmlPage->PrintHeaderExt();
    // execute the SQL statement
    $result = sqlQuery($conn, $pageInfo);
 
-   $redcapProjects = GetRedcapProjectNames($conn);
-   $isFirstRow = TRUE;
-
-   while ( $row = mysqli_fetch_assoc( $result ) )
-   {
-      if ( $isFirstRow )
-      {
-         // use column aliases for column headers
-         $headers = array_keys( $row );
-
-         // print table header
-         PrintTableHeader( $projectTable, $headers );
-         printf( "   <tbody>\n" );
-
-         $isFirstRow = FALSE;  // toggle flag
-      }
-
-      $webData = WebifyDataRow( $row, $redcapProjects );
-      PrintTableRow( $webData );
-   }
+   FormatQueryResults($conn, $result, "html");
 
    printf( "   </tbody>\n" );
    printf( "</table>\n" );  // <table> created by PrintTableHeader
-   printf( "<p /> <br />\n" );
 
-   displayElapsedTime();
+   if ($_REQUEST['tab'] == 0) {
+      $result = sqlQuery($conn, $miscQueryReference[0]);
+      printf(FormatQueryResults($conn, $result, "text") . " users are currently suspended.");
+   }
+
+   DisplayElapsedTime();
 
    // Display the footer
    $HtmlPage->PrintFooterExt();
