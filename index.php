@@ -1,5 +1,5 @@
 <?php
-
+test
 require_once('resources/config.php');
 
 require_once('../redcap_connect.php');
