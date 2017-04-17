@@ -243,52 +243,54 @@ $HtmlPage->PrintHeaderExt();
           });
 
        });
-</script>
+   </script>
 <?php else : ?>
-    <!-- get graph data and generate -->
-    <script>
-       d3.json("getGraphData.php?tab=1", function (error, json) {
-          if (error) return console.warn(error);
+   <script>
+      function createPieChart(json, title, chartID) {
+         console.log(json);
 
-          // Must match div ids above
-          createPieChart(json, "Status");
-          createPieChart(json, "Purpose");
-       });
+         var chart = c3.generate({
+            data: {
+               json: json,
+               type: 'pie'
+            },
+            title: {
+               text: title
+            },
+            bindto: "#" + chartID
+         });
+      }
 
-       function createPieChart(json, column) {
-          var chart = c3.generate({
-             data: {
-                json: getCountsFromJson(json, column),
-                type: 'pie'
-             },
-             title: {
-                text: column
-             },
-             bindto: "#" + column.replace(/\s+/g, '')
-          });
-       }
+      function getCountsFromJson(json, column) {
+         var countList = {};
 
-       function getCountsFromJson(json, column) {
-          var countList = {};
+         for (var i = 0; i < json.length; i++) {
+            var currentValue = json[i][column] ? json[i][column] : "N/A"; // Value to be tallied
 
-          for (var i = 0; i < json.length; i++) {
-             var currentValue = json[i][column] ? json[i][column] : "N/A"; // Value to be tallied
+            if ( !(currentValue in countList) ) {
+               countList[currentValue] = 1;
+            }
+            else {
+               countList[currentValue]++;
+            }
+         }
+         return countList;
+         }
+   </script>
 
-             if ( !(currentValue in countList) ) {
-                countList[currentValue] = 1;
-             }
-             else {
-                countList[currentValue]++;
-             }
-          }
-          return countList;
-       }
-    </script>
+   <!-- get graph data and generate -->
+   <?php foreach ($visualizationQueries as $vis => $visInfo ): ?>
+      <script>
+         d3.json("getGraphData.php?vis=<?= $vis ?>", function (error, json) {
+            if (error) return console.warn(error);
+            console.log(json);
+            createPieChart(getCountsFromJson(json, <?php echo json_encode($visInfo['countColumns']) ?>), <?= $visInfo['visName'] ?>, <?= $visInfo['visID'] ?>);
+         });
+      </script>
+   <?php endforeach; ?>
 <?php endif; ?>
 
-<h2 style="text-align: center;
-    color: #800000;
-    font-weight: bold;">
+<h2 style="text-align: center; color: #800000; font-weight: bold;">
    <?= $title ?>
 </h2>
 
@@ -346,20 +348,27 @@ $HtmlPage->PrintHeaderExt();
       </form>
    </div>
 <?php else : ?>
-   <!-- display graphs, ids must match below -->
-   <div style="width: 100%; display: table">
-      <div style="display: table-row">
-         <div style="width: 600px; display: table-cell" id="Status"></div>
-         <div style="display: table-cell" id="Purpose"></div>
-      </div>
-   </div>
+    <!-- display graphs, ids must match above -->
+    <div style="display: inline-block;">
+        <div style="width: 100%; display: table; max-height: 500px">
+            <div style="display: table-row">
+               <?php foreach ($visualizationQueries as $vis => $visInfo ): ?>
+                     <div style="width: 600px; display: table-cell" id=<?= $visInfo['visID'] ?>></div>
+               <?php endforeach; ?>
+            </div>
+            <div style="display: table-row">
+                <div style="display: table-cell" id="status_research"></div>
+            </div>
+        </div>
+    </div>
+
 <?php endif; ?>
 
 <?php
    // display normal reports
    if($pageInfo['sql']) {
       // execute the SQL statement
-      $result = sqlQuery($conn, $pageInfo);
+      $result = sqlQuery($conn, $pageInfo['sql']);
 
       FormatQueryResults($conn, $result, "html");
 
@@ -367,7 +376,7 @@ $HtmlPage->PrintHeaderExt();
       printf( "</table>\n" );  // <table> created by PrintTableHeader
 
       if ($_REQUEST['tab'] == 0) {
-         $result = sqlQuery($conn, $miscQueryReference[0]);
+         $result = sqlQuery($conn, $miscQueryReference[0]['sql']);
          printf(FormatQueryResults($conn, $result, "text") . " users are currently suspended.");
       }
    }

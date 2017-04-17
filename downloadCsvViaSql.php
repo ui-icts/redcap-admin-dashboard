@@ -29,7 +29,7 @@ header('Pragma: no-cache');
 
 // initialize variables
 $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
-$result = sqlQuery($conn, $pageInfo);
+$result = sqlQuery($conn, $pageInfo['sql']);
 $isFirstRow = TRUE;
 
 FormatQueryResults($conn, $result, "csv");

@@ -4,9 +4,9 @@ require_once('resources/config.php');
 
 require_once('../redcap_connect.php');
 
-$pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
+$pageInfo = $visualizationQueries[ $_REQUEST['vis'] ];
 
-$result = sqlQuery($conn, $pageInfo);
+$result = sqlQuery($conn, $pageInfo['sql']);
 
 $data = array();
 

@@ -8,10 +8,10 @@ function LogToConsole( $data ) {
     echo "<script>console.log( 'Debug Objects: " . $output . "' );</script>";
 }
 
-function SqlQuery($conn, $queryInfo)
+function SqlQuery($conn, $query)
 {
 // execute the SQL statement
-    $result = mysqli_query($conn,  $queryInfo['sql'] );
+    $result = mysqli_query($conn,  $query );
 
     if ( ! $result )  // sql failed
     {

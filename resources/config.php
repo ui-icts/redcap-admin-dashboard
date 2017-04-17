@@ -13,7 +13,7 @@ $reportReference = array
 (
     array // Projects by User
     (
-        "reportName" => "Projects By User",
+        "reportName" => "Projects by User",
         "fileName" => "projectsByUser",
         "description" => "Listing of users and the projects of which they are members.",
         "tabIcon" => "fa fa-male",
@@ -188,13 +188,91 @@ WHERE (projects.created_by = users.ui_id) AND
 ORDER BY projects.project_id, form_name, field_name;
       "
     ),
-    array // Graphs
+    array // Visualizations
     (
-        "reportName" => "Graphs",
-        "fileName" => "graphs",
-        "description" => "Additional data presented in graph form.",
+        "reportName" => "Visualizations",
+        "fileName" => "visualizations",
+        "description" => "Additional data presented in graph and chart form.",
         "tabIcon" => "fa fa-pie-chart"
     )
+);
+
+$visualizationQueries = array
+(
+    array
+    (
+        "visName" => "\"Status (All Projects)\"",
+        "visID" => "\"status_all\"",
+        "visType" => "\"count\"",
+        "countColumns" => ["Status"],
+        "sql" => "
+SELECT
+    redcap_projects.project_id AS PID,
+    app_title AS 'Project Name',
+    CAST( CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archive'
+        ELSE status
+    END AS CHAR(50) ) AS 'Status',
+    record_count AS 'Record Count',
+    CAST( CASE purpose
+        WHEN 0 THEN 'Practice / Just for fun'
+        WHEN 1 THEN 'Operational Support'
+        WHEN 2 THEN 'Research'
+        WHEN 3 THEN 'Quality Improvement'
+        WHEN 4 THEN 'Other'
+        ELSE purpose
+    END AS CHAR(50) ) AS 'Purpose',
+    GROUP_CONCAT( ( redcap_user_rights.username ) SEPARATOR ', ' ) AS 'Project Users',
+    DATE_FORMAT( last_logged_event, '%Y-%m-%d' ) AS 'Last Event Date',
+    DATEDIFF( now(), last_logged_event ) AS 'Event Days',
+    COUNT( redcap_user_rights.username ) AS 'Users Total'
+FROM redcap_projects
+LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+LEFT JOIN redcap_user_rights ON redcap_projects.project_id = redcap_user_rights.project_id
+GROUP BY redcap_projects.project_id
+ORDER BY app_title
+        "
+    ),
+    array
+    (
+            "visName" => "\"Purpose Specified (Research Projects)\"",
+            "visID" => "\"purpose_all\"",
+            "visType" => "\"count\"",
+            "countColumns" => ["Purpose"],
+            "sql" => "
+SELECT
+    redcap_projects.project_id AS PID,
+    app_title AS 'Project Name',
+    CAST( CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archive'
+        ELSE status
+    END AS CHAR(50) ) AS 'Status',
+    record_count AS 'Record Count',
+    CAST( CASE purpose
+        WHEN 0 THEN 'Practice / Just for fun'
+        WHEN 1 THEN 'Operational Support'
+        WHEN 2 THEN 'Research'
+        WHEN 3 THEN 'Quality Improvement'
+        WHEN 4 THEN 'Other'
+        ELSE purpose
+    END AS CHAR(50) ) AS 'Purpose',
+    GROUP_CONCAT( ( redcap_user_rights.username ) SEPARATOR ', ' ) AS 'Project Users',
+    DATE_FORMAT( last_logged_event, '%Y-%m-%d' ) AS 'Last Event Date',
+    DATEDIFF( now(), last_logged_event ) AS 'Event Days',
+    COUNT( redcap_user_rights.username ) AS 'Users Total'
+FROM redcap_projects
+LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+LEFT JOIN redcap_user_rights ON redcap_projects.project_id = redcap_user_rights.project_id
+GROUP BY redcap_projects.project_id
+ORDER BY app_title
+        "
+        )
 );
 
 $miscQueryReference = array
