@@ -1,13 +1,5 @@
 <?php
 
-function LogToConsole( $data ) {
-    $output = $data;
-    if ( is_array( $output ) )
-        $output = implode( ',', $output);
-
-    echo "<script>console.log( 'Debug Objects: " . $output . "' );</script>";
-}
-
 function SqlQuery($conn, $query)
 {
 // execute the SQL statement
