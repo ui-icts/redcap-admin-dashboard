@@ -101,6 +101,33 @@ WHERE purpose = 2  -- 'Research'
 ORDER BY app_title
       "
     ),
+    array // Development Projects
+    (
+        "reportName" => "Development Projects",
+        "fileName" => "developmentProjects",
+        "description" => "Listing of record counts for projects in Development Mode.",
+        "tabIcon" => "fa fa-folder",
+        "sql" => "
+SELECT
+    redcap_projects.project_id AS 'PID',
+    app_title AS 'Project Name',
+    project_pi_email AS 'PI Email',
+    record_count AS 'Record Count',
+    CAST( CASE purpose
+        WHEN 0 THEN 'Practice / Just for fun'
+        WHEN 1 THEN 'Operational Support'
+        WHEN 2 THEN 'Research'
+        WHEN 3 THEN 'Quality Improvement'
+        WHEN 4 THEN 'Other'
+        ELSE purpose
+    END AS CHAR(50) ) AS 'Purpose',
+    creation_time AS 'Creation Time',
+    last_logged_event AS 'Last Logged Event'
+FROM redcap_projects
+INNER JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+WHERE (redcap_projects.status = 0 and redcap_projects.purpose != 0)
+      "
+    ),
     array // Passwords in Projects
     (
         "reportName" => "Passwords in Projects",
