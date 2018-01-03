@@ -106,7 +106,7 @@ ORDER BY app_title
         "reportName" => "Development Projects",
         "fileName" => "developmentProjects",
         "description" => "Listing of record counts for projects in Development Mode.",
-        "tabIcon" => "fa fa-folder",
+        "tabIcon" => "fa fa-wrench",
         "sql" => "
 SELECT
     redcap_projects.project_id AS 'PID',
@@ -213,6 +213,22 @@ WHERE (projects.created_by = users.ui_id) AND
         (element_note LIKE '%usr%name%') OR
         (element_note LIKE '%usr%id%') )
 ORDER BY projects.project_id, form_name, field_name;
+      "
+    ),
+    array // Publication Matches
+    (
+        "reportName" => "Publication Matches",
+        "fileName" => "pubMatches",
+        "description" => "List of publication matches",
+        "tabIcon" => "fa fa-book",
+        "sql" => "
+SELECT
+    *
+FROM
+    redcap_pub_articles
+INNER JOIN redcap_pub_authors ON redcap_pub_articles.article_id = redcap_pub_authors.article_id
+INNER JOIN redcap_pub_matches ON redcap_pub_articles.article_id = redcap_pub_matches.article_id
+INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
       "
     ),
     array // Visualizations
