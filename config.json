@@ -31,10 +31,9 @@
 
 	"system-settings": [
 		{
-			"key": "username",
-			"name": "Institution-Specific Username",
+			"key": "additional_search_terms",
+			"name": "Additional search term for username/password reports",
 			"type": "text",
-			"default": "username",
 			"required": false,
 			"repeatable": true
 		}

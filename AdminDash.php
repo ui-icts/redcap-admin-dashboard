@@ -10,239 +10,6 @@ use ExternalModules\ExternalModules;
 class AdminDash extends AbstractExternalModule {
     // Your module methods, constants, etc. go here
 
-    public static $reportReference = array
-    (
-        array // Projects by User
-        (
-            "reportName" => "Projects by User",
-            "fileName" => "projectsByUser",
-            "description" => "List of users and the projects to which they have access.",
-            "tabIcon" => "fa fa-male",
-            "sql" => "
-        SELECT
-        info.username AS 'HawkID',
-        CONCAT(info.user_lastname, ', ', info.user_firstname) AS 'User Name',
-        info.user_email AS 'User Email',
-        GROUP_CONCAT(CAST(project.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-        GROUP_CONCAT(CAST(CASE project.status
-        WHEN 0 THEN 'Development'
-        WHEN 1 THEN 'Production'
-        WHEN 2 THEN 'Inactive'
-        WHEN 3 THEN 'Archived'
-        ELSE project.status
-        END AS CHAR(50))) AS 'Project Statuses (Hidden)',
-        GROUP_CONCAT(CAST(CASE WHEN project.date_deleted IS NULL THEN 'N/A'
-        ELSE project.date_deleted
-        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-        COUNT(project.project_id) AS 'Projects Total'
-        FROM redcap_user_information AS info,
-        redcap_projects AS project,
-        redcap_user_rights AS access
-        WHERE info.username = access.username AND
-        access.project_id = project.project_id
-        GROUP BY info.ui_id
-        ORDER BY info.user_lastname, info.user_firstname, info.username
-        "
-       ),
-        array // Users by Project
-        (
-            "reportName" => "Users by Project",
-            "fileName" => "usersByProject",
-            "description" => "List of projects and the users which have access.",
-            "tabIcon" => "fa fa-folder",
-            "sql" => "
-        SELECT
-        redcap_projects.project_id AS PID,
-        app_title AS 'Project Name',
-        CAST(CASE status
-        WHEN 0 THEN 'Development'
-        WHEN 1 THEN 'Production'
-        WHEN 2 THEN 'Inactive'
-        WHEN 3 THEN 'Archived'
-        ELSE status
-        END AS CHAR(50)) AS 'Status',
-        GROUP_CONCAT(CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
-        ELSE redcap_projects.date_deleted
-        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-        record_count AS 'Record Count',
-        CAST(CASE purpose
-        WHEN 0 THEN 'Practice / Just for fun'
-        WHEN 1 THEN 'Operational Support'
-        WHEN 2 THEN 'Research'
-        WHEN 3 THEN 'Quality Improvement'
-        WHEN 4 THEN 'Other'
-        ELSE purpose
-        END AS CHAR(50)) AS 'Purpose',
-        GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Project Users',
-        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
-        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
-        COUNT(redcap_user_rights.username) AS 'Users Total'
-        FROM redcap_projects
-        LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
-        LEFT JOIN redcap_user_rights ON redcap_projects.project_id = redcap_user_rights.project_id
-        GROUP BY redcap_projects.project_id
-        ORDER BY app_title
-        "
-       ),
-        array // Research Projects
-        (
-            "reportName" => "Research Projects",
-            "fileName" => "researchProjects",
-            "description" => "List of projects that are identified as being used for research purposes.",
-            "tabIcon" => "fa fa-flask",
-            "sql" => "
-        SELECT
-        redcap_projects.project_id AS PID,
-        app_title AS 'Project Name',
-        CAST(CASE status
-        WHEN 0 THEN 'Development'
-        WHEN 1 THEN 'Production'
-        WHEN 2 THEN 'Inactive'
-        WHEN 3 THEN 'Archived'
-        ELSE status
-        END AS CHAR(50)) AS 'Status',
-        CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
-        ELSE redcap_projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        record_count AS 'Record Count',
-        purpose_other AS 'Purpose Specified',
-        CONCAT(project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi) AS 'PI Name',
-        project_pi_email AS 'PI Email',
-        project_irb_number AS 'IRB Number',
-        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
-        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
-        FROM redcap_projects
-        LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
-        WHERE purpose = 2  -- 'Research'
-        ORDER BY app_title
-        "
-       ),
-        array // Development Projects
-        (
-            "reportName" => "Development Projects",
-            "fileName" => "developmentProjects",
-            "description" => "List of record counts for projects in Development Mode.",
-            "tabIcon" => "fa fa-folder",
-            "sql" => "
-        SELECT
-        redcap_projects.project_id AS 'PID',
-        app_title AS 'Project Name',
-        project_pi_email AS 'PI Email',
-        record_count AS 'Record Count',
-        CAST(CASE purpose
-        WHEN 0 THEN 'Practice / Just for fun'
-        WHEN 1 THEN 'Operational Support'
-        WHEN 2 THEN 'Research'
-        WHEN 3 THEN 'Quality Improvement'
-        WHEN 4 THEN 'Other'
-        ELSE purpose
-        END AS CHAR(50)) AS 'Purpose',
-        CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
-        ELSE redcap_projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        creation_time AS 'Creation Time',
-        last_logged_event AS 'Last Logged Event'
-        FROM redcap_projects
-        INNER JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
-        WHERE (redcap_projects.status = 0 and redcap_projects.purpose != 0)
-        "
-       ),
-        array // Passwords in Project Titles
-        (
-            "reportName" => "Passwords in Project Titles",
-            "fileName" => "projectPassword",
-            "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the project title.",
-            "tabIcon" => "fa fa-key",
-            "sql" => "
-        SELECT projects.project_id AS 'PID',
-        app_title AS 'Project Name'
-        FROM redcap_projects AS projects,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        ((app_title LIKE '%pass%word%') OR
-        (app_title LIKE '%pass%wd%') OR
-        (app_title LIKE '%hawk%id%') OR
-        (app_title LIKE '%user%name%') OR
-        (app_title LIKE '%user%id%'));
-        "
-       ),
-        array // Passwords in Instruments
-        (
-            "reportName" => "Passwords in Instruments",
-            "fileName" => "instrumentPassword",
-            "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name.",
-            "tabIcon" => "fa fa-key",
-            "sql" => "
-        SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Name',
-        meta.form_menu_description AS 'Instrument Name'
-        FROM redcap_projects AS projects,
-        redcap_metadata AS meta,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        (projects.project_id = meta.project_id) AND
-        (meta.form_menu_description IS NOT NULL) AND
-        ((app_title LIKE '%pass%word%') OR
-        (app_title LIKE '%pass%wd%') OR
-        (app_title LIKE '%hawk%id%') OR
-        (app_title LIKE '%user%name%') OR
-        (app_title LIKE '%user%id%'));
-              "
-       ),
-        array // Passwords in Fields
-        (
-            "reportName" => "Passwords in Fields",
-            "fileName" => "fieldPassword",
-            "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in one of the fields.",
-            "tabIcon" => "fa fa-key",
-            "sql" => "
-        SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Name',
-        meta.form_name AS 'Form Name',
-        meta.field_name AS 'Field Name',
-        meta.element_label AS 'Field Label',
-        meta.element_note AS 'Field Note'
-        FROM redcap_projects AS projects,
-        redcap_metadata AS meta,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        (projects.project_id = meta.project_id) AND
-        ((field_name LIKE '%pass%word%') OR
-        (field_name LIKE '%pass%wd%') OR
-        (field_name LIKE '%hawk%id%') OR
-        (field_name LIKE '%hwk%id%') OR
-        (field_name LIKE '%user%name%') OR
-        (field_name LIKE '%user%id%') OR
-        (field_name LIKE '%usr%name%') OR
-        (field_name LIKE '%usr%id%') OR
-        (element_label LIKE '%pass%word%') OR
-        (element_label LIKE '%pass%wd%') OR
-        (element_label LIKE '%hawk%id%') OR
-        (element_label LIKE '%hwk%id%') OR
-        (element_label LIKE '%user%name%') OR
-        (element_label LIKE '%user%id%') OR
-        (element_label LIKE '%usr%name%') OR
-        (element_label LIKE '%usr%id%') OR
-        (element_note LIKE '%pass%word%') OR
-        (element_note LIKE '%pass%wd%') OR
-        (element_note LIKE '%hawk%id%') OR
-        (element_note LIKE '%hwk%id%') OR
-        (element_note LIKE '%user%name%') OR
-        (element_note LIKE '%user%id%') OR
-        (element_note LIKE '%usr%name%') OR
-        (element_note LIKE '%usr%id%'))
-        ORDER BY projects.project_id, form_name, field_name;
-        "
-       ),
-        array // Visualizations
-        (
-            "reportName" => "Visualizations",
-            "fileName" => "visualizations",
-            "description" => "Additional data presented in graph and chart form.",
-            "tabIcon" => "fa fa-pie-chart"
-       )
-   );
-
     public static $visualizationQueries = array
     (
     array
@@ -295,7 +62,9 @@ class AdminDash extends AbstractExternalModule {
    )
    );
 
-    public function generateAdminDash() {
+    public $reportReference;
+
+    public function generateAdminDash(&$reportReference) {
         ?>
         <script src="<? print $this->getUrl("/resources/tablesorter/jquery-3.2.0.min.js") ?>"></script>
         <script src="<? print $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
@@ -313,13 +82,15 @@ class AdminDash extends AbstractExternalModule {
         <script src="<? print $this->getUrl("/adminDash.js") ?>"></script>
         <?php
 
+        $reportReference = $this->generateReportReference();
+
         // display the header
         $HtmlPage = new \HtmlPage();
         $HtmlPage->PrintHeaderExt();
 
         // define variables
         $title = $this->getModuleName();
-        $pageInfo = self::$reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
+        $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
         $csvFileName = sprintf("%s.%s.csv", $pageInfo['fileName'], date("Y-m-d_His"));
 
         // only allow super users to view this information
@@ -360,7 +131,7 @@ class AdminDash extends AbstractExternalModule {
 
                 <!-- create navigation tabs -->
              <ul class='nav nav-tabs' role='tablist'>
-             <?php foreach(self::$reportReference as $report => $reportInfo): ?>
+             <?php foreach($reportReference as $report => $reportInfo): ?>
              <li <?= $_REQUEST['tab'] == $report ? "class=\"active\"" : "" ?> >
              <a href="<?= $this->formatUrl($report) ?>">
              <span class="<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <?= $reportInfo['reportName'] ?></a>
@@ -450,6 +221,239 @@ class AdminDash extends AbstractExternalModule {
         // Display the footer
         $HtmlPage->PrintFooterExt();
    }
+
+    public function generateReportReference() {
+        $pwordSearchTerms =
+            array(
+                'pass%word',
+                'pass%wd',
+                'user%name',
+                'user%id',
+                'usr%id'
+            );
+
+        $userDefinedTerms = self::getSystemSetting('additional_search_terms');
+
+        foreach($userDefinedTerms as $term) {
+            $pwordSearchTerms[] = $term;
+        }
+
+        $pwordProjectSql = array();
+        $pwordInstrumentSql = array();
+        $pwordFieldSql = array();
+
+        foreach($pwordSearchTerms as $term) {
+            $pwordProjectSql[] = '(app_title LIKE \'%' . $term . '%\')';
+
+            $pwordInstrumentSql[] = '(form_name LIKE \'%' . $term . '%\')';
+
+            $pwordFieldSql[] = '(field_name LIKE \'%' . $term . '%\')';
+            $pwordFieldSql[] = '(element_label LIKE \'%' . $term . '%\')';
+            $pwordFieldSql[] = '(element_note LIKE \'%' . $term . '%\')';
+        }
+
+        $reportReference = array
+        (
+            array // Projects by User
+            (
+                "reportName" => "Projects by User",
+                "fileName" => "projectsByUser",
+                "description" => "List of users and the projects to which they have access.",
+                "tabIcon" => "fa fa-male",
+                "sql" => "
+        SELECT
+        info.username AS 'Username',
+        CONCAT(info.user_lastname, ', ', info.user_firstname) AS 'Name',
+        info.user_email AS 'User Email',
+        GROUP_CONCAT(CAST(project.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
+        GROUP_CONCAT(CAST(CASE project.status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE project.status
+        END AS CHAR(50))) AS 'Project Statuses (Hidden)',
+        GROUP_CONCAT(CAST(CASE WHEN project.date_deleted IS NULL THEN 'N/A'
+        ELSE project.date_deleted
+        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
+        COUNT(project.project_id) AS 'Projects Total'
+        FROM redcap_user_information AS info,
+        redcap_projects AS project,
+        redcap_user_rights AS access
+        WHERE info.username = access.username AND
+        access.project_id = project.project_id
+        GROUP BY info.ui_id
+        ORDER BY info.user_lastname, info.user_firstname, info.username
+        "
+            ),
+            array // Users by Project
+            (
+                "reportName" => "Users by Project",
+                "fileName" => "usersByProject",
+                "description" => "List of projects and the users which have access.",
+                "tabIcon" => "fa fa-folder",
+                "sql" => "
+        SELECT
+        redcap_projects.project_id AS PID,
+        app_title AS 'Project Name',
+        CAST(CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE status
+        END AS CHAR(50)) AS 'Status',
+        GROUP_CONCAT(CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
+        ELSE redcap_projects.date_deleted
+        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
+        record_count AS 'Record Count',
+        CAST(CASE purpose
+        WHEN 0 THEN 'Practice / Just for fun'
+        WHEN 1 THEN 'Operational Support'
+        WHEN 2 THEN 'Research'
+        WHEN 3 THEN 'Quality Improvement'
+        WHEN 4 THEN 'Other'
+        ELSE purpose
+        END AS CHAR(50)) AS 'Purpose',
+        GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Project Users',
+        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
+        COUNT(redcap_user_rights.username) AS 'Users Total'
+        FROM redcap_projects
+        LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+        LEFT JOIN redcap_user_rights ON redcap_projects.project_id = redcap_user_rights.project_id
+        GROUP BY redcap_projects.project_id
+        ORDER BY app_title
+        "
+            ),
+            array // Research Projects
+            (
+                "reportName" => "Research Projects",
+                "fileName" => "researchProjects",
+                "description" => "List of projects that are identified as being used for research purposes.",
+                "tabIcon" => "fa fa-flask",
+                "sql" => "
+        SELECT
+        redcap_projects.project_id AS PID,
+        app_title AS 'Project Name',
+        CAST(CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE status
+        END AS CHAR(50)) AS 'Status',
+        CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
+        ELSE redcap_projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+        record_count AS 'Record Count',
+        purpose_other AS 'Purpose Specified',
+        CONCAT(project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi) AS 'PI Name',
+        project_pi_email AS 'PI Email',
+        project_irb_number AS 'IRB Number',
+        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
+        FROM redcap_projects
+        LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+        WHERE purpose = 2  -- 'Research'
+        ORDER BY app_title
+        "
+            ),
+            array // Development Projects
+            (
+                "reportName" => "Development Projects",
+                "fileName" => "developmentProjects",
+                "description" => "List of record counts for projects in Development Mode.",
+                "tabIcon" => "fa fa-folder",
+                "sql" => "
+        SELECT
+        redcap_projects.project_id AS 'PID',
+        app_title AS 'Project Name',
+        project_pi_email AS 'PI Email',
+        record_count AS 'Record Count',
+        CAST(CASE purpose
+        WHEN 0 THEN 'Practice / Just for fun'
+        WHEN 1 THEN 'Operational Support'
+        WHEN 2 THEN 'Research'
+        WHEN 3 THEN 'Quality Improvement'
+        WHEN 4 THEN 'Other'
+        ELSE purpose
+        END AS CHAR(50)) AS 'Purpose',
+        CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
+        ELSE redcap_projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+        creation_time AS 'Creation Time',
+        last_logged_event AS 'Last Logged Event'
+        FROM redcap_projects
+        INNER JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+        WHERE (redcap_projects.status = 0 and redcap_projects.purpose != 0)
+        "
+            ),
+            array // Passwords in Project Titles
+            (
+                "reportName" => "Passwords in Project Titles",
+                "fileName" => "projectPassword",
+                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the project title.",
+                "tabIcon" => "fa fa-key",
+                "sql" => "
+        SELECT projects.project_id AS 'PID',
+        app_title AS 'Project Name'
+        FROM redcap_projects AS projects,
+        redcap_user_information AS users
+        WHERE (projects.created_by = users.ui_id) AND
+        (" . implode(" OR ", $pwordProjectSql) . ");"
+            ),
+            array // Passwords in Instruments
+            (
+                "reportName" => "Passwords in Instruments",
+                "fileName" => "instrumentPassword",
+                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name.",
+                "tabIcon" => "fa fa-key",
+                "sql" => "
+        SELECT projects.project_id AS 'PID',
+        projects.app_title AS 'Project Name',
+        meta.form_menu_description AS 'Instrument Name'
+        FROM redcap_projects AS projects,
+        redcap_metadata AS meta,
+        redcap_user_information AS users
+        WHERE (projects.created_by = users.ui_id) AND
+        (projects.project_id = meta.project_id) AND
+        (meta.form_menu_description IS NOT NULL) AND
+        (" . implode(" OR ", $pwordInstrumentSql) . ");"
+            ),
+            array // Passwords in Fields
+            (
+                "reportName" => "Passwords in Fields",
+                "fileName" => "fieldPassword",
+                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in one of the fields.",
+                "tabIcon" => "fa fa-key",
+                "sql" => "
+        SELECT projects.project_id AS 'PID',
+        projects.app_title AS 'Project Name',
+        meta.form_name AS 'Form Name',
+        meta.field_name AS 'Field Name',
+        meta.element_label AS 'Field Label',
+        meta.element_note AS 'Field Note'
+        FROM redcap_projects AS projects,
+        redcap_metadata AS meta,
+        redcap_user_information AS users
+        WHERE (projects.created_by = users.ui_id) AND
+        (projects.project_id = meta.project_id) AND
+        (" . implode(" OR ", $pwordFieldSql) . ")
+        ORDER BY projects.project_id, form_name, field_name;
+        "
+            ),
+            array // Visualizations
+            (
+                "reportName" => "Visualizations",
+                "fileName" => "visualizations",
+                "description" => "Additional data presented in graph and chart form.",
+                "tabIcon" => "fa fa-pie-chart"
+            )
+        );
+
+        return $reportReference;
+    }
 
     public function formatQueryResults($result, $format)
     {
@@ -607,9 +611,8 @@ class AdminDash extends AbstractExternalModule {
             {
                 $webified[$key] = $this->convertEmail2Link($value);
             }
-            elseif (($key == "Owner HawkID") ||
-                ($key == "Project Users") ||
-                ($key == "HawkID"))
+            elseif (($key == "Project Users") ||
+                ($key == "Username"))
             {
                 $webified[$key] = $this->convertUsername2Link($value);
             }
@@ -634,9 +637,9 @@ class AdminDash extends AbstractExternalModule {
     {
         $urlString =
             sprintf("https://%s%sProjectSetup/index.php?pid=%d",  // Project Setup page
-                SERVER_NAME,  // www-dev.icts.uiowa.edu
-                APP_PATH_WEBROOT, // /redcap/redcap_v5.10.0/
-                $pid);  // 15
+                SERVER_NAME,
+                APP_PATH_WEBROOT,
+                $pid);
 
         $styleIdStr = '';
 
@@ -655,11 +658,10 @@ class AdminDash extends AbstractExternalModule {
 
     private function convertPid2AdminLink($pid, $hrefStr)
     {
-        // https://www-dev.icts.uiowa.edu/redcap/redcap_v6.1.4/ControlCenter/edit_project.php?project=15
         $urlString =
             sprintf("https://%s%sControlCenter/edit_project.php?project=%d",  // Project Setup page
-                SERVER_NAME,  // www-dev.icts.uiowa.edu
-                APP_PATH_WEBROOT, // /redcap/redcap_v5.10.0/
+                SERVER_NAME,
+                APP_PATH_WEBROOT,
                 $pid);  // 15
 
         $pidLink = sprintf("<a href=\"%s\"
