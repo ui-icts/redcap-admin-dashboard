@@ -17,9 +17,7 @@
  * @example https://www-dev.icts.uiowa.edu/redcap/adminDash/downloadCsvViaSql.php?file=usersByProject.2014-10-14_085438.csv&tab=1
  */
 
-require_once('resources/config.php');
-
-require_once('../redcap_connect.php');
+$adminDash = new \UIOWA\AdminDash\AdminDash();
 
 header('Content-type: text/csv');
 header("Content-Description: File Transfer");
@@ -28,8 +26,8 @@ header('Expires: 0');
 header('Pragma: no-cache');
 
 // initialize variables
-$pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
-$result = sqlQuery($conn, $pageInfo['sql']);
+$pageInfo = $adminDash::$reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
+$result = db_query($pageInfo['sql']);
 $isFirstRow = TRUE;
 
-FormatQueryResults($conn, $result, "csv");
+$adminDash->formatQueryResults($result, "csv");

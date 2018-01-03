@@ -1,16 +1,14 @@
 <?php
 
-require_once('resources/config.php');
+$adminDash = new \UIOWA\AdminDash\AdminDash();
 
-require_once('../redcap_connect.php');
-
-$pageInfo = $visualizationQueries[ $_REQUEST['vis'] ];
-
-$result = sqlQuery($conn, $pageInfo['sql']);
-
+$pageInfo = $adminDash::$visualizationQueries[ $_REQUEST['vis'] ];
+$result = db_query($pageInfo['sql']);
 $data = array();
 
-while ( $row = mysqli_fetch_assoc( $result ) )
+//var_dump($data);
+
+while ( $row = db_fetch_assoc( $result ) )
 {
     $data[] = $row;
 }

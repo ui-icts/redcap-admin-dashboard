@@ -56,3 +56,13 @@ div#elapsedTime
    max-width: 80%;
 
 }
+
+#deleted
+{
+   color: red;
+}
+
+#archived
+{
+   color: darkgrey;
+}
