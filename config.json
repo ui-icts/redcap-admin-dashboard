@@ -31,7 +31,7 @@
 
 	"system-settings": [
 		{
-			"key": "additional_search_terms",
+			"key": "additional-search-terms",
 			"name": "Additional search term for username/password reports",
 			"type": "text",
 			"required": false,

@@ -10,6 +10,8 @@ use ExternalModules\ExternalModules;
 class AdminDash extends AbstractExternalModule {
     // Your module methods, constants, etc. go here
 
+    public $reportReference;
+
     public static $visualizationQueries = array
     (
     array
@@ -61,8 +63,6 @@ class AdminDash extends AbstractExternalModule {
             "
    )
    );
-
-    public $reportReference;
 
     public function generateAdminDash(&$reportReference) {
         ?>
@@ -225,14 +225,15 @@ class AdminDash extends AbstractExternalModule {
     public function generateReportReference() {
         $pwordSearchTerms =
             array(
-                'pass%word',
-                'pass%wd',
+                'p%word',
+                'p%wd',
                 'user%name',
+                'usr%name',
                 'user%id',
                 'usr%id'
             );
 
-        $userDefinedTerms = self::getSystemSetting('additional_search_terms');
+        $userDefinedTerms = self::getSystemSetting('additional-search-terms');
 
         foreach($userDefinedTerms as $term) {
             $pwordSearchTerms[] = $term;
@@ -397,7 +398,17 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
-        app_title AS 'Project Name'
+        app_title AS 'Project Name',
+        CAST(CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE status
+        END AS CHAR(50)) AS 'Status',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
         FROM redcap_projects AS projects,
         redcap_user_information AS users
         WHERE (projects.created_by = users.ui_id) AND
@@ -412,7 +423,10 @@ class AdminDash extends AbstractExternalModule {
                 "sql" => "
         SELECT projects.project_id AS 'PID',
         projects.app_title AS 'Project Name',
-        meta.form_menu_description AS 'Instrument Name'
+        meta.form_menu_description AS 'Instrument Name',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
         FROM redcap_projects AS projects,
         redcap_metadata AS meta,
         redcap_user_information AS users
@@ -433,7 +447,10 @@ class AdminDash extends AbstractExternalModule {
         meta.form_name AS 'Form Name',
         meta.field_name AS 'Field Name',
         meta.element_label AS 'Field Label',
-        meta.element_note AS 'Field Note'
+        meta.element_note AS 'Field Note',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
         FROM redcap_projects AS projects,
         redcap_metadata AS meta,
         redcap_user_information AS users
@@ -457,9 +474,6 @@ class AdminDash extends AbstractExternalModule {
 
     public function formatQueryResults($result, $format)
     {
-        $hideArchivedProjects = FALSE;
-        $hideDeletedProjects = FALSE;
-
         $redcapProjects = $this->getRedcapProjectNames();
         $isFirstRow = TRUE;
 
@@ -469,19 +483,6 @@ class AdminDash extends AbstractExternalModule {
 
         while ($row = db_fetch_assoc($result))
         {
-
-            if ($hideArchivedProjects & $row['Status'] == 'Archived') {
-                continue;
-            }
-            if ($hideDeletedProjects) {
-                if ($_REQUEST['tab'] == 0) {
-                    unset($row['Project Deleted Date (Hidden)']);
-                }
-                else {
-                    continue;
-                }
-            }
-
             if ($isFirstRow) {
                 // use column aliases for column headers
                 $headers = array_keys($row);
@@ -524,6 +525,8 @@ class AdminDash extends AbstractExternalModule {
 
                 $rowStr = implode("\",\"", $row);
                 $row['Purpose Specified'] = $this->convertProjectPurpose2List($row['Purpose Specified']);
+
+//todo                $row['Project Titles'] = $this->convertPidList2Links($row['Purpose Specified']);
 
                 printf("\"%s\"\n", $rowStr);
             }
