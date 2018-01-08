@@ -412,7 +412,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Passwords in Project Titles",
                 "fileName" => "projectPassword",
-                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the project title.",
+                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the project title. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
@@ -436,7 +436,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Passwords in Instruments",
                 "fileName" => "instrumentPassword",
-                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name.",
+                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
@@ -457,7 +457,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Passwords in Fields",
                 "fileName" => "fieldPassword",
-                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in one of the fields.",
+                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in one of the fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
