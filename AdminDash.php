@@ -66,20 +66,20 @@ class AdminDash extends AbstractExternalModule {
 
     public function generateAdminDash(&$reportReference) {
         ?>
-        <script src="<? print $this->getUrl("/resources/tablesorter/jquery-3.2.0.min.js") ?>"></script>
-        <script src="<? print $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
-        <script src="<? print $this->getUrl("/resources/tablesorter/jquery.tablesorter.widgets.min.js") ?>"></script>
-        <script src="<? print $this->getUrl("/resources/tablesorter/widgets/widget-pager.min.js") ?>"></script>
-        <script src="<? print $this->getUrl("/resources/c3/d3.min.js") ?>" charset="utf-8"></script>
-        <script src="<? print $this->getUrl("/resources/c3/c3.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/tablesorter/jquery-3.2.0.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.widgets.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-pager.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/c3/d3.min.js") ?>" charset="utf-8"></script>
+        <script src="<?= $this->getUrl("/resources/c3/c3.min.js") ?>"></script>
 
-        <link href="<? print $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
-        <link href="<? print $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>" rel="stylesheet">
-        <link href="<? print $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
-        <link href="<? print $this->getUrl("/resources/font-awesome-4.7.0/css/font-awesome.min.css") ?>" rel="stylesheet">
-        <link href="<? print $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
+        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
+        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>" rel="stylesheet">
+        <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
+        <link href="<?= $this->getUrl("/resources/font-awesome-4.7.0/css/font-awesome.min.css") ?>" rel="stylesheet">
+        <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
 
-        <script src="<? print $this->getUrl("/adminDash.js") ?>"></script>
+        <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
         <?php
 
         $reportReference = $this->generateReportReference();
@@ -103,7 +103,7 @@ class AdminDash extends AbstractExternalModule {
          foreach (self::$visualizationQueries as $vis => $visInfo):
             ?>
                <script>
-               d3.json("<? print $this->getUrl("getGraphData.php?vis=" . $vis) ?>", function (error, json) {
+               d3.json("<?= $this->getUrl("getGraphData.php?vis=" . $vis) ?>", function (error, json) {
 //                   console.log(json);
 
                    if (error) return console.warn(error);
@@ -144,7 +144,7 @@ class AdminDash extends AbstractExternalModule {
          <!-- display csv download button (for reports) -->
         <?php if($pageInfo['sql']) : ?>
         <div style="text-align: right; width: 100%">
-            <a href="<? print $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
+            <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
                class="btn btn-default btn-lg">
           <span class="fa fa-download"></span>&nbsp;
         Download CSV File</a>
@@ -165,12 +165,12 @@ class AdminDash extends AbstractExternalModule {
              <!-- display tablesorter pager buttons for reports -->
           <div id="pager" class="pager">
           <form>
-          <img src="<? print $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png") ?>" class="first"/>
-          <img src="<? print $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png") ?>" class="prev"/>
+          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png") ?>" class="first"/>
+          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png") ?>" class="prev"/>
              <!-- the "pagedisplay" can be any element, including an input -->
           <span class="pagedisplay" data-pager-output-filtered="{startRow:input} &ndash; {endRow} / {filteredRows} of {totalRows} total rows"></span>
-          <img src="<? print $this->getUrl("resources/tablesorter/tablesorter/images/icons/next.png") ?>" class="next"/>
-          <img src="<? print $this->getUrl("resources/tablesorter/tablesorter/images/icons/last.png") ?>" class="last"/>
+          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/next.png") ?>" class="next"/>
+          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/last.png") ?>" class="last"/>
           <select class="pagesize">
           <option value="10">10</option>
           <option value="25">25</option>
