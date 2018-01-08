@@ -104,7 +104,7 @@ class AdminDash extends AbstractExternalModule {
             ?>
                <script>
                d3.json("<? print $this->getUrl("getGraphData.php?vis=" . $vis) ?>", function (error, json) {
-                   console.log(json);
+//                   console.log(json);
 
                    if (error) return console.warn(error);
 
@@ -160,8 +160,6 @@ class AdminDash extends AbstractExternalModule {
           <h5 style="text-align: center">
           <?= $pageInfo['description']; ?>
           </h5>
-
-<!--        <input id="hideDeleted" type="checkbox" class="checkbox" style="text-align: center"> Hide Deleted Projects</input>-->
 
         <?php if($pageInfo['sql']) : ?>
              <!-- display tablesorter pager buttons for reports -->
@@ -253,6 +251,21 @@ class AdminDash extends AbstractExternalModule {
             $pwordFieldSql[] = '(element_note LIKE \'%' . $term . '%\')';
         }
 
+        $hideDeleted = !self::getSystemSetting('show-deleted-projects');
+        $hideArchived = !self::getSystemSetting('show-archived-projects');
+
+        $hideFiltersSql = array();
+
+        if ($hideArchived) {
+            $hideFiltersSql[] = "projects.status != 3";
+        }
+        if ($hideDeleted) {
+            $hideFiltersSql[] = "projects.date_deleted IS NULL";
+        }
+
+        $formattedFilterSql = ($hideDeleted || $hideArchived) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
+        $formattedWhereFilterSql = ($hideDeleted || $hideArchived) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
+
         $reportReference = array
         (
             array // Projects by User
@@ -266,23 +279,25 @@ class AdminDash extends AbstractExternalModule {
         info.username AS 'Username',
         CONCAT(info.user_lastname, ', ', info.user_firstname) AS 'Name',
         info.user_email AS 'User Email',
-        GROUP_CONCAT(CAST(project.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-        GROUP_CONCAT(CAST(CASE project.status
+        GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
+        GROUP_CONCAT(CAST(projects.app_title AS CHAR(50)) SEPARATOR ', ') AS 'Project CSV Titles (Hidden)',
+        GROUP_CONCAT(CAST(CASE projects.status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
-        ELSE project.status
+        ELSE projects.status
         END AS CHAR(50))) AS 'Project Statuses (Hidden)',
-        GROUP_CONCAT(CAST(CASE WHEN project.date_deleted IS NULL THEN 'N/A'
-        ELSE project.date_deleted
+        GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
         END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-        COUNT(project.project_id) AS 'Projects Total'
+        COUNT(projects.project_id) AS 'Projects Total'
         FROM redcap_user_information AS info,
-        redcap_projects AS project,
+        redcap_projects AS projects,
         redcap_user_rights AS access
         WHERE info.username = access.username AND
-        access.project_id = project.project_id
+        access.project_id = projects.project_id
+        $formattedFilterSql
         GROUP BY info.ui_id
         ORDER BY info.user_lastname, info.user_firstname, info.username
         "
@@ -295,7 +310,7 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-folder",
                 "sql" => "
         SELECT
-        redcap_projects.project_id AS PID,
+        projects.project_id AS PID,
         app_title AS 'Project Name',
         CAST(CASE status
         WHEN 0 THEN 'Development'
@@ -304,8 +319,8 @@ class AdminDash extends AbstractExternalModule {
         WHEN 3 THEN 'Archived'
         ELSE status
         END AS CHAR(50)) AS 'Status',
-        GROUP_CONCAT(CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
-        ELSE redcap_projects.date_deleted
+        GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
         END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
         record_count AS 'Record Count',
         CAST(CASE purpose
@@ -320,10 +335,11 @@ class AdminDash extends AbstractExternalModule {
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
         COUNT(redcap_user_rights.username) AS 'Users Total'
-        FROM redcap_projects
-        LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
-        LEFT JOIN redcap_user_rights ON redcap_projects.project_id = redcap_user_rights.project_id
-        GROUP BY redcap_projects.project_id
+        FROM redcap_projects AS projects
+        LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+        LEFT JOIN redcap_user_rights ON projects.project_id = redcap_user_rights.project_id
+        $formattedWhereFilterSql
+        GROUP BY projects.project_id
         ORDER BY app_title
         "
             ),
@@ -335,7 +351,7 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-flask",
                 "sql" => "
         SELECT
-        redcap_projects.project_id AS PID,
+        projects.project_id AS PID,
         app_title AS 'Project Name',
         CAST(CASE status
         WHEN 0 THEN 'Development'
@@ -344,8 +360,8 @@ class AdminDash extends AbstractExternalModule {
         WHEN 3 THEN 'Archived'
         ELSE status
         END AS CHAR(50)) AS 'Status',
-        CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
-        ELSE redcap_projects.date_deleted
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
         END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
         record_count AS 'Record Count',
         purpose_other AS 'Purpose Specified',
@@ -354,9 +370,10 @@ class AdminDash extends AbstractExternalModule {
         project_irb_number AS 'IRB Number',
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
-        FROM redcap_projects
-        LEFT JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
+        FROM redcap_projects as projects
+        LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
         WHERE purpose = 2  -- 'Research'
+        $formattedFilterSql
         ORDER BY app_title
         "
             ),
@@ -368,7 +385,7 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-folder",
                 "sql" => "
         SELECT
-        redcap_projects.project_id AS 'PID',
+        projects.project_id AS 'PID',
         app_title AS 'Project Name',
         project_pi_email AS 'PI Email',
         record_count AS 'Record Count',
@@ -380,14 +397,15 @@ class AdminDash extends AbstractExternalModule {
         WHEN 4 THEN 'Other'
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
-        CAST(CASE WHEN redcap_projects.date_deleted IS NULL THEN 'N/A'
-        ELSE redcap_projects.date_deleted
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
         END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
         creation_time AS 'Creation Time',
         last_logged_event AS 'Last Logged Event'
-        FROM redcap_projects
-        INNER JOIN redcap_record_counts ON redcap_projects.project_id = redcap_record_counts.project_id
-        WHERE (redcap_projects.status = 0 and redcap_projects.purpose != 0)
+        FROM redcap_projects AS projects
+        INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+        WHERE projects.status = 0 and projects.purpose != 0
+        $formattedFilterSql
         "
             ),
             array // Passwords in Project Titles
@@ -497,6 +515,7 @@ class AdminDash extends AbstractExternalModule {
                     unset($headers[$index]);
                 }
             }
+
             if ($format == 'html') {
                 if ($isFirstRow)
                 {
@@ -518,15 +537,18 @@ class AdminDash extends AbstractExternalModule {
                     $isFirstRow = FALSE;  // toggle flag
                 }
 
+                $pidsInCsv = self::getSystemSetting('csv-display-pids');
+
+                if (!$pidsInCsv) {
+                    $row['Project Titles'] = $row['Project CSV Titles (Hidden)'];
+                }
+
                 foreach ($hiddenColumns as $column)
                 {
                     unset($row[$column]);
                 }
 
                 $rowStr = implode("\",\"", $row);
-                $row['Purpose Specified'] = $this->convertProjectPurpose2List($row['Purpose Specified']);
-
-//todo                $row['Project Titles'] = $this->convertPidList2Links($row['Purpose Specified']);
 
                 printf("\"%s\"\n", $rowStr);
             }

@@ -31,11 +31,29 @@
 
 	"system-settings": [
 		{
+			"key": "show-archived-projects",
+			"name": "Show archived projects",
+			"type": "checkbox",
+			"required": false
+		},
+		{
+			"key": "show-deleted-projects",
+			"name": "Show deleted projects",
+			"type": "checkbox",
+			"required": false
+		},
+		{
 			"key": "additional-search-terms",
 			"name": "Additional search term for username/password reports",
 			"type": "text",
 			"required": false,
 			"repeatable": true
+		},
+		{
+			"key": "csv-display-pids",
+			"name": "Display PIDs instead of titles in 'Projects by User' CSV file",
+			"type": "checkbox",
+			"required": false
 		}
 	]
 }
