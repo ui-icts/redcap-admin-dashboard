@@ -408,6 +408,22 @@ class AdminDash extends AbstractExternalModule {
         $formattedFilterSql
         "
             ),
+            array // Publication Matches
+            (
+                "reportName" => "Publication Matches",
+                "fileName" => "pubMatches",
+                "description" => "List of publication matches",
+                "tabIcon" => "fa fa-book",
+                "sql" => "
+SELECT
+    *
+FROM
+    redcap_pub_articles
+INNER JOIN redcap_pub_authors ON redcap_pub_articles.article_id = redcap_pub_authors.article_id
+INNER JOIN redcap_pub_matches ON redcap_pub_articles.article_id = redcap_pub_matches.article_id
+INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
+      "
+            ),
             array // Passwords in Project Titles
             (
                 "reportName" => "Passwords in Project Titles",
