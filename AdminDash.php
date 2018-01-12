@@ -263,6 +263,10 @@ class AdminDash extends AbstractExternalModule {
             $pwordFieldSql[] = '(element_note LIKE \'%' . $term . '%\')';
         }
 
+        $pwordProjectSql =  "(" . implode(" OR ", $pwordProjectSql) . ")";
+        $pwordInstrumentSql = "(" . implode(" OR ", $pwordInstrumentSql) . ")";
+        $pwordFieldSql = "(" . implode(" OR ", $pwordFieldSql) . ")";
+
         $hideDeleted = !self::getSystemSetting('show-deleted-projects');
         $hideArchived = !self::getSystemSetting('show-archived-projects');
 
@@ -277,6 +281,10 @@ class AdminDash extends AbstractExternalModule {
 
         $formattedFilterSql = ($hideDeleted || $hideArchived) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
         $formattedWhereFilterSql = ($hideDeleted || $hideArchived) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
+
+        $pwordProjectSql =  $pwordProjectSql . $formattedFilterSql;
+        $pwordInstrumentSql = $pwordInstrumentSql . $formattedFilterSql;
+        $pwordFieldSql = $pwordFieldSql . $formattedFilterSql;
 
         $reportReference = array
         (
@@ -458,7 +466,7 @@ INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_
         FROM redcap_projects AS projects,
         redcap_user_information AS users
         WHERE (projects.created_by = users.ui_id) AND
-        (" . implode(" OR ", $pwordProjectSql) . ");"
+        " . $pwordProjectSql
             ),
             array // Passwords in Instruments
             (
@@ -479,7 +487,7 @@ INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_
         WHERE (projects.created_by = users.ui_id) AND
         (projects.project_id = meta.project_id) AND
         (meta.form_menu_description IS NOT NULL) AND
-        (" . implode(" OR ", $pwordInstrumentSql) . ");"
+        " . $pwordInstrumentSql
             ),
             array // Passwords in Fields
             (
@@ -502,7 +510,7 @@ INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_
         redcap_user_information AS users
         WHERE (projects.created_by = users.ui_id) AND
         (projects.project_id = meta.project_id) AND
-        (" . implode(" OR ", $pwordFieldSql) . ")
+        " . $pwordFieldSql . "
         ORDER BY projects.project_id, form_name, field_name;
         "
             ),
