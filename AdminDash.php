@@ -12,6 +12,18 @@ class AdminDash extends AbstractExternalModule {
 
     public $reportReference;
 
+    public static $purposeMaster = array
+    (
+        "Basic or Bench Research",
+        "Clinical Research Study or Trial",
+        "Translational Research 1",
+        "Translational Research 2",
+        "Behavioral or Psychosocial Research Study",
+        "Epidemiology",
+        "Repository",
+        "Other"
+    );
+
     public static $visualizationQueries = array
     (
     array
@@ -547,10 +559,52 @@ INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_
             elseif ($format == 'csv') {
                 if ($isFirstRow)
                 {
+                    if ($_REQUEST['tab'] = 2) {
+                        $headerIndex = array_search('Purpose Specified', $headers);
+                        $purposeMasterArray = Array();
+
+                        foreach (self::$purposeMaster as $index=>$purposeStr)
+                        {
+                            $purposeMasterArray[$purposeStr] = "FALSE";
+                        }
+
+                        $headers = array_merge(
+                            array_merge(
+                                array_slice($headers, 0, $headerIndex, true),
+                                array_keys($purposeMasterArray)),
+                            array_slice($headers, $headerIndex, NULL, true)
+                        );
+                    }
+
                     $headerStr = implode("\",\"", $headers);
                     printf("\"%s\"\n", $headerStr);
 
                     $isFirstRow = FALSE;  // toggle flag
+                }
+
+                if ($_REQUEST['tab'] = 2) {
+                    $headerIndex = array_search('Purpose Specified', $headers);
+                    $purposeArray = explode(',', $row['Purpose Specified']);
+                    $row = array_merge(
+                        array_merge(
+                            array_slice($row, 0, $headerIndex + 2, true),
+                            $purposeMasterArray),
+                        array_slice($row, $headerIndex, NULL, true)
+                    );
+
+                    foreach (self::$purposeMaster as $index=>$purposeStr) {
+                        if ($row['Purpose Specified'] !== '' &&
+                            array_search($index, $purposeArray) !== FALSE) {
+                            $row[$purposeStr] = 'TRUE';
+                        }
+                        else {
+                            $row[$purposeStr] = 'FALSE';
+                        }
+                    }
+                }
+
+                if ($row['Purpose Specified']) {
+                    $row['Purpose Specified'] = $this->convertProjectPurpose2List($row['Purpose Specified']);
                 }
 
                 $pidsInCsv = self::getSystemSetting('csv-display-pids');
@@ -765,18 +819,10 @@ INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_
         // initialize variables
         $purposeResults = array();
         $purposeParts = explode(",", $purposeList);
-        $purposeMaster = array("Basic or Bench Research",
-            "Clinical Research Study or Trial",
-            "Translational Research 1",
-            "Translational Research 2",
-            "Behavioral or Psychosocial Research Study",
-            "Epidemiology",
-            "Repository",
-            "Other");
 
         foreach ($purposeParts as $index)
         {
-            array_push($purposeResults, $purposeMaster[$index]);
+            array_push($purposeResults, self::$purposeMaster[$index]);
         }
 
         $purposeStr = implode(", ", $purposeResults);
