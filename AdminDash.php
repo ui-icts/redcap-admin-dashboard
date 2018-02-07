@@ -611,7 +611,7 @@ INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_
                     }
                 }
 
-                if ($row['Purpose Specified']) {
+                if ($row['Purpose Specified'] != null) {
                     $row['Purpose Specified'] = $this->convertProjectPurpose2List($row['Purpose Specified']);
                 }
 
