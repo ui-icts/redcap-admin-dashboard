@@ -1,4 +1,5 @@
 <?php
+// query REDCap data and download as CSV file
 
 $adminDash = new \UIOWA\AdminDash\AdminDash();
 

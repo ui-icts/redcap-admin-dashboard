@@ -1,17 +1,7 @@
+// tablesorter js
 (function($, window, document) {
     // sort table when document is loaded
     $(document).ready(function () {
-        $('.checkbox').click(function(){
-            var clickBtnValue = $(this).val();
-            console.log(clickBtnValue);
-            var ajaxurl = getURL('ajax.php'),
-                data =  {'action': clickBtnValue};
-            $.post(ajaxurl, data, function (response) {
-                // Response div goes here.
-                alert("action performed successfully");
-            });
-        });
-
         $("#reportTable")
             .tablesorter({
                 theme: 'blue',
@@ -211,9 +201,8 @@
 
 var UIOWA_AdminDash = {};
 
+// generate pie chart with c3.js
 UIOWA_AdminDash.createPieChart = function(json, title, chartID) {
-    console.log(json);
-
     var chart = c3.generate({
         data: {
             json: json,
@@ -226,6 +215,7 @@ UIOWA_AdminDash.createPieChart = function(json, title, chartID) {
     });
 };
 
+// flatten REDCap data json into counts
 UIOWA_AdminDash.getCountsFromJson = function(json, column) {
     var countList = {};
 
@@ -241,7 +231,3 @@ UIOWA_AdminDash.getCountsFromJson = function(json, column) {
     }
     return countList;
 };
-
-function getURL() {
-    return 'index.php?NOAUTH&pid='+getParameterByName('pid')+'&sid='+getParameterByName('sid')+'&id='+getParameterByName('id')+'&page='+getParameterByName('page');
-}

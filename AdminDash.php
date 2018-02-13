@@ -1,15 +1,10 @@
 <?php
-// Set the namespace defined in your config file
 namespace UIOWA\AdminDash;
 
-// The next 2 lines should always be included and be the same in every module
 use ExternalModules\AbstractExternalModule;
 use ExternalModules\ExternalModules;
 
-// Declare your module class, which must extend AbstractExternalModule
 class AdminDash extends AbstractExternalModule {
-    // Your module methods, constants, etc. go here
-
     public $reportReference;
 
     public static $purposeMaster = array
@@ -115,9 +110,7 @@ class AdminDash extends AbstractExternalModule {
          foreach (self::$visualizationQueries as $vis => $visInfo):
             ?>
                <script>
-               d3.json("<?= $this->getUrl("getGraphData.php?vis=" . $vis) ?>", function (error, json) {
-//                   console.log(json);
-
+               d3.json("<?= $this->getUrl("getVisData.php?vis=" . $vis) ?>", function (error, json) {
                    if (error) return console.warn(error);
 
                     UIOWA_AdminDash.createPieChart(
@@ -193,7 +186,7 @@ class AdminDash extends AbstractExternalModule {
         </form>
         </div>
         <?php else : ?>
-         <!-- display graphs, ids must match above -->
+         <!-- display graphs -->
         <div style="display: inline-block; margin: 0 auto;">
           <div style="width: 100%; display: table; max-height: 500px;">
           <div style="display: table-row">
@@ -428,22 +421,23 @@ class AdminDash extends AbstractExternalModule {
         $formattedFilterSql
         "
             ),
-            array // Publication Matches
-            (
-                "reportName" => "Publication Matches",
-                "fileName" => "pubMatches",
-                "description" => "List of publication matches",
-                "tabIcon" => "fa fa-book",
-                "sql" => "
-SELECT
-    *
-FROM
-    redcap_pub_articles
-INNER JOIN redcap_pub_authors ON redcap_pub_articles.article_id = redcap_pub_authors.article_id
-INNER JOIN redcap_pub_matches ON redcap_pub_articles.article_id = redcap_pub_matches.article_id
-INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
-      "
-            ),
+// todo
+//            array // Publication Matches
+//            (
+//                "reportName" => "Publication Matches",
+//                "fileName" => "pubMatches",
+//                "description" => "List of publication matches",
+//                "tabIcon" => "fa fa-book",
+//                "sql" => "
+//SELECT
+//    *
+//FROM
+//    redcap_pub_articles
+//INNER JOIN redcap_pub_authors ON redcap_pub_articles.article_id = redcap_pub_authors.article_id
+//INNER JOIN redcap_pub_matches ON redcap_pub_articles.article_id = redcap_pub_matches.article_id
+//INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
+//      "
+//            ),
             array // Passwords in Project Titles
             (
                 "reportName" => "Passwords in Project Titles",
