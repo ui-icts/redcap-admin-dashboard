@@ -291,7 +291,7 @@ class AdminDash extends AbstractExternalModule {
         SELECT
         info.username AS 'Username',
         CONCAT(info.user_lastname, ', ', info.user_firstname) AS 'Name',
-        info.user_email AS 'User Email',
+        info.user_email AS 'Email',
         GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
         GROUP_CONCAT(CAST(projects.app_title AS CHAR(50)) SEPARATOR ', ') AS 'Project CSV Titles (Hidden)',
         GROUP_CONCAT(CAST(CASE projects.status
@@ -304,7 +304,7 @@ class AdminDash extends AbstractExternalModule {
         GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
         END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-        COUNT(projects.project_id) AS 'Projects Total'
+        COUNT(projects.project_id) AS 'Total Projects'
         FROM redcap_user_information AS info,
         redcap_projects AS projects,
         redcap_user_rights AS access
@@ -324,7 +324,7 @@ class AdminDash extends AbstractExternalModule {
                 "sql" => "
         SELECT
         projects.project_id AS PID,
-        app_title AS 'Project Name',
+        app_title AS 'Project Title',
         CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
@@ -344,10 +344,10 @@ class AdminDash extends AbstractExternalModule {
         WHEN 4 THEN 'Other'
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
-        GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Project Users',
+        GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Users',
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
-        COUNT(redcap_user_rights.username) AS 'Users Total'
+        COUNT(redcap_user_rights.username) AS 'Total Users'
         FROM redcap_projects AS projects
         LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
         LEFT JOIN redcap_user_rights ON projects.project_id = redcap_user_rights.project_id
@@ -365,7 +365,7 @@ class AdminDash extends AbstractExternalModule {
                 "sql" => "
         SELECT
         projects.project_id AS PID,
-        app_title AS 'Project Name',
+        app_title AS 'Project Title',
         CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
@@ -399,8 +399,7 @@ class AdminDash extends AbstractExternalModule {
                 "sql" => "
         SELECT
         projects.project_id AS 'PID',
-        app_title AS 'Project Name',
-        project_pi_email AS 'PI Email',
+        app_title AS 'Project Title',
         record_count AS 'Record Count',
         CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
@@ -414,7 +413,7 @@ class AdminDash extends AbstractExternalModule {
         ELSE projects.date_deleted
         END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
         creation_time AS 'Creation Time',
-        last_logged_event AS 'Last Logged Event'
+        last_logged_event AS 'Last Logged Event Date'
         FROM redcap_projects AS projects
         INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
         WHERE projects.status = 0 and projects.purpose != 0
@@ -446,7 +445,7 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
-        app_title AS 'Project Name',
+        app_title AS 'Project Title',
         CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
@@ -470,7 +469,7 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Name',
+        projects.app_title AS 'Project Title',
         meta.form_menu_description AS 'Instrument Name',
         CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
@@ -491,9 +490,9 @@ class AdminDash extends AbstractExternalModule {
                 "tabIcon" => "fa fa-key",
                 "sql" => "
         SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Name',
+        projects.app_title AS 'Project Title',
         meta.form_name AS 'Form Name',
-        meta.field_name AS 'Field Name',
+        meta.field_name AS 'Variable Name',
         meta.element_label AS 'Field Label',
         meta.element_note AS 'Field Note',
         CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
@@ -512,7 +511,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Visualizations",
                 "fileName" => "visualizations",
-                "description" => "Additional data presented in graph and chart form.",
+                "description" => "Additional metadata presented in a visual format.",
                 "tabIcon" => "fa fa-pie-chart"
             )
         );
@@ -546,6 +545,11 @@ class AdminDash extends AbstractExternalModule {
                 }
             }
 
+            // set PI Name blank if not entered
+            if ($row['PI Name'] == ',  ') {
+                $row['PI Name'] = '';
+            }
+
             if ($format == 'html') {
                 if ($isFirstRow)
                 {
@@ -561,7 +565,7 @@ class AdminDash extends AbstractExternalModule {
             elseif ($format == 'csv') {
                 if ($isFirstRow)
                 {
-                    if ($_REQUEST['tab'] = 2) {
+                    if ($_REQUEST['tab'] == 2) {
                         $headerIndex = array_search('Purpose Specified', $headers);
                         $purposeMasterArray = Array();
 
@@ -584,7 +588,7 @@ class AdminDash extends AbstractExternalModule {
                     $isFirstRow = FALSE;  // toggle flag
                 }
 
-                if ($_REQUEST['tab'] = 2) {
+                if ($_REQUEST['tab'] == 2) {
                     $headerIndex = array_search('Purpose Specified', $headers);
                     $purposeArray = explode(',', $row['Purpose Specified']);
                     $row = array_merge(
@@ -670,26 +674,16 @@ class AdminDash extends AbstractExternalModule {
         {
             if ($key == "PID")
             {
-                $projectStatus = $row['Status'];
-                $projectDeleted = $row['Project Deleted Date (Hidden)'];
-
-                $webified[$key] = $this->convertPid2Link($value, $value, $projectStatus, $projectDeleted);
+                $webified[$key] = $this->convertPid2AdminLink($value, $value);
             }
-            elseif ($key == "Project Name")
+            elseif ($key == "Project Title")
             {
                 $pid = $row['PID'];
-                $hrefStr = $row['Project Name'];
+                $hrefStr = $row['Project Title'];
                 $projectStatus = $row['Status'];
                 $projectDeleted = $row['Project Deleted Date (Hidden)'];
 
                 $webified[$key] = $this->convertPid2Link($pid, $hrefStr, $projectStatus, $projectDeleted);
-            }
-            elseif ($key == "Name of Project")
-            {
-                $pid = $row['PID'];
-                $hrefStr = $row['Name of Project'];
-
-                $webified[$key] = $this->convertPid2AdminLink($pid, $hrefStr);
             }
             elseif ($key == "Project Titles")
             {
@@ -704,11 +698,11 @@ class AdminDash extends AbstractExternalModule {
             }
             elseif (($key == "PI Email") ||
                 ($key == "Owner Email") ||
-                ($key == "User Email"))
+                ($key == "Email"))
             {
                 $webified[$key] = $this->convertEmail2Link($value);
             }
-            elseif (($key == "Project Users") ||
+            elseif (($key == "Users") ||
                 ($key == "Username"))
             {
                 $webified[$key] = $this->convertUsername2Link($value);
@@ -753,7 +747,7 @@ class AdminDash extends AbstractExternalModule {
         return($pidLink);
     }
 
-    private function convertPid2AdminLink($pid, $hrefStr)
+    private function convertPid2AdminLink($pid)
     {
         $urlString =
             sprintf("https://%s%sControlCenter/edit_project.php?project=%d",  // Project Setup page
@@ -763,7 +757,7 @@ class AdminDash extends AbstractExternalModule {
 
         $pidLink = sprintf("<a href=\"%s\"
                           target=\"_blank\">%s</a>",
-            $urlString, $hrefStr);
+            $urlString, $pid);
 
         return($pidLink);
     }
