@@ -38,13 +38,6 @@
 			"required": false
 		},
 		{
-			"key": "additional-search-terms",
-			"name": "Additional search term for username/password reports (use % for wildcard)",
-			"type": "text",
-			"required": false,
-			"repeatable": true
-		},
-		{
 			"key": "csv-display-pids",
 			"name": "Display PIDs instead of titles in 'Projects by User' CSV file",
 			"type": "checkbox",

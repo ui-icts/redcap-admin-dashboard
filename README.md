@@ -21,7 +21,3 @@ After downloading and enabling this module in your REDCap instance, a link to th
 * **Show deleted projects:** Enabling this option will include projects marked for deletion in report views. Deleted projects titles are red in color.
 * **Additional search term for username/password reports:** Any terms entered here will be added to the list of default terms checked when running the "Passwords in Project Titles/Instruments/Fields" reports. The "%" symbol is a wildcard that can be used to represent zero, one, or multiple characters.
 * **Display PIDs instead of titles in 'Projects by User' CSV file:** The list of project titles displayed on the "Projects by User" report can be extremely long and difficult to read in CSV format. Enabling this option will display a list of project ID numbers instead when exporting the CSV file.
-
-### Known Bugs/Issues
-
-* The Backspace key does not work in the table filter fields.
