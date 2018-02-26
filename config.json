@@ -1,8 +1,10 @@
 {
 	"name": "Admin Dashboard",
 	"description": "Provides a sortable table view of various reports on REDCap metadata (users, projects, etc).",
+	"documentation": "README.md",
 
 	"namespace": "UIOWA\\AdminDash",
+
 
 	"authors": [
 		{
@@ -20,13 +22,6 @@
 				"url": "index.php"
 			}
 		]
-	},
-	
-	"compatibility": {
-		"php-version-min": "5.4.0",
-		"php-version-max": "",
-		"redcap-version-min": "7.0.0",
-		"redcap-version-max": ""
 	},
 
 	"system-settings": [

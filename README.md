@@ -7,7 +7,8 @@ The following reports are included:
 * **Projects by User** (List of users and the projects to which they have access)
 * **Users by Project** (List of projects and the users which have access)
 * **Research Projects** (List of projects that are identified as being used for research purposes)
-* **Development Projects** (List of record counts for projects in Development Mode)
+* **Development Projects** (List of projects that are in Development Mode)
+* **All Projects** (List of all projects, excluding those designated as 'Practice/Just for Fun')
 * **Passwords in Project Titles/Instruments/Fields** (List of projects that contain strings related to REDCap login credentials in Project Titles/Instruments/Fields)
 
 Some simple visual representations of project statuses and research purposes are also available.

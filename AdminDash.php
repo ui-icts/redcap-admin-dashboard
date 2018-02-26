@@ -41,7 +41,7 @@ class AdminDash extends AbstractExternalModule {
    ),
     array
     (
-    "visName" => "\"Purpose Specified (Research Projects)\"",
+    "visName" => "\"Purpose (All Projects)\"",
     "visID" => "\"purpose_all\"",
     "visType" => "\"count\"",
     "countColumns" => ["Purpose"],
@@ -72,6 +72,10 @@ class AdminDash extends AbstractExternalModule {
    );
 
     public function generateAdminDash(&$reportReference) {
+        // display the header
+        $HtmlPage = new \HtmlPage();
+        $HtmlPage->PrintHeaderExt();
+
         ?>
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery-3.2.0.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
@@ -87,13 +91,10 @@ class AdminDash extends AbstractExternalModule {
         <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
 
         <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
+
         <?php
 
         $reportReference = $this->generateReportReference();
-
-        // display the header
-        $HtmlPage = new \HtmlPage();
-        $HtmlPage->PrintHeaderExt();
 
         // define variables
         $title = $this->getModuleName();
@@ -102,9 +103,6 @@ class AdminDash extends AbstractExternalModule {
 
         // only allow super users to view this information
         if (!SUPER_USER) die("Access denied! Only super users can access this page.");
-
-        // start the stopwatch ...
-        $this->elapsedTime();
 
         if (!$pageInfo['sql']) :
          foreach (self::$visualizationQueries as $vis => $visInfo):
@@ -181,7 +179,6 @@ class AdminDash extends AbstractExternalModule {
           <option value="25">25</option>
           <option value="50">50</option>
           <option value="100">100</option>
-          <option value="all">All Rows</option>
         </select>
         </form>
         </div>
@@ -219,47 +216,11 @@ class AdminDash extends AbstractExternalModule {
          }
         }
 
-        $this->displayElapsedTime();
-
         // Display the footer
         $HtmlPage->PrintFooterExt();
    }
 
     public function generateReportReference() {
-        $pwordSearchTerms =
-            array(
-                'p%word',
-                'p%wd',
-                'user%name',
-                'usr%name',
-                'user%id',
-                'usr%id'
-            );
-
-        $userDefinedTerms = self::getSystemSetting('additional-search-terms');
-
-        foreach($userDefinedTerms as $term) {
-            $pwordSearchTerms[] = $term;
-        }
-
-        $pwordProjectSql = array();
-        $pwordInstrumentSql = array();
-        $pwordFieldSql = array();
-
-        foreach($pwordSearchTerms as $term) {
-            $pwordProjectSql[] = '(app_title LIKE \'%' . $term . '%\')';
-
-            $pwordInstrumentSql[] = '(form_name LIKE \'%' . $term . '%\')';
-
-            $pwordFieldSql[] = '(field_name LIKE \'%' . $term . '%\')';
-            $pwordFieldSql[] = '(element_label LIKE \'%' . $term . '%\')';
-            $pwordFieldSql[] = '(element_note LIKE \'%' . $term . '%\')';
-        }
-
-        $pwordProjectSql =  "(" . implode(" OR ", $pwordProjectSql) . ")";
-        $pwordInstrumentSql = "(" . implode(" OR ", $pwordInstrumentSql) . ")";
-        $pwordFieldSql = "(" . implode(" OR ", $pwordFieldSql) . ")";
-
         $hideDeleted = !self::getSystemSetting('show-deleted-projects');
         $hideArchived = !self::getSystemSetting('show-archived-projects');
 
@@ -274,10 +235,6 @@ class AdminDash extends AbstractExternalModule {
 
         $formattedFilterSql = ($hideDeleted || $hideArchived) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
         $formattedWhereFilterSql = ($hideDeleted || $hideArchived) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
-
-        $pwordProjectSql =  $pwordProjectSql . $formattedFilterSql;
-        $pwordInstrumentSql = $pwordInstrumentSql . $formattedFilterSql;
-        $pwordFieldSql = $pwordFieldSql . $formattedFilterSql;
 
         $reportReference = array
         (
@@ -345,6 +302,7 @@ class AdminDash extends AbstractExternalModule {
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
         GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Users',
+        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
         COUNT(redcap_user_rights.username) AS 'Total Users'
@@ -381,6 +339,7 @@ class AdminDash extends AbstractExternalModule {
         CONCAT(project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi) AS 'PI Name',
         project_pi_email AS 'PI Email',
         project_irb_number AS 'IRB Number',
+        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
         FROM redcap_projects as projects
@@ -394,7 +353,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Development Projects",
                 "fileName" => "developmentProjects",
-                "description" => "List of record counts for projects in Development Mode.",
+                "description" => "List of projects that are in Development Mode.",
                 "tabIcon" => "fa fa-folder",
                 "sql" => "
         SELECT
@@ -412,12 +371,53 @@ class AdminDash extends AbstractExternalModule {
         CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
         END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        creation_time AS 'Creation Time',
-        last_logged_event AS 'Last Logged Event Date'
+        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
+        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
         FROM redcap_projects AS projects
         INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
         WHERE projects.status = 0 and projects.purpose != 0
         $formattedFilterSql
+        ORDER BY app_title
+        "
+            ),
+            array // All Projects
+            (
+                "reportName" => "All Projects",
+                "fileName" => "allProjects",
+                "description" => "List of all projects (excluding those designated as 'Practice/Just for Fun').",
+                "tabIcon" => "fa fa-folder",
+                "sql" => "
+        SELECT
+        projects.project_id AS 'PID',
+        app_title AS 'Project Title',
+        record_count AS 'Record Count',
+        CAST(CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE status
+        END AS CHAR(50)) AS 'Status',
+        CAST(CASE purpose
+        WHEN 0 THEN 'Practice / Just for fun'
+        WHEN 1 THEN 'Operational Support'
+        WHEN 2 THEN 'Research'
+        WHEN 3 THEN 'Quality Improvement'
+        WHEN 4 THEN 'Other'
+        ELSE purpose
+        END AS CHAR(50)) AS 'Purpose',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
+        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
+        FROM redcap_projects AS projects
+        INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+        WHERE projects.purpose != 0
+        $formattedFilterSql
+        ORDER BY app_title
         "
             ),
 // todo
@@ -437,76 +437,6 @@ class AdminDash extends AbstractExternalModule {
 //INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
 //      "
 //            ),
-            array // Passwords in Project Titles
-            (
-                "reportName" => "Passwords in Project Titles",
-                "fileName" => "projectPassword",
-                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the project title. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                "tabIcon" => "fa fa-key",
-                "sql" => "
-        SELECT projects.project_id AS 'PID',
-        app_title AS 'Project Title',
-        CAST(CASE status
-        WHEN 0 THEN 'Development'
-        WHEN 1 THEN 'Production'
-        WHEN 2 THEN 'Inactive'
-        WHEN 3 THEN 'Archived'
-        ELSE status
-        END AS CHAR(50)) AS 'Status',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
-        ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-        FROM redcap_projects AS projects,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        " . $pwordProjectSql
-            ),
-            array // Passwords in Instruments
-            (
-                "reportName" => "Passwords in Instruments",
-                "fileName" => "instrumentPassword",
-                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                "tabIcon" => "fa fa-key",
-                "sql" => "
-        SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Title',
-        meta.form_menu_description AS 'Instrument Name',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
-        ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-        FROM redcap_projects AS projects,
-        redcap_metadata AS meta,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        (projects.project_id = meta.project_id) AND
-        (meta.form_menu_description IS NOT NULL) AND
-        " . $pwordInstrumentSql
-            ),
-            array // Passwords in Fields
-            (
-                "reportName" => "Passwords in Fields",
-                "fileName" => "fieldPassword",
-                "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in one of the fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                "tabIcon" => "fa fa-key",
-                "sql" => "
-        SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Title',
-        meta.form_name AS 'Form Name',
-        meta.field_name AS 'Variable Name',
-        meta.element_label AS 'Field Label',
-        meta.element_note AS 'Field Note',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
-        ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-        FROM redcap_projects AS projects,
-        redcap_metadata AS meta,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        (projects.project_id = meta.project_id) AND
-        " . $pwordFieldSql . "
-        ORDER BY projects.project_id, form_name, field_name;
-        "
-            ),
             array // Visualizations
             (
                 "reportName" => "Visualizations",
@@ -826,30 +756,6 @@ class AdminDash extends AbstractExternalModule {
         return($purposeStr);
     }
 
-    private function elapsedTime()
-    {
-        // initialize variables
-        static $startTime = null;
-        $elapseTimeStr = "";
-
-        if ($startTime == null)  // start the clock
-        {
-            $startTime = round(microtime(true));
-            // printf("\$startTime: %f<br />", $startTime);
-        }
-        else
-        {
-            $endTime = round(microtime(true));
-            // printf("\$endTime: %f<br />", $endTime);
-            $elapseTime = $endTime - $startTime;
-            // printf("\$elapsedTime: %f<br />", $elapsedTime);
-
-            $elapseTimeStr = date("i:s", $elapseTime);
-        }
-
-        return($elapseTimeStr);
-    }
-
     private function sqlQuery($query)
     {
         // execute the SQL statement
@@ -868,18 +774,6 @@ class AdminDash extends AbstractExternalModule {
         {
             return $result;
         }
-    }
-
-    private function displayElapsedTime()
-    {
-        $load = sys_getloadavg();
-
-        printf("<div id='elapsedTime'>
-            Elapsed Execution Time: %s<br />
-            System load avg last minute: %d%%<br />
-            System load avg last 5 mins: %d%%<br />
-            System load avg last 15 min: %d%%</div>",
-            $this->elapsedTime(), $load[0] * 100, $load[1] * 100, $load[2] * 100);
     }
 
     private function getRedcapProjectNames()
