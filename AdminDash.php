@@ -604,7 +604,7 @@ class AdminDash extends AbstractExternalModule {
         {
             if ($key == "PID")
             {
-                $webified[$key] = $this->convertPid2AdminLink($value, $value);
+                $webified[$key] = $this->convertPid2AdminLink($value);
             }
             elseif ($key == "Project Title")
             {
