@@ -49,10 +49,10 @@ class AdminDash extends AbstractExternalModule {
             SELECT
             CAST(CASE purpose
             WHEN 0 THEN 'Practice / Just for fun'
-            WHEN 1 THEN 'Operational Support'
+            WHEN 4 THEN 'Operational Support'
             WHEN 2 THEN 'Research'
             WHEN 3 THEN 'Quality Improvement'
-            WHEN 4 THEN 'Other'
+            WHEN 1 THEN 'Other'
             ELSE purpose
             END AS CHAR(50)) AS 'Purpose'
             FROM redcap_projects
@@ -295,10 +295,10 @@ class AdminDash extends AbstractExternalModule {
         record_count AS 'Record Count',
         CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
-        WHEN 1 THEN 'Operational Support'
+        WHEN 4 THEN 'Operational Support'
         WHEN 2 THEN 'Research'
         WHEN 3 THEN 'Quality Improvement'
-        WHEN 4 THEN 'Other'
+        WHEN 1 THEN 'Other'
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
         GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Users',
@@ -362,10 +362,10 @@ class AdminDash extends AbstractExternalModule {
         record_count AS 'Record Count',
         CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
-        WHEN 1 THEN 'Operational Support'
+        WHEN 4 THEN 'Operational Support'
         WHEN 2 THEN 'Research'
         WHEN 3 THEN 'Quality Improvement'
-        WHEN 4 THEN 'Other'
+        WHEN 1 THEN 'Other'
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
         CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
@@ -401,10 +401,10 @@ class AdminDash extends AbstractExternalModule {
         END AS CHAR(50)) AS 'Status',
         CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
-        WHEN 1 THEN 'Operational Support'
+        WHEN 4 THEN 'Operational Support'
         WHEN 2 THEN 'Research'
         WHEN 3 THEN 'Quality Improvement'
-        WHEN 4 THEN 'Other'
+        WHEN 1 THEN 'Other'
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
         CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
