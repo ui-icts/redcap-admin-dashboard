@@ -57,7 +57,40 @@ class AdminDash extends AbstractExternalModule {
             END AS CHAR(50)) AS 'Purpose'
             FROM redcap_projects
             "
-   )
+   ),
+    array
+    (
+        "visName" => "\"Purpose (Research Projects)\"",
+        "visID" => "\"purpose_research\"",
+        "visType" => "\"count\"",
+        "countColumns" => ["Purpose Specified"],
+        "sql" => "
+            SELECT
+              CAST(CASE SUBSTRING_INDEX(SUBSTRING_INDEX(redcap_projects.purpose_other, ',', numbers.n), ',', -1)
+                   WHEN 0 THEN 'Basic or Bench Research'
+                   WHEN 1 THEN 'Clinical Research Study or Trial'
+                   WHEN 2 THEN 'Translational Research 1'
+                   WHEN 3 THEN 'Translational Research 2'
+                   WHEN 4 THEN 'Behavioral or Psychosocial Research Study'
+                   WHEN 5 THEN 'Epidemiology'
+                   WHEN 6 THEN 'Repository'
+                   WHEN 7 THEN 'Other'
+                   ELSE purpose
+                   END AS CHAR(50)) AS 'Purpose Specified'
+            FROM
+              (SELECT 1 n
+               UNION ALL SELECT 2
+               UNION ALL SELECT 3
+               UNION ALL SELECT 4
+               UNION ALL SELECT 5
+               UNION ALL SELECT 6
+               UNION ALL SELECT 7
+               UNION ALL SELECT 8) numbers INNER JOIN redcap_projects
+                ON CHAR_LENGTH(redcap_projects.purpose_other)
+                   -CHAR_LENGTH(REPLACE(redcap_projects.purpose_other, ',', ''))>=numbers.n-1
+            WHERE purpose = 2 AND purpose_other != ' '
+        "
+    )
    );
 
     public static $miscQueryReference = array
@@ -186,13 +219,10 @@ class AdminDash extends AbstractExternalModule {
          <!-- display graphs -->
         <div style="display: inline-block; margin: 0 auto;">
           <div style="width: 100%; display: table; max-height: 500px;">
-          <div style="display: table-row">
-          <?php foreach (self::$visualizationQueries as $vis => $visInfo): ?>
-          <div style="width: 500px; display: table-cell;" id=<?= $visInfo['visID'] ?>></div>
-        <?php endforeach; ?>
+            <?php foreach (self::$visualizationQueries as $vis => $visInfo): ?>
+                <div style="width: 500px; display: table-row;" id=<?= $visInfo['visID'] ?>></div>
+            <?php endforeach; ?>
         </div>
-        <div style="display: table-row">
-          <div style="display: table-cell" id="status_research"></div>
           </div>
           </div>
           </div>
@@ -205,14 +235,14 @@ class AdminDash extends AbstractExternalModule {
          // execute the SQL statement
          $result = $this->sqlQuery($pageInfo['sql']);
 
-          $this->formatQueryResults($result, "html");
+          $this->formatQueryResults($result, "html", $pageInfo);
 
          printf("   </tbody>\n");
          printf("</table>\n");  // <table> created by PrintTableHeader
 
          if ($_REQUEST['tab'] == 0) {
             $result = db_query(self::$miscQueryReference[0]['sql']);
-            printf($this->formatQueryResults($result, "text") . " users are currently suspended.");
+            printf($this->formatQueryResults($result, "text", $pageInfo) . " users are currently suspended.");
          }
         }
 
@@ -221,6 +251,40 @@ class AdminDash extends AbstractExternalModule {
    }
 
     public function generateReportReference() {
+        $pwordSearchTerms =
+            array(
+                'p%word',
+                'p%wd',
+                'user%name',
+                'usr%name',
+                'user%id',
+                'usr%id'
+            );
+
+        $userDefinedTerms = self::getSystemSetting('additional-search-terms');
+
+        foreach($userDefinedTerms as $term) {
+            $pwordSearchTerms[] = $term;
+        }
+
+        $pwordProjectSql = array();
+        $pwordInstrumentSql = array();
+        $pwordFieldSql = array();
+
+        foreach($pwordSearchTerms as $term) {
+            $pwordProjectSql[] = '(app_title LIKE \'%' . $term . '%\')';
+
+            $pwordInstrumentSql[] = '(form_name LIKE \'%' . $term . '%\')';
+
+            $pwordFieldSql[] = '(field_name LIKE \'%' . $term . '%\')';
+            $pwordFieldSql[] = '(element_label LIKE \'%' . $term . '%\')';
+            $pwordFieldSql[] = '(element_note LIKE \'%' . $term . '%\')';
+        }
+
+        $pwordProjectSql =  "(" . implode(" OR ", $pwordProjectSql) . ")";
+        $pwordInstrumentSql = "(" . implode(" OR ", $pwordInstrumentSql) . ")";
+        $pwordFieldSql = "(" . implode(" OR ", $pwordFieldSql) . ")";
+
         $hideDeleted = !self::getSystemSetting('show-deleted-projects');
         $hideArchived = !self::getSystemSetting('show-archived-projects');
 
@@ -419,7 +483,7 @@ class AdminDash extends AbstractExternalModule {
         $formattedFilterSql
         ORDER BY app_title
         "
-            ),
+            )
 // todo
 //            array // Publication Matches
 //            (
@@ -436,20 +500,136 @@ class AdminDash extends AbstractExternalModule {
 //INNER JOIN redcap_pub_matches ON redcap_pub_articles.article_id = redcap_pub_matches.article_id
 //INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
 //      "
-//            ),
+//            )
+        );
+
+        if (self::getSystemSetting('optional-report-passwords')) {
+            array_push($reportReference,
+                array
+                (
+                    "reportName" => "Credentials Check (Project Titles)",
+                    "fileName" => "projectCredentials",
+                    "description" => "List of projects titles that contain strings related to REDCap login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
+                    "tabIcon" => "fa fa-key",
+                    "sql" => "
+        SELECT projects.project_id AS 'PID',
+        app_title AS 'Project Title',
+        CAST(CASE status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE status
+        END AS CHAR(50)) AS 'Status',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
+        FROM redcap_projects AS projects,
+        redcap_user_information AS users
+        WHERE (projects.created_by = users.ui_id) AND
+        " . $pwordProjectSql
+                ),
+                array
+                (
+                    "reportName" => "Credentials Check (Instruments)",
+                    "fileName" => "instrumentCredentials",
+                    "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
+                    "tabIcon" => "fa fa-key",
+                    "sql" => "
+        SELECT projects.project_id AS 'PID',
+        projects.app_title AS 'Project Title',
+        meta.form_menu_description AS 'Instrument Name',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
+        FROM redcap_projects AS projects,
+        redcap_metadata AS meta,
+        redcap_user_information AS users
+        WHERE (projects.created_by = users.ui_id) AND
+        (projects.project_id = meta.project_id) AND
+        (meta.form_menu_description IS NOT NULL) AND
+        " . $pwordInstrumentSql
+                ),
+                array
+                (
+                    "reportName" => "Credentials Check (Fields)",
+                    "fileName" => "fieldCredentials",
+                    "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
+                    "tabIcon" => "fa fa-key",
+                    "sql" => "
+        SELECT projects.project_id AS 'PID',
+        projects.app_title AS 'Project Title',
+        meta.form_name AS 'Form Name',
+        meta.field_name AS 'Variable Name',
+        meta.element_label AS 'Field Label',
+        meta.element_note AS 'Field Note',
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
+        FROM redcap_projects AS projects,
+        redcap_metadata AS meta,
+        redcap_user_information AS users
+        WHERE (projects.created_by = users.ui_id) AND
+        (projects.project_id = meta.project_id) AND
+        " . $pwordFieldSql . "
+        ORDER BY projects.project_id, form_name, field_name;
+        "
+                )
+
+            );
+        }
+
+        if (self::getSystemSetting('optional-report-modules')) {
+            array_push($reportReference,
+                array
+                (
+                    "reportName" => "Projects with External Modules",
+                    "fileName" => "modulesByProject",
+                    "description" => "List of External Modules and the projects they are enabled in.",
+                    "tabIcon" => "fa fa-folder",
+                    "sql" => "
+        SELECT
+        REPLACE(directory_prefix, '_', ' ') AS 'Module Title',
+        GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
+        GROUP_CONCAT(CAST(projects.app_title AS CHAR(50)) SEPARATOR ', ') AS 'Project CSV Titles (Hidden)',
+        GROUP_CONCAT(CAST(users.user_email AS CHAR(50)) SEPARATOR ', ') AS 'User Emails',
+        GROUP_CONCAT(CAST(CASE projects.status
+        WHEN 0 THEN 'Development'
+        WHEN 1 THEN 'Production'
+        WHEN 2 THEN 'Inactive'
+        WHEN 3 THEN 'Archived'
+        ELSE projects.status
+        END AS CHAR(50))) AS 'Project Statuses (Hidden)',
+        GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        ELSE projects.date_deleted
+        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
+        COUNT(projects.project_id) AS 'Total Projects'
+        FROM redcap_external_module_settings AS settings
+        LEFT JOIN redcap_external_modules ON redcap_external_modules.external_module_id = settings.external_module_id
+        LEFT JOIN redcap_projects AS projects ON projects.project_id = settings.project_id
+        LEFT JOIN redcap_user_rights AS rights ON rights.project_id = projects.project_id
+        LEFT JOIN redcap_user_information AS users ON users.username = rights.username
+        WHERE settings.key = 'enabled' AND settings.value = 'true' AND settings.project_id IS NOT NULL
+        $formattedFilterSql
+        GROUP BY settings.external_module_id
+        ORDER BY directory_prefix
+        "
+                ));
+        }
+
+        array_push($reportReference,
             array // Visualizations
             (
                 "reportName" => "Visualizations",
                 "fileName" => "visualizations",
                 "description" => "Additional metadata presented in a visual format.",
                 "tabIcon" => "fa fa-pie-chart"
-            )
-        );
+            ));
 
         return $reportReference;
     }
 
-    public function formatQueryResults($result, $format)
+    public function formatQueryResults($result, $format, $pageInfo)
     {
         $redcapProjects = $this->getRedcapProjectNames();
         $isFirstRow = TRUE;
@@ -478,6 +658,21 @@ class AdminDash extends AbstractExternalModule {
             // set PI Name blank if not entered
             if ($row['PI Name'] == ',  ') {
                 $row['PI Name'] = '';
+            }
+
+            if ($row['Module Title']) {
+                $row['Module Title'] = ucwords($row['Module Title']);
+            }
+
+            if ($pageInfo['fileName'] == 'modulesByProject') {
+                $titlesStr = $row['Project Titles'];
+                $csvTitlesStr = $row['Project CSV Titles (Hidden)'];
+
+                $rowArray = explode(',', $titlesStr);
+                $rowArray = array_unique($rowArray);
+
+                $row['Project Titles'] = implode(',', $rowArray);
+                $row['Total Projects'] = sizeof($rowArray);
             }
 
             if ($format == 'html') {
@@ -554,13 +749,13 @@ class AdminDash extends AbstractExternalModule {
                     unset($row[$column]);
                 }
 
-                $rowStr = implode("\",\"", $row);
+                $titlesStr = implode("\",\"", $row);
 
-                printf("\"%s\"\n", $rowStr);
+                printf("\"%s\"\n", $titlesStr);
             }
             elseif ($format == 'text') {
-                $rowStr = implode("\",\"", $row);
-                return $rowStr;
+                $titlesStr = implode("\",\"", $row);
+                return $titlesStr;
             }
         }
     }
@@ -627,10 +822,13 @@ class AdminDash extends AbstractExternalModule {
                 $webified[$key] = $this->convertProjectPurpose2List($value);
             }
             elseif (($key == "PI Email") ||
-                ($key == "Owner Email") ||
                 ($key == "Email"))
             {
                 $webified[$key] = $this->convertEmail2Link($value);
+            }
+            elseif ($key == "User Emails")
+            {
+                $webified[$key] = $this->convertEmailList2Links($value);
             }
             elseif (($key == "Users") ||
                 ($key == "Username"))
@@ -652,6 +850,28 @@ class AdminDash extends AbstractExternalModule {
             $email, $email);
 
         return($mailtoLink);
+    }
+
+    private function convertEmailList2Links($emailStr)
+    {
+        // convert comma-delimited string to array
+        $emailList = explode(", ", $emailStr);
+        $emailLinks = array();
+
+        foreach ($emailList as $index=>$email)
+        {
+            array_push($emailLinks, $this->convertEmail2Link($email));
+        }
+
+        // convert array back to comma-delimited string
+        $emailCell = implode("<br />", $emailLinks);
+        $mailtoLink = 'mailto:?bcc=' . str_replace(', ', ';', $emailStr);
+
+        if (count($emailLinks) > 1) {
+            $emailCell .= "<button style='float:right' onclick='location.href=\"" . $mailtoLink . "\"'>Email All</button>";
+        }
+
+        return($emailCell);
     }
 
     private function convertPid2Link($pid, $hrefStr, $projectStatus, $projectDeleted)
