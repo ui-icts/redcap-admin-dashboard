@@ -640,6 +640,8 @@ class AdminDash extends AbstractExternalModule {
 
         while ($row = db_fetch_assoc($result))
         {
+            $originalRow = $row;
+
             if ($isFirstRow) {
                 // use column aliases for column headers
                 $headers = array_keys($row);
@@ -664,15 +666,19 @@ class AdminDash extends AbstractExternalModule {
                 $row['Module Title'] = ucwords($row['Module Title']);
             }
 
-            if ($pageInfo['fileName'] == 'modulesByProject') {
-                $titlesStr = $row['Project Titles'];
-                $csvTitlesStr = $row['Project CSV Titles (Hidden)'];
-
-                $rowArray = explode(',', $titlesStr);
+            if ($pageInfo['fileName'] == 'modulesByProject' || strpos($_REQUEST['file'], 'modulesByProject') !== false) {
+                $rowArray = explode(',', $row['Project Titles']);
                 $rowArray = array_unique($rowArray);
-
                 $row['Project Titles'] = implode(',', $rowArray);
                 $row['Total Projects'] = sizeof($rowArray);
+
+                $rowArray = explode(',', $originalRow['Project CSV Titles (Hidden)']);
+                $rowArray = array_unique($rowArray);
+                $csvTitles = implode(',', $rowArray);
+
+                $rowArray = explode(', ', $row['User Emails']);
+                $rowArray = array_unique($rowArray);
+                $row['User Emails'] = implode(', ', $rowArray);
             }
 
             if ($format == 'html') {
@@ -741,7 +747,7 @@ class AdminDash extends AbstractExternalModule {
                 $pidsInCsv = self::getSystemSetting('csv-display-pids');
 
                 if (!$pidsInCsv) {
-                    $row['Project Titles'] = $row['Project CSV Titles (Hidden)'];
+                    $row['Project Titles'] = $csvTitles;
                 }
 
                 foreach ($hiddenColumns as $column)

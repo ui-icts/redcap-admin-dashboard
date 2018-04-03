@@ -62,17 +62,15 @@
       "required": false
     },
     {
-      "key": "optional-report-settings",
-      "name": "<b>Settings specific to optional reports:</b>",
-      "type": "descriptive",
-      "required": false
-    },
-    {
       "key": "additional-search-terms",
       "name": "Additional search term for Login Credentials Check reports (use % for wildcard)",
       "type": "text",
       "required": false,
-      "repeatable": true
+      "repeatable": true,
+      "branchingLogic": {
+        "field": "optional-report-passwords",
+        "value": "true"
+      }
     }
   ]
 }

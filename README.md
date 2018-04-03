@@ -24,6 +24,6 @@ After downloading and enabling this module in your REDCap instance, a link to th
 * **Show deleted projects:** Enabling this option will include projects marked for deletion in report views. Deleted projects titles are red in color.
 * **Display PIDs instead of titles in 'Projects by User' CSV file:** The list of project titles displayed on the "Projects by User" report can be extremely long and difficult to read in CSV format. Enabling this option will display a list of project ID numbers instead when exporting the CSV file.
 
-The following settings are specific to optional reports and will not have any effect if their related report is not enabled:
+The following settings are specific to optional reports and will only be visible if their related report is enabled:
 
 * **Additional search term for Login Credentials Check reports:** This repeatable field can be used to define additional search terms to be queried when running the Login Credentials Check reports. This can be helpful for defining institution specific usernames.
