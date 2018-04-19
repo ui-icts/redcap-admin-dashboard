@@ -5,8 +5,6 @@ use ExternalModules\AbstractExternalModule;
 use ExternalModules\ExternalModules;
 
 class AdminDash extends AbstractExternalModule {
-    public $reportReference;
-
     public static $purposeMaster = array
     (
         "Basic or Bench Research",
@@ -104,12 +102,13 @@ class AdminDash extends AbstractExternalModule {
    )
    );
 
-    public function generateAdminDash(&$reportReference) {
-        // display the header
-        $HtmlPage = new \HtmlPage();
-        $HtmlPage->PrintHeaderExt();
+    public function generateAdminDash() {
 
         ?>
+        <div style="text-align: left; width: 100%">
+            <div style="height: 50px;"></div>
+        </div>
+
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery-3.2.0.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.widgets.min.js") ?>"></script>
@@ -120,7 +119,6 @@ class AdminDash extends AbstractExternalModule {
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
-        <link href="<?= $this->getUrl("/resources/font-awesome-4.7.0/css/font-awesome.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
 
         <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
@@ -132,12 +130,13 @@ class AdminDash extends AbstractExternalModule {
         // define variables
         $title = $this->getModuleName();
         $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
+        $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 7)) == "select ");
         $csvFileName = sprintf("%s.%s.csv", $pageInfo['fileName'], date("Y-m-d_His"));
 
         // only allow super users to view this information
         if (!SUPER_USER) die("Access denied! Only super users can access this page.");
 
-        if (!$pageInfo['sql']) :
+        if (!$pageInfo['sql'] && !$pageInfo['userDefined']) :
          foreach (self::$visualizationQueries as $vis => $visInfo):
             ?>
                <script>
@@ -178,14 +177,12 @@ class AdminDash extends AbstractExternalModule {
          <p />
 
          <!-- display csv download button (for reports) -->
-        <?php if($pageInfo['sql']) : ?>
         <div style="text-align: right; width: 100%">
             <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
-               class="btn btn-default btn-lg">
+               class="btn btn-default <?= $pageInfo['sql'] == '' ? 'disabled' : '' ?> btn-lg">
           <span class="fa fa-download"></span>&nbsp;
         Download CSV File</a>
         </div>
-        <?php endif; ?>
 
         <p />
 
@@ -216,6 +213,7 @@ class AdminDash extends AbstractExternalModule {
         </form>
         </div>
         <?php else : ?>
+            <br />
          <!-- display graphs -->
         <div style="display: inline-block; margin: 0 auto;">
           <div style="width: 100%; display: table; max-height: 500px;">
@@ -224,14 +222,20 @@ class AdminDash extends AbstractExternalModule {
             <?php endforeach; ?>
         </div>
           </div>
-          </div>
-          </div>
 
         <?php endif; ?>
 
         <?php
+        if(!$isSelectQuery && $pageInfo['userDefined'] && $pageInfo['sql'] != '') {
+            $pageInfo['sql'] = '';
+            $pageInfo['sqlErrorMsg'] = 'ERROR: SQL query is not a SELECT query.';
+        }
+        elseif($pageInfo['sql'] == '') {
+            $pageInfo['sqlErrorMsg'] = 'ERROR: No SQL query defined.';
+        }
+
         // display normal reports
-        if($pageInfo['sql']) {
+        if($pageInfo['sql'] != '') {
          // execute the SQL statement
          $result = $this->sqlQuery($pageInfo['sql']);
 
@@ -245,9 +249,9 @@ class AdminDash extends AbstractExternalModule {
             printf($this->formatQueryResults($result, "text", $pageInfo) . " users are currently suspended.");
          }
         }
-
-        // Display the footer
-        $HtmlPage->PrintFooterExt();
+        elseif ($pageInfo['userDefined']) {
+            printf("<div id='deleted'> " . $pageInfo['sqlErrorMsg'] . "</div>");
+        }
    }
 
     public function generateReportReference() {
@@ -264,7 +268,7 @@ class AdminDash extends AbstractExternalModule {
         $userDefinedTerms = self::getSystemSetting('additional-search-terms');
 
         foreach($userDefinedTerms as $term) {
-            $pwordSearchTerms[] = $term;
+            $pwordSearchTerms[] = db_real_escape_string($term);
         }
 
         $pwordProjectSql = array();
@@ -341,7 +345,7 @@ class AdminDash extends AbstractExternalModule {
                 "reportName" => "Users by Project",
                 "fileName" => "usersByProject",
                 "description" => "List of projects and the users which have access.",
-                "tabIcon" => "fa fa-folder",
+                "tabIcon" => "fas fa-users",
                 "sql" => "
         SELECT
         projects.project_id AS PID,
@@ -418,7 +422,7 @@ class AdminDash extends AbstractExternalModule {
                 "reportName" => "Development Projects",
                 "fileName" => "developmentProjects",
                 "description" => "List of projects that are in Development Mode.",
-                "tabIcon" => "fa fa-folder",
+                "tabIcon" => "fas fa-wrench",
                 "sql" => "
         SELECT
         projects.project_id AS 'PID',
@@ -450,7 +454,7 @@ class AdminDash extends AbstractExternalModule {
                 "reportName" => "All Projects",
                 "fileName" => "allProjects",
                 "description" => "List of all projects (excluding those designated as 'Practice/Just for Fun').",
-                "tabIcon" => "fa fa-folder",
+                "tabIcon" => "fas fa-folder-open",
                 "sql" => "
         SELECT
         projects.project_id AS 'PID',
@@ -586,7 +590,7 @@ class AdminDash extends AbstractExternalModule {
                     "reportName" => "Projects with External Modules",
                     "fileName" => "modulesByProject",
                     "description" => "List of External Modules and the projects they are enabled in.",
-                    "tabIcon" => "fa fa-folder",
+                    "tabIcon" => "fas fa-plug",
                     "sql" => "
         SELECT
         REPLACE(directory_prefix, '_', ' ') AS 'Module Title',
@@ -617,13 +621,37 @@ class AdminDash extends AbstractExternalModule {
                 ));
         }
 
+        $customNames = $this->getSystemSetting('custom-report-name');
+        $customDescs = $this->getSystemSetting('custom-report-desc');
+        $customIcons = $this->getSystemSetting('custom-report-icon');
+        $customSqls = $this->getSystemSetting('custom-report-sql');
+        $customToggles = $this->getSystemSetting('custom-report-enabled');
+
+
+        for($i = 0; $i < count($customNames); $i++) {
+            if ($customToggles[$i] == "true") {
+                $customFileName = preg_replace('/\s*/', '', $customNames[$i]);
+
+                array_push($reportReference,
+                    array
+                    (
+                        "reportName" => $customNames[$i] != '' ? $customNames[$i] : 'Untitled',
+                        "fileName" => $customNames[$i] != '' ? $customFileName : 'untitled',
+                        "description" => $customDescs[$i] != '' ? $customDescs[$i] : 'No description defined.',
+                        "tabIcon" => $customIcons[$i] != '' ? $customIcons[$i] : 'fas fa-question-circle',
+                        "sql" => $customSqls[$i],
+                        "userDefined" => TRUE
+                    ));
+            }
+        }
+
         array_push($reportReference,
             array // Visualizations
             (
                 "reportName" => "Visualizations",
                 "fileName" => "visualizations",
                 "description" => "Additional metadata presented in a visual format.",
-                "tabIcon" => "fa fa-pie-chart"
+                "tabIcon" => "fas fa-chart-pie"
             ));
 
         return $reportReference;
@@ -634,7 +662,7 @@ class AdminDash extends AbstractExternalModule {
         $redcapProjects = $this->getRedcapProjectNames();
         $isFirstRow = TRUE;
 
-        if ($result -> num_rows == 0) {
+        if ($result -> num_rows == 0 & $result != 0) {
             printf("No records found.");
         }
 
@@ -666,19 +694,20 @@ class AdminDash extends AbstractExternalModule {
                 $row['Module Title'] = ucwords($row['Module Title']);
             }
 
-            if ($pageInfo['fileName'] == 'modulesByProject' || strpos($_REQUEST['file'], 'modulesByProject') !== false) {
-                $rowArray = explode(',', $row['Project Titles']);
-                $rowArray = array_unique($rowArray);
-                $row['Project Titles'] = implode(',', $rowArray);
-                $row['Total Projects'] = sizeof($rowArray);
+            if ($pageInfo['fileName'] == 'modulesByProject' ||
+                strpos($_REQUEST['file'], 'modulesByProject') !== false) {
+                    $rowArray = explode(', ', $row['Project Titles']);
+                    $rowArray = array_unique($rowArray);
+                    $row['Project Titles'] = implode(', ', $rowArray);
+                    $row['Total Projects'] = sizeof($rowArray);
 
-                $rowArray = explode(',', $originalRow['Project CSV Titles (Hidden)']);
-                $rowArray = array_unique($rowArray);
-                $csvTitles = implode(',', $rowArray);
+                    $rowArray = explode(', ', $originalRow['Project CSV Titles (Hidden)']);
+                    $rowArray = array_unique($rowArray);
+                    $csvTitles = implode(',', $rowArray);
 
-                $rowArray = explode(', ', $row['User Emails']);
-                $rowArray = array_unique($rowArray);
-                $row['User Emails'] = implode(', ', $rowArray);
+                    $rowArray = explode(', ', $row['User Emails']);
+                    $rowArray = array_unique($rowArray);
+                    $row['User Emails'] = implode(', ', $rowArray);
             }
 
             if ($format == 'html') {
@@ -987,19 +1016,13 @@ class AdminDash extends AbstractExternalModule {
         // execute the SQL statement
         $result = db_query($query);
 
-        if (! $result)  // sql failed
+        if (! $result || $result == 0)  // sql failed
         {
-            $message = printf("Line: %d<br />
-                          Could not execute SQL<br />
-                          Error #: %d<br />
-                          Error Msg: %s",
-                __LINE__);
-            die($message);
+            printf("<div id='deleted'>Could not execute SQL!<br />
+                  Error #" . db_errno() . ": " . db_error() . "</div>");
         }
-        else
-        {
-            return $result;
-        }
+
+        return $result;
     }
 
     private function getRedcapProjectNames()

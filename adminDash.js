@@ -212,12 +212,16 @@ UIOWA_AdminDash.createPieChart = function(json, title, chartID) {
             text: title
         },
         legend: {
-            position: 'right'
+            position: 'inset',
+            width: '50%',
+            inset: {
+                anchor: 'top-right',
+                x: 100,
+                y: 0
+            }
         },
         tooltip: {
-            position: function (data, width, height, element) {
-                return {top: event.clientY - 50, left: event.clientX + 25};
-            }
+            show: false
         },
         bindto: "#" + chartID
     });

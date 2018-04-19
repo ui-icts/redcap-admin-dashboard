@@ -62,15 +62,57 @@
       "required": false
     },
     {
+      "key": "optional-reports-settings",
+      "name": "<b>Additional configuration for optional reports:</b>",
+      "type": "descriptive",
+      "required": false
+    },
+    {
       "key": "additional-search-terms",
-      "name": "Additional search term for Login Credentials Check reports (use % for wildcard)",
+      "name": "Additional search term for Login Credentials Check reports",
       "type": "text",
       "required": false,
+      "repeatable": true
+    },
+    {
+      "key": "custom-reports",
+      "name": "<b>Define custom reports (see documentation for more info):</b>",
+      "type": "descriptive",
+      "required": false
+    },
+    {
+      "key": "custom-report",
+      "name": "Define custom report",
+      "type": "sub_settings",
+      "required": false,
       "repeatable": true,
-      "branchingLogic": {
-        "field": "optional-report-passwords",
-        "value": "true"
-      }
+      "sub_settings":[
+        {
+          "key": "custom-report-name",
+          "name": "Report Name",
+          "type": "text"
+        },
+        {
+          "key": "custom-report-desc",
+          "name": "Report Description",
+          "type": "text"
+        },
+        {
+          "key": "custom-report-icon",
+          "name": "Report Icon",
+          "type": "text"
+        },
+        {
+          "key": "custom-report-sql",
+          "name": "Report SQL",
+          "type": "textarea"
+        },
+        {
+          "key": "custom-report-enabled",
+          "name": "Report Enabled",
+          "type": "checkbox"
+        }
+      ]
     }
   ]
 }
