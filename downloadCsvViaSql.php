@@ -15,4 +15,4 @@ $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
 $result = db_query($pageInfo['sql']);
 $isFirstRow = TRUE;
 
-$adminDash->formatQueryResults($result, "csv");
+$adminDash->formatQueryResults($result, "csv", $pageInfo);
