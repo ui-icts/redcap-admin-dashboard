@@ -126,10 +126,15 @@ class AdminDash extends AbstractExternalModule {
         <?php
 
         $reportReference = $this->generateReportReference();
+        $defaultTab = $this->getSystemSetting("default-report");
+
+        if (!isset($_REQUEST['tab']) && $defaultTab != "none") {
+            $_REQUEST['tab'] = $defaultTab;
+        }
 
         // define variables
         $title = $this->getModuleName();
-        $pageInfo = $reportReference[ (!$_REQUEST['tab']) ? 0 : $_REQUEST['tab'] ];
+        $pageInfo = $reportReference[$_REQUEST['tab']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 7)) == "select ");
         $csvFileName = sprintf("%s.%s.csv", $pageInfo['fileName'], date("Y-m-d_His"));
 
@@ -167,7 +172,7 @@ class AdminDash extends AbstractExternalModule {
                 <!-- create navigation tabs -->
              <ul class='nav nav-tabs' role='tablist'>
              <?php foreach($reportReference as $report => $reportInfo): ?>
-             <li <?= $_REQUEST['tab'] == $report ? "class=\"active\"" : "" ?> >
+             <li <?= $_REQUEST['tab'] == $report && isset($_REQUEST['tab']) ? "class=\"active\"" : "" ?> >
              <a href="<?= $this->formatUrl($report) ?>">
              <span class="<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <?= $reportInfo['reportName'] ?></a>
          </li>
@@ -176,54 +181,62 @@ class AdminDash extends AbstractExternalModule {
 
          <p />
 
-         <!-- display csv download button (for reports) -->
-        <div style="text-align: right; width: 100%">
-            <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
-               class="btn btn-default <?= $pageInfo['sql'] == '' ? 'disabled' : '' ?> btn-lg">
-          <span class="fa fa-download"></span>&nbsp;
-        Download CSV File</a>
-        </div>
+        <?php if (isset($_REQUEST['tab'])): ?>
+             <!-- display csv download button (for reports) -->
+            <div style="text-align: right; width: 100%">
+                <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
+                   class="btn btn-default <?= $pageInfo['sql'] == '' ? 'disabled' : '' ?> btn-lg">
+              <span class="fa fa-download"></span>&nbsp;
+            Download CSV File</a>
+            </div>
 
-        <p />
+            <p />
 
-        <h3 style="text-align: center">
-          <?= $pageInfo['reportName'] ?>
-          </h3>
+            <h3 style="text-align: center">
+              <?= $pageInfo['reportName'] ?>
+              </h3>
 
-          <h5 style="text-align: center">
-          <?= $pageInfo['description']; ?>
-          </h5>
+              <h5 style="text-align: center">
+              <?= $pageInfo['description']; ?>
+              </h5>
 
-        <?php if($pageInfo['sql']) : ?>
-             <!-- display tablesorter pager buttons for reports -->
-          <div id="pager" class="pager">
-          <form>
-          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png") ?>" class="first"/>
-          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png") ?>" class="prev"/>
-             <!-- the "pagedisplay" can be any element, including an input -->
-          <span class="pagedisplay" data-pager-output-filtered="{startRow:input} &ndash; {endRow} / {filteredRows} of {totalRows} total rows"></span>
-          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/next.png") ?>" class="next"/>
-          <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/last.png") ?>" class="last"/>
-          <select class="pagesize">
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-        </form>
-        </div>
+            <?php if($pageInfo['sql']) : ?>
+                 <!-- display tablesorter pager buttons for reports -->
+              <div id="pager" class="pager">
+              <form>
+              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png") ?>" class="first"/>
+              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png") ?>" class="prev"/>
+                 <!-- the "pagedisplay" can be any element, including an input -->
+              <span class="pagedisplay" data-pager-output-filtered="{startRow:input} &ndash; {endRow} / {filteredRows} of {totalRows} total rows"></span>
+              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/next.png") ?>" class="next"/>
+              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/last.png") ?>" class="last"/>
+              <select class="pagesize">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            </form>
+            </div>
+            <?php else : ?>
+                <br />
+             <!-- display graphs -->
+            <div style="display: inline-block; margin: 0 auto;">
+              <div style="width: 100%; display: table; max-height: 500px;">
+                <?php foreach (self::$visualizationQueries as $vis => $visInfo): ?>
+                    <div style="width: 500px; display: table-row;" id=<?= $visInfo['visID'] ?>></div>
+                <?php endforeach; ?>
+            </div>
+              </div>
+
+            <?php endif; ?>
         <?php else : ?>
             <br />
-         <!-- display graphs -->
-        <div style="display: inline-block; margin: 0 auto;">
-          <div style="width: 100%; display: table; max-height: 500px;">
-            <?php foreach (self::$visualizationQueries as $vis => $visInfo): ?>
-                <div style="width: 500px; display: table-row;" id=<?= $visInfo['visID'] ?>></div>
-            <?php endforeach; ?>
-        </div>
-          </div>
-
+            <br />
+            <h3 style="text-align: center;">Welcome to the REDCap Admin Dashboard!</h3>
+            <div style="text-align: center;">Click one of the tabs above to view a report. You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.</div>
         <?php endif; ?>
+
 
         <?php
         if(!$isSelectQuery && $pageInfo['userDefined'] && $pageInfo['sql'] != '') {
@@ -488,23 +501,6 @@ class AdminDash extends AbstractExternalModule {
         ORDER BY app_title
         "
             )
-// todo
-//            array // Publication Matches
-//            (
-//                "reportName" => "Publication Matches",
-//                "fileName" => "pubMatches",
-//                "description" => "List of publication matches",
-//                "tabIcon" => "fa fa-book",
-//                "sql" => "
-//SELECT
-//    *
-//FROM
-//    redcap_pub_articles
-//INNER JOIN redcap_pub_authors ON redcap_pub_articles.article_id = redcap_pub_authors.article_id
-//INNER JOIN redcap_pub_matches ON redcap_pub_articles.article_id = redcap_pub_matches.article_id
-//INNER JOIN redcap_pub_mesh_terms ON redcap_pub_articles.article_id = redcap_pub_mesh_terms.article_id
-//      "
-//            )
         );
 
         if (self::getSystemSetting('optional-report-passwords')) {

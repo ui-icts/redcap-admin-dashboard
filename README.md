@@ -20,6 +20,7 @@ Some simple visual representations of project statuses and research purposes are
 After downloading and enabling this module on your REDCap instance, a link to the Admin Dashboard will appear at the bottom of the Control Center sidebar.
 
 ### Configuration Options
+* **Default report view:** Selecting one of the default reports here will make it load immediately after opening the Admin Dashboard. Leaving this option unselected will display a simple landing page instead of loading a report (this is recommended, as reports with large result sets can take a while to process and should not be run unless necessary).
 * **Show archived projects:** Enabling this option will include archived projects in report views. Archived project titles are grey in color.
 * **Show deleted projects:** Enabling this option will include projects marked for deletion in report views. Deleted project titles are red in color.
 * **Display PIDs instead of titles in 'Projects by User' CSV file:** The list of project titles displayed on the "Projects by User" report can be extremely long and difficult to read in CSV format. Enabling this option will display a list of project ID numbers instead when exporting the CSV file.
