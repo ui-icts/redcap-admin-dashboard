@@ -181,7 +181,7 @@ class AdminDash extends AbstractExternalModule {
 
          <p />
 
-        <?php if (isset($_REQUEST['tab']) && $defaultTab != -1): ?>
+        <?php if (isset($_REQUEST['tab'])): ?>
              <!-- display csv download button (for reports) -->
             <div style="text-align: right; width: 100%">
                 <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
