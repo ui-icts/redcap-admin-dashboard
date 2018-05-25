@@ -126,9 +126,9 @@ class AdminDash extends AbstractExternalModule {
         <?php
 
         $reportReference = $this->generateReportReference();
-        $defaultTab = $this->getSystemSetting("default-report");
+        $defaultTab = $this->getSystemSetting("default-report") - 1;
 
-        if (!isset($_REQUEST['tab']) && $defaultTab != "none") {
+        if (!isset($_REQUEST['tab']) && $defaultTab != -1) {
             $_REQUEST['tab'] = $defaultTab;
         }
 
@@ -181,7 +181,7 @@ class AdminDash extends AbstractExternalModule {
 
          <p />
 
-        <?php if (isset($_REQUEST['tab'])): ?>
+        <?php if (isset($_REQUEST['tab']) && $defaultTab != -1): ?>
              <!-- display csv download button (for reports) -->
             <div style="text-align: right; width: 100%">
                 <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
@@ -328,7 +328,8 @@ class AdminDash extends AbstractExternalModule {
                 "sql" => "
         SELECT
         info.username AS 'Username',
-        CONCAT(info.user_lastname, ', ', info.user_firstname) AS 'Name',
+        info.user_lastname AS 'Last Name',
+        info.user_firstname AS 'First Name',
         info.user_email AS 'Email',
         GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
         GROUP_CONCAT(CAST(projects.app_title AS CHAR(50)) SEPARATOR ', ') AS 'Project CSV Titles (Hidden)',
@@ -417,7 +418,8 @@ class AdminDash extends AbstractExternalModule {
         END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
         record_count AS 'Record Count',
         purpose_other AS 'Purpose Specified',
-        CONCAT(project_pi_lastname, ', ', project_pi_firstname, ' ', project_pi_mi) AS 'PI Name',
+        project_pi_lastname AS 'PI Last Name',
+        project_pi_firstname AS 'PI First Name',
         project_pi_email AS 'PI Email',
         project_irb_number AS 'IRB Number',
         DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
@@ -679,11 +681,6 @@ class AdminDash extends AbstractExternalModule {
                     $index = array_search($column, $headers);
                     unset($headers[$index]);
                 }
-            }
-
-            // set PI Name blank if not entered
-            if ($row['PI Name'] == ',  ') {
-                $row['PI Name'] = '';
             }
 
             if ($row['Module Title']) {

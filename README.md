@@ -35,6 +35,7 @@ Additional reports can be defined through custom SQL queries. Some things to be 
 * Please exercise caution when adding your own SQL queries. For security reasons, only 'SELECT' queries can be used. Executing queries with large result sets could impact server performance.
 * The "Report Icon" field uses [Font Awesome icons](http://fontawesome.com/icons). You can add one by pasting the class string into this field. (e.g. to use the [solid folder icon](https://fontawesome.com/icons/folder?style=solid), the class string would be 'fa fa-folder')
 * The "Report Enabled" option must be checked for each custom report tab to be visible on the Admin Dashboard. This is included to easily hide custom reports while keeping their SQL queries saved and ready to be re-enabled at any time.
+* Custom reports are not affected by the "Show archived/deleted projects" configuration options.
 
 When the following column aliases are used in queries (e.g. *SELECT app_title AS 'Project Title'*), their results will receive special formatting in the Admin Dashboard view (same as the built-in reports):
 

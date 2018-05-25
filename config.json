@@ -31,12 +31,12 @@
       "type": "dropdown",
       "required": false,
       "choices": [
-        {"value": "none", "name": ""},
-        {"value": 0, "name": "Projects by User"},
-        {"value": 1, "name": "Users by Project"},
-        {"value": 2, "name": "Research Projects"},
-        {"value": 3, "name": "Development Projects"},
-        {"value": 4, "name": "All Projects"}
+        {"value": 0, "name": ""},
+        {"value": 1, "name": "Projects by User"},
+        {"value": 2, "name": "Users by Project"},
+        {"value": 3, "name": "Research Projects"},
+        {"value": 4, "name": "Development Projects"},
+        {"value": 5, "name": "All Projects"}
       ]
     },
     {
