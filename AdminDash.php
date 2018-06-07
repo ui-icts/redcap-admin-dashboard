@@ -304,6 +304,8 @@ class AdminDash extends AbstractExternalModule {
 
         $hideDeleted = !self::getSystemSetting('show-deleted-projects');
         $hideArchived = !self::getSystemSetting('show-archived-projects');
+        $hidePractice = !self::getSystemSetting('show-practice-projects');
+
 
         $hideFiltersSql = array();
 
@@ -313,9 +315,12 @@ class AdminDash extends AbstractExternalModule {
         if ($hideDeleted) {
             $hideFiltersSql[] = "projects.date_deleted IS NULL";
         }
+        if ($hidePractice) {
+            $hideFiltersSql[] = "projects.purpose != 0";
+        }
 
-        $formattedFilterSql = ($hideDeleted || $hideArchived) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
-        $formattedWhereFilterSql = ($hideDeleted || $hideArchived) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
+        $formattedFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
+        $formattedWhereFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
 
         $reportReference = array
         (
@@ -371,9 +376,9 @@ class AdminDash extends AbstractExternalModule {
         WHEN 3 THEN 'Archived'
         ELSE status
         END AS CHAR(50)) AS 'Status',
-        GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
+        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
         record_count AS 'Record Count',
         CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
@@ -442,7 +447,8 @@ class AdminDash extends AbstractExternalModule {
         SELECT
         projects.project_id AS 'PID',
         app_title AS 'Project Title',
-        record_count AS 'Record Count',
+        CAST(CASE WHEN record_count IS NULL THEN 0
+        ELSE record_count END AS CHAR(10)) AS 'Record Count',
         CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
         WHEN 4 THEN 'Operational Support'
@@ -458,8 +464,8 @@ class AdminDash extends AbstractExternalModule {
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
         FROM redcap_projects AS projects
-        INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
-        WHERE projects.status = 0 and projects.purpose != 0
+        LEFT JOIN redcap_record_counts ON redcap_record_counts.project_id = projects.project_id
+        WHERE projects.status = 0
         $formattedFilterSql
         ORDER BY app_title
         "
@@ -498,8 +504,7 @@ class AdminDash extends AbstractExternalModule {
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
         FROM redcap_projects AS projects
         INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
-        WHERE projects.purpose != 0
-        $formattedFilterSql
+        $formattedWhereFilterSql
         ORDER BY app_title
         "
             )

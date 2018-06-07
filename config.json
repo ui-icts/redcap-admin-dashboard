@@ -40,6 +40,12 @@
       ]
     },
     {
+      "key": "show-practice-projects",
+      "name": "Show \"Practice / Just for Fun\" projects",
+      "type": "checkbox",
+      "required": false
+    },
+    {
       "key": "show-archived-projects",
       "name": "Show archived projects",
       "type": "checkbox",
