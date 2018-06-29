@@ -62,3 +62,9 @@ div#elapsedTime
 {
    color: darkgrey;
 }
+
+#suspended
+{
+   color: red;
+   font-size: 10px;
+}

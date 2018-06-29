@@ -333,6 +333,9 @@ class AdminDash extends AbstractExternalModule {
                 "sql" => "
         SELECT
         info.username AS 'Username',
+        CAST(CASE WHEN info.user_suspended_time IS NULL THEN 'N/A'
+        ELSE info.user_suspended_time
+        END AS CHAR(50)) AS 'User Suspended Date (Hidden)',
         info.user_lastname AS 'Last Name',
         info.user_firstname AS 'First Name',
         info.user_email AS 'Email',
@@ -389,6 +392,9 @@ class AdminDash extends AbstractExternalModule {
         ELSE purpose
         END AS CHAR(50)) AS 'Purpose',
         GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Users',
+        GROUP_CONCAT(CAST(CASE WHEN redcap_user_information.user_suspended_time IS NULL THEN 'N/A'
+        ELSE redcap_user_information.user_suspended_time
+        END AS CHAR(50))) AS 'User Suspended Date (Hidden)',
         DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
@@ -396,6 +402,7 @@ class AdminDash extends AbstractExternalModule {
         FROM redcap_projects AS projects
         LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
         LEFT JOIN redcap_user_rights ON projects.project_id = redcap_user_rights.project_id
+        LEFT JOIN redcap_user_information ON redcap_user_rights.username = redcap_user_information.username
         $formattedWhereFilterSql
         GROUP BY projects.project_id
         ORDER BY app_title
@@ -474,7 +481,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "All Projects",
                 "fileName" => "allProjects",
-                "description" => "List of all projects (excluding those designated as 'Practice/Just for Fun').",
+                "description" => "List of all projects.",
                 "tabIcon" => "fas fa-folder-open",
                 "sql" => "
         SELECT
@@ -866,7 +873,9 @@ class AdminDash extends AbstractExternalModule {
             elseif (($key == "Users") ||
                 ($key == "Username"))
             {
-                $webified[$key] = $this->convertUsername2Link($value);
+                $suspended = $row['User Suspended Date (Hidden)'];
+
+                $webified[$key] = $this->convertUsername2Link($value, $suspended);
             }
             else
             {
@@ -966,13 +975,15 @@ class AdminDash extends AbstractExternalModule {
         return($pidCell);
     }
 
-    private function convertUsername2Link($userIDs)
+    private function convertUsername2Link($userIDs, $suspended)
     {
         // convert comma delimited string to array
         $userIDlist = explode(", ", $userIDs);
         $linkList = array();
 
-        foreach ($userIDlist as $userID)
+        $suspendedList = explode(",", $suspended);
+
+        foreach ($userIDlist as $index=>$userID)
         {
             $urlString =
                 sprintf("https://%s%sControlCenter/view_users.php?username=%s",  // Browse User Page
@@ -980,8 +991,14 @@ class AdminDash extends AbstractExternalModule {
                     APP_PATH_WEBROOT,
                     $userID);
 
+            $suspendedTag = '';
+
+            if ($suspendedList[$index] != 'N/A' && self::getSystemSetting('show-suspended-tags')) {
+                $suspendedTag = "<div id='suspended'>[suspended]</div>";
+            }
+
             $userLink = sprintf("<a href=\"%s\"
-                              target=\"_blank\">%s</a>",
+                              target=\"_blank\">%s</a>" . $suspendedTag,
                 $urlString, $userID);
 
             array_push($linkList, $userLink);

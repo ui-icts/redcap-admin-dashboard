@@ -58,6 +58,12 @@
       "required": false
     },
     {
+      "key": "show-suspended-tags",
+      "name": "Mark suspended users in reports with red [suspended] tag",
+      "type": "checkbox",
+      "required": false
+    },
+    {
       "key": "csv-display-pids",
       "name": "Display project lists as PIDs instead of titles in CSV file",
       "type": "checkbox",
