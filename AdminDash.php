@@ -135,7 +135,7 @@ class AdminDash extends AbstractExternalModule {
         // define variables
         $title = $this->getModuleName();
         $pageInfo = $reportReference[$_REQUEST['tab']];
-        $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 7)) == "select ");
+        $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
         $csvFileName = sprintf("%s.%s.csv", $pageInfo['fileName'], date("Y-m-d_His"));
 
         // only allow super users to view this information
@@ -994,7 +994,7 @@ class AdminDash extends AbstractExternalModule {
             $suspendedTag = '';
 
             if ($suspendedList[$index] != 'N/A' && self::getSystemSetting('show-suspended-tags')) {
-                $suspendedTag = "<div id='suspended'>[suspended]</div>";
+                $suspendedTag = "<span id='suspended'> [suspended]</span>";
             }
 
             $userLink = sprintf("<a href=\"%s\"

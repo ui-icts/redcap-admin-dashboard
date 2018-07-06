@@ -95,7 +95,10 @@
                         gotoPage: '.gotoPage',    // go to page selector - select dropdown that sets the current page
                         pageDisplay: '.pagedisplay', // location of where the "output" is displayed
                         pageSize: '.pagesize'     // page size selector - select dropdown that sets the "size" option
-                    }
+                    },
+
+                    //stickyHeaders_attachTo: '.redcap-home-navbar-collapse',
+                    stickyHeaders_offset: 50
 
                 }
 
