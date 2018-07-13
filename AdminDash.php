@@ -328,7 +328,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Projects by User",
                 "fileName" => "projectsByUser",
-                "description" => "List of users and the projects to which they have access.",
+                "description" => "List of all users and the projects to which they have access.",
                 "tabIcon" => "fa fa-male",
                 "sql" => "
         SELECT
@@ -366,7 +366,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Users by Project",
                 "fileName" => "usersByProject",
-                "description" => "List of projects and the users which have access.",
+                "description" => "List of all projects and the users which have access.",
                 "tabIcon" => "fas fa-users",
                 "sql" => "
         SELECT
@@ -412,7 +412,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Research Projects",
                 "fileName" => "researchProjects",
-                "description" => "List of projects that are identified as being used for research purposes.",
+                "description" => "List of all projects that are identified as being used for research purposes.",
                 "tabIcon" => "fa fa-flask",
                 "sql" => "
         SELECT
@@ -448,7 +448,7 @@ class AdminDash extends AbstractExternalModule {
             (
                 "reportName" => "Development Projects",
                 "fileName" => "developmentProjects",
-                "description" => "List of projects that are in Development Mode.",
+                "description" => "List of all projects that are in Development Mode.",
                 "tabIcon" => "fas fa-wrench",
                 "sql" => "
         SELECT
@@ -487,7 +487,9 @@ class AdminDash extends AbstractExternalModule {
         SELECT
         projects.project_id AS 'PID',
         app_title AS 'Project Title',
-        record_count AS 'Record Count',
+        CAST(CASE WHEN record_count IS NULL THEN 0
+        ELSE record_count
+        END AS CHAR(50)) AS 'Record Count',
         CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
@@ -510,7 +512,7 @@ class AdminDash extends AbstractExternalModule {
         DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
         DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
         FROM redcap_projects AS projects
-        INNER JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+        LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
         $formattedWhereFilterSql
         ORDER BY app_title
         "
@@ -926,10 +928,10 @@ class AdminDash extends AbstractExternalModule {
 
         $styleIdStr = '';
 
-        if ($projectStatus == 'Archived') {
+        if ($projectStatus == 'Archived' && $projectStatus != null) {
             $styleIdStr = "id=archived";
         }
-        if ($projectDeleted != 'N/A') {
+        if ($projectDeleted != 'N/A' && $projectDeleted != null) {
             $styleIdStr = "id=deleted";
         }
         $pidLink = sprintf("<a href=\"%s\"
@@ -993,7 +995,7 @@ class AdminDash extends AbstractExternalModule {
 
             $suspendedTag = '';
 
-            if ($suspendedList[$index] != 'N/A' && self::getSystemSetting('show-suspended-tags')) {
+            if ($suspendedList[$index] != 'N/A' && self::getSystemSetting('show-suspended-tags') && $suspendedList[$index] != null) {
                 $suspendedTag = "<span id='suspended'> [suspended]</span>";
             }
 

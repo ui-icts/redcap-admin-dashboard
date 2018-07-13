@@ -1,6 +1,6 @@
 {
   "name": "Admin Dashboard",
-  "description": "Provides a sortable table view of various reports on REDCap metadata (users, projects, etc).",
+  "description": "Provides a sortable table view of various reports on REDCap metadata (users, projects, etc). Includes a number of built-in reports as well as support for custom SQL queries.",
   "documentation": "README.md",
 
   "namespace": "UIOWA\\AdminDash",
@@ -59,7 +59,7 @@
     },
     {
       "key": "show-suspended-tags",
-      "name": "Mark suspended users in reports with red [suspended] tag",
+      "name": "Mark suspended usernames with red [suspended] tag",
       "type": "checkbox",
       "required": false
     },
@@ -77,7 +77,7 @@
     },
     {
       "key": "optional-report-modules",
-      "name": "<ul><i>External Modules by Project</i><br>List of External Modules and the projects they are enabled in",
+      "name": "<ul><i>Projects with External Modules</i><br>List of External Modules and the projects they are enabled in",
       "type": "checkbox",
       "required": false
     },
