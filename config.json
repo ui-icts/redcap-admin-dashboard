@@ -64,12 +64,6 @@
       "required": false
     },
     {
-      "key": "csv-display-pids",
-      "name": "Display project lists as PIDs instead of titles in CSV file",
-      "type": "checkbox",
-      "required": false
-    },
-    {
       "key": "optional-reports",
       "name": "<b>Enable/Disable optional reports:</b>",
       "type": "descriptive",

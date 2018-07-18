@@ -68,3 +68,20 @@ div#elapsedTime
    color: red;
    font-size: 10px;
 }
+
+.dropdown-menu
+{
+   width: 250px;
+   padding: 10px;
+}
+
+.download
+{
+   width: 175px;
+   text-align: center;
+}
+
+.hide-in-table
+{
+   display: none;
+}

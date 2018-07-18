@@ -115,11 +115,14 @@ class AdminDash extends AbstractExternalModule {
         <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-pager.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/c3/d3.min.js") ?>" charset="utf-8"></script>
         <script src="<?= $this->getUrl("/resources/c3/c3.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/tablesorter/parsers/parser-input-select.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-output.min.js") ?>"></script>
 
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
         <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
+        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.bootstrap.min.css") ?>" rel="stylesheet">
 
         <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
 
@@ -136,7 +139,6 @@ class AdminDash extends AbstractExternalModule {
         $title = $this->getModuleName();
         $pageInfo = $reportReference[$_REQUEST['tab']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
-        $csvFileName = sprintf("%s.%s.csv", $pageInfo['fileName'], date("Y-m-d_His"));
 
         // only allow super users to view this information
         if (!SUPER_USER) die("Access denied! Only super users can access this page.");
@@ -182,13 +184,59 @@ class AdminDash extends AbstractExternalModule {
          <p />
 
         <?php if (isset($_REQUEST['tab'])): ?>
-             <!-- display csv download button (for reports) -->
-            <div style="text-align: right; width: 100%">
-                <a href="<?= $this->getUrl("downloadCsvViaSql.php?tab=" . $_REQUEST['tab'] . "&file=" . $csvFileName) ?>"
-                   class="btn btn-default <?= $pageInfo['sql'] == '' ? 'disabled' : '' ?> btn-lg">
-              <span class="fa fa-download"></span>&nbsp;
-            Download CSV File</a>
+            <div style="text-align: right; width: 100%; <?= $pageInfo['sql'] == '' ? 'visibility: hidden;' : '' ?>" class="output-button">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default download"><span class="fas fa-download"></span><b> Export CSV File</b></button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <label>Separator: <input class="output-separator-input" type="text" size="4" value=","></label><br />
+                            <button type="button" class="output-separator btn btn-default btn-xs active" title="Comma">,</button>
+                            <button type="button" class="output-separator btn btn-default btn-xs" title="Semicolon">;</button>
+                            <button type="button" class="output-separator btn btn-default btn-xs" title="Tab">⇥</button>
+                            <button type="button" class="output-separator btn btn-default btn-xs" title="Space">␣</button>
+                            <button type="button" class="output-separator btn btn-default btn-xs" title="JSON Formatted">json</button>
+                            <button type="button" class="output-separator btn btn-default btn-xs" title="Array Formatted">array</button>
+                        </li>
+                        <li>
+                            <br />
+                            <label>Include:</label>
+                            <div class="btn-group output-filter-all" data-toggle="buttons" title="Export all rows or filtered rows only">
+                                <label class="btn btn-default btn-sm active">
+                                    <input type="radio" name="getrows1" class="output-all" checked="checked"> All
+                                </label>
+                                <label class="btn btn-default btn-sm">
+                                    <input type="radio" name="getrows1" class="output-filter"> Filtered
+                                </label>
+                            </div>
+                        </li>
+                        <li>
+                            <br />
+                            <label>Export to:</label>
+                            <div class="btn-group output-download-popup" data-toggle="buttons" title="Download file or open in popup window">
+                                <label class="btn btn-default btn-sm active output-type">
+                                    <input type="radio" name="delivery1" class="output-download" checked="checked"> Download
+                                </label>
+                                <label class="btn btn-default btn-sm output-type">
+                                    <input type="radio" name="delivery1" class="output-popup"> Popup
+                                </label>
+                            </div>
+                        </li>
+                        <li class="divider filename-field-display"></li>
+                        <li class="filename-field-display"><label title="Choose a download filename">Filename: <input class="output-filename" type="text" size="25" value=""></label></li>
+                        <li class="filename-field-display"><label title="Append date and time of report render to filename">Include timestamp: <input class="filename-datetime" type="checkbox" checked></li>
+                    </ul>
+                </div>
             </div>
+
+            <script>
+                var csvFileName = '<?= sprintf("%s.csv", $pageInfo['fileName']); ?>';
+                var renderDatetime = '<?= date("Y-m-d_His") ?>';
+                $('.output-filename').val(csvFileName);
+            </script>
 
             <p />
 
@@ -600,7 +648,7 @@ class AdminDash extends AbstractExternalModule {
                 array
                 (
                     "reportName" => "Projects with External Modules",
-                    "fileName" => "modulesByProject",
+                    "fileName" => "modulesInProjects",
                     "description" => "List of External Modules and the projects they are enabled in.",
                     "tabIcon" => "fas fa-plug",
                     "sql" => "
@@ -708,10 +756,6 @@ class AdminDash extends AbstractExternalModule {
                     $row['Project Titles'] = implode(', ', $rowArray);
                     $row['Total Projects'] = sizeof($rowArray);
 
-                    $rowArray = explode(', ', $originalRow['Project CSV Titles (Hidden)']);
-                    $rowArray = array_unique($rowArray);
-                    $csvTitles = implode(',', $rowArray);
-
                     $rowArray = explode(', ', $row['User Emails']);
                     $rowArray = array_unique($rowArray);
                     $row['User Emails'] = implode(', ', $rowArray);
@@ -728,72 +772,6 @@ class AdminDash extends AbstractExternalModule {
 
                 $webData = $this->webifyDataRow($row, $redcapProjects);
                 $this->printTableRow($webData, $hiddenColumns);
-            }
-            elseif ($format == 'csv') {
-                if ($isFirstRow)
-                {
-                    if ($_REQUEST['tab'] == 2) {
-                        $headerIndex = array_search('Purpose Specified', $headers);
-                        $purposeMasterArray = Array();
-
-                        foreach (self::$purposeMaster as $index=>$purposeStr)
-                        {
-                            $purposeMasterArray[$purposeStr] = "FALSE";
-                        }
-
-                        $headers = array_merge(
-                            array_merge(
-                                array_slice($headers, 0, $headerIndex, true),
-                                array_keys($purposeMasterArray)),
-                            array_slice($headers, $headerIndex, NULL, true)
-                        );
-                    }
-
-                    $headerStr = implode("\",\"", $headers);
-                    printf("\"%s\"\n", $headerStr);
-
-                    $isFirstRow = FALSE;  // toggle flag
-                }
-
-                if ($_REQUEST['tab'] == 2) {
-                    $headerIndex = array_search('Purpose Specified', $headers);
-                    $purposeArray = explode(',', $row['Purpose Specified']);
-                    $row = array_merge(
-                        array_merge(
-                            array_slice($row, 0, $headerIndex + 2, true),
-                            $purposeMasterArray),
-                        array_slice($row, $headerIndex, NULL, true)
-                    );
-
-                    foreach (self::$purposeMaster as $index=>$purposeStr) {
-                        if ($row['Purpose Specified'] !== '' &&
-                            array_search($index, $purposeArray) !== FALSE) {
-                            $row[$purposeStr] = 'TRUE';
-                        }
-                        else {
-                            $row[$purposeStr] = 'FALSE';
-                        }
-                    }
-                }
-
-                if ($row['Purpose Specified'] != null) {
-                    $row['Purpose Specified'] = $this->convertProjectPurpose2List($row['Purpose Specified']);
-                }
-
-                $pidsInCsv = self::getSystemSetting('csv-display-pids');
-
-                if (!$pidsInCsv) {
-                    $row['Project Titles'] = $csvTitles;
-                }
-
-                foreach ($hiddenColumns as $column)
-                {
-                    unset($row[$column]);
-                }
-
-                $titlesStr = implode("\",\"", $row);
-
-                printf("\"%s\"\n", $titlesStr);
             }
             elseif ($format == 'text') {
                 $titlesStr = implode("\",\"", $row);
@@ -904,7 +882,7 @@ class AdminDash extends AbstractExternalModule {
 
         foreach ($emailList as $index=>$email)
         {
-            array_push($emailLinks, $this->convertEmail2Link($email));
+            array_push($emailLinks, $this->convertEmail2Link($email) . ($index < count($emailList) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
         }
 
         // convert array back to comma-delimited string
@@ -968,7 +946,7 @@ class AdminDash extends AbstractExternalModule {
         foreach ($pidList as $index=>$pid)
         {
             $hrefStr = $pidTitles[$pid];
-            array_push($pidLinks, $this->convertPid2Link($pid, $hrefStr, $statusList[$index], $deletedList[$index]));
+            array_push($pidLinks, $this->convertPid2Link($pid, $hrefStr, $statusList[$index], $deletedList[$index]) . ($index < count($pidList) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
         }
 
         // convert array back to comma-delimited string
@@ -1001,7 +979,7 @@ class AdminDash extends AbstractExternalModule {
 
             $userLink = sprintf("<a href=\"%s\"
                               target=\"_blank\">%s</a>" . $suspendedTag,
-                $urlString, $userID);
+                $urlString, $userID . ($index < count($userIDlist) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
 
             array_push($linkList, $userLink);
         }

@@ -9,7 +9,7 @@
                 usNumberFormat: false,
                 sortReset: false,
                 sortRestart: true,
-                widgets: ['zebra', 'filter', 'resizable', 'stickyHeaders', 'pager'],
+                widgets: ['zebra', 'filter', 'resizable', 'stickyHeaders', 'pager', 'output'],
 
                 widgetOptions: {
 
@@ -98,7 +98,52 @@
                     },
 
                     //stickyHeaders_attachTo: '.redcap-home-navbar-collapse',
-                    stickyHeaders_offset: 50
+                    stickyHeaders_offset: 50,
+
+                    output_separator     : ',',         // ',' 'json', 'array' or separator (e.g. ';')
+                    output_ignoreColumns : '',         // columns to ignore [0, 1,... ] (zero-based index)
+                    output_hiddenColumns : false,       // include hidden columns in the output
+                    output_includeFooter : true,        // include footer rows in the output
+                    output_includeHeader : true,        // include header rows in the output
+                    output_headerRows    : false,       // output all header rows (if multiple rows)
+                    output_dataAttrib    : 'data-name', // data-attribute containing alternate cell text
+                    output_delivery      : 'd',         // (p)opup, (d)ownload
+                    output_saveRows      : 'a',         // (a)ll, (v)isible, (f)iltered, jQuery filter selector (string only) or filter function
+                    output_duplicateSpans: true,        // duplicate output data in tbody colspan/rowspan
+                    output_replaceQuote  : '\u201c;',   // change quote to left double quote
+                    output_includeHTML   : false,        // output includes all cell HTML (except the header cells)
+                    output_trimSpaces    : true,       // remove extra white-space characters from beginning & end
+                    output_wrapQuotes    : false,       // wrap every cell output in quotes
+                    output_popupStyle    : 'width=580,height=310',
+                    output_saveFileName  : csvFileName,
+                    // callback executed after the content of the table has been processed
+                    output_formatContent : function(config, widgetOptions, data) {
+                        // data.isHeader (boolean) = true if processing a header cell
+                        // data.$cell = jQuery object of the cell currently being processed
+                        // data.content = processed cell content (spaces trimmed, quotes added/replaced, etc)
+                        // data.columnIndex = column in which the cell is contained
+                        // data.parsed = cell content parsed by the associated column parser
+                        return data.content.replace(/ \[suspended]/ig, '').replace(/Email All/ig, '');
+                    },
+                    // callback executed when processing completes
+                    output_callback      : function(config, data, url) {
+                        // return false to stop delivery & do something else with the data
+                        // return true OR modified data (v2.25.1) to continue download/output
+                        data = '\ufeff' + data;
+                        return data;
+                    },
+                    // callbackJSON used when outputting JSON & any header cells has a colspan - unique names required
+                    output_callbackJSON  : function($cell, txt, cellIndex) {
+                        return txt + '(' + cellIndex + ')';
+                    },
+                    // the need to modify this for Excel no longer exists
+                    //output_encoding      : 'data:application/octet-stream;charset=utf8',
+                    // override internal save file code and use an external plugin such as
+                    // https://github.com/eligrey/FileSaver.js
+                    output_savePlugin    : null /* function(config, widgetOptions, data) {
+                     var blob = new Blob([data], {type: widgetOptions.output_encoding});
+                     saveAs(blob, widgetOptions.output_saveFileName);
+                     } */
 
                 }
 
@@ -141,34 +186,6 @@
             return false;
         });
 
-        // Delete a row
-        // *************
-        //$table.delegate('button.remove', 'click', function () {
-        //    // disabling the pager will restore all table rows
-        //    // $table.trigger('disablePager');
-        //    // remove chosen row
-        //    $(this).closest('tr').remove();
-        //    // restore pager
-        //    // $table.trigger('enablePager');
-        //    $table.trigger('update');
-        //    return false;
-        //});
-
-        // Destroy pager / Restore pager
-        // **************
-        //$('button:contains(Destroy)').click(function () {
-        //    // Exterminate, annhilate, destroy! http://www.youtube.com/watch?v=LOqn8FxuyFs
-        //    var $t = $(this);
-        //    if (/Destroy/.test($t.text())) {
-        //        $table.trigger('destroyPager');
-        //        $t.text('Restore Pager');
-        //    } else {
-        //        $('table').trigger('applyWidgetId', 'pager');
-        //        $t.text('Destroy Pager');
-        //    }
-        //    return false;
-        //});
-
         // Disable / Enable
         // **************
         $('.toggle').click(function () {
@@ -178,10 +195,6 @@
             $(this).text((mode ? 'Enable' : 'Disable') + 'Pager');
             return false;
         });
-        //$table.bind('pagerChange', function () {
-        //    // pager automatically enables when table is sorted.
-        //    $('.toggle').text('Disable Pager');
-        //});
 
         // clear storage (page & size)
         $('.clear-pager-data').click(function () {
@@ -198,6 +211,87 @@
             $table.trigger('pageAndSize', [1, 10]);
         });
 
+        var $this = $(".output-button");
+
+        $this.find('.dropdown-toggle').click(function(e) {
+            // this is needed because clicking inside the dropdown will close
+            // the menu with only bootstrap controlling it.
+            $this.find('.dropdown-menu').toggle();
+            return false;
+        });
+        // make separator & replace quotes buttons update the value
+        $this.find('.output-separator').click(function() {
+            $this.find('.output-separator').removeClass('active');
+            var txt = $(this).addClass('active').html();
+            $this.find('.output-separator-input').val( txt );
+            var filename = $this.find('.output-filename');
+            var filetype = (txt === 'json' || txt === 'array') ? 'js' :
+                txt === ',' ? 'csv' : 'txt';
+            filename.val(function(i, v) {
+                // change filename extension based on separator
+                return v.replace(/\.\w+$/, '.' + filetype);
+            });
+            var outputType = $($this.find('.output-type.active'))[0].innerText;
+            if (outputType == 'Download') {
+                $this.find('.download').html('<span class="fas fa-download"></span><b> Export ' + filetype.toUpperCase() + ' File</b>');
+            }
+            else {
+                $this.find('.download').html('<span class="far fa-window-maximize"></span><b> Open ' + filetype.toUpperCase() + ' Popup</b>');
+            }
+            return false;
+        });
+        $this.find('.output-type').click(function() {
+            var outputType = $(this)[0].innerText;
+            var filename = $this.find('.output-filename');
+            var txt = $($this.find('.output-separator.active')).html();
+            var filetype = (txt === 'json' || txt === 'array') ? 'js' :
+                txt === ',' ? 'csv' : 'txt';
+            if (outputType == 'Download') {
+                $this.find('.download').html('<span class="fas fa-download"></span><b> Export ' + filetype.toUpperCase() + ' File</b>');
+                $this.find('.filename-field-display').removeClass('hidden');
+            }
+            else {
+                $this.find('.download').html('<span class="far fa-window-maximize"></span><b> Open ' + filetype.toUpperCase() + ' Popup</b>');
+                $this.find('.filename-field-display').addClass('hidden');
+            }
+            //return false;
+        });
+        // clicking the download button; all you really need is to
+        // trigger an "output" event on the table
+        $this.find('.download').click(function() {
+            var typ,
+                $table = $("#reportTable"),
+                wo = $table[0].config.widgetOptions,
+                val = $this.find('.output-filter-all :checked').attr('class');
+
+            wo.output_saveRows     = val === 'output-filter' ? 'f' :
+                val === 'output-visible' ? 'v' :
+                    // checked class name, see table.config.checkboxClass
+                    val === 'output-selected' ? '.checked' :
+                        val === 'output-sel-vis' ? '.checked:visible' :
+                            'a';
+            val = $this.find('.output-download-popup :checked').attr('class');
+            wo.output_delivery     = val === 'output-download' ? 'd' : 'p';
+            wo.output_separator    = $this.find('.output-separator-input').val();
+            //wo.output_replaceQuote = $this.find('.output-replacequotes').val();
+            //wo.output_trimSpaces   = $this.find('.output-trim').is(':checked');
+            //wo.output_includeHTML  = $this.find('.output-html').is(':checked');
+            //wo.output_wrapQuotes   = $this.find('.output-wrap').is(':checked');
+
+            var filename = $this.find('.output-filename').val();
+
+            if ($this.find('.filename-datetime').is(':checked')) {
+                var splitFilename = filename.split('.');
+                splitFilename.splice(-1, 0, renderDatetime);
+                wo.output_saveFileName = splitFilename.join('.');
+            }
+            else {
+                wo.output_saveFileName = filename;
+            }
+
+            $table.trigger('outputTable');
+            return false;
+        });
     });
 
 }(window.jQuery, window, document));
