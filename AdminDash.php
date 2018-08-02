@@ -109,7 +109,6 @@ class AdminDash extends AbstractExternalModule {
             <div style="height: 50px;"></div>
         </div>
 
-        <script src="<?= $this->getUrl("/resources/tablesorter/jquery-3.2.0.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.widgets.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-pager.min.js") ?>"></script>
@@ -117,37 +116,63 @@ class AdminDash extends AbstractExternalModule {
         <script src="<?= $this->getUrl("/resources/c3/c3.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/parsers/parser-input-select.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-output.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.js") ?>"></script>
 
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
         <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
-        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.bootstrap.min.css") ?>" rel="stylesheet">
+        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.bootstrap_4.min.css") ?>" rel="stylesheet">
+        <link href="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.css") ?>" rel="stylesheet">
 
         <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
 
         <?php
 
+        $restrictedAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
         $reportReference = $this->generateReportReference();
         $defaultTab = $this->getSystemSetting("default-report") - 1;
+        $defaultVisibilitySettings = array();
 
-        if (!isset($_REQUEST['tab']) && $defaultTab != -1) {
+        foreach ($reportReference as $index => $reportInfo) {
+            $defaultVisibilitySettings[$reportInfo['reportName']][0] = $reportInfo['defaultVisibility'];
+            $defaultVisibilitySettings[$reportInfo['reportName']][1] = false;
+        }
+
+        if ((!isset($_REQUEST['tab']) && !$restrictedAccess) && $defaultTab != -1) {
             $_REQUEST['tab'] = $defaultTab;
         }
 
-        // define variables
-        $title = $this->getModuleName();
+        $title = $restrictedAccess ? "Executive Dashboard" : $this->getModuleName();
         $pageInfo = $reportReference[$_REQUEST['tab']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
+        $visibilitySettings = self::getSystemSetting('report-visibility') != null ? json_decode(self::getSystemSetting('report-visibility'), true) : $defaultVisibilitySettings;
+        $reportEnabled = $visibilitySettings[$pageInfo['reportName']][$restrictedAccess];
+        $restrictedViewEnabled = false;
+        $exportEnabled = ($this->getSystemSetting("executive-export-enabled") && $restrictedAccess) || (SUPER_USER && !$restrictedAccess);
 
-        // only allow super users to view this information
-        if (!SUPER_USER) die("Access denied! Only super users can access this page.");
+        foreach ($visibilitySettings as $index => $report) {
+            if ($report[1] == true) {
+                $restrictedViewEnabled = true;
+                break;
+            }
+        }
+
+        if (!SUPER_USER) {
+            if (
+                (!$restrictedAccess) ||
+                (!$reportEnabled && isset($_REQUEST['tab'])) ||
+                (!$restrictedViewEnabled)
+            ) {
+                die("Access denied! You do not have permission to view this page.");
+            }
+        }
 
         if (!$pageInfo['sql'] && !$pageInfo['userDefined']) :
          foreach (self::$visualizationQueries as $vis => $visInfo):
             ?>
                <script>
-               d3.json("<?= $this->getUrl("getVisData.php?vis=" . $vis) ?>", function (error, json) {
+               d3.json("<?= $this->getUrl("requestHandler.php?type=getVisData&vis=" . $vis) ?>", function (error, json) {
                    if (error) return console.warn(error);
 
                     UIOWA_AdminDash.createPieChart(
@@ -165,17 +190,17 @@ class AdminDash extends AbstractExternalModule {
         endif;
 
         ?>
-         <h2 style="text-align: center; color: #800000; font-weight: bold;">
+        <h2 style="text-align: center; color: #106CD6; font-weight: bold;">
              <?= $title ?>
              </h2>
 
              <p />
 
                 <!-- create navigation tabs -->
-             <ul class='nav nav-tabs' role='tablist'>
+             <ul class='nav nav-tabs'>
              <?php foreach($reportReference as $report => $reportInfo): ?>
-             <li <?= $_REQUEST['tab'] == $report && isset($_REQUEST['tab']) ? "class=\"active\"" : "" ?> >
-             <a href="<?= $this->formatUrl($report) ?>">
+             <li class="nav-item <?= $_REQUEST['tab'] == $report && isset($_REQUEST['tab']) ? "active" : "" ?>" style="display:none" >
+             <a class="nav-link" href="<?= $this->formatUrl($report) ?>">
              <span class="<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <?= $reportInfo['reportName'] ?></a>
          </li>
         <?php endforeach; ?>
@@ -183,32 +208,130 @@ class AdminDash extends AbstractExternalModule {
 
          <p />
 
-        <?php if (isset($_REQUEST['tab'])): ?>
-            <div style="text-align: right; width: 100%; <?= $pageInfo['sql'] == '' ? 'visibility: hidden;' : '' ?>" class="output-button">
+        <script>
+            var csvFileName = '<?= sprintf("%s.csv", $pageInfo['fileName']); ?>';
+            var renderDatetime = '<?= date("Y-m-d_His") ?>';
+            $('.output-filename').val(csvFileName);
+
+            var reportReference = <?= json_encode($reportReference) ?>;
+            var restrictedAccess = <?= $restrictedAccess ?>;
+            var visibilitySettings = <?= json_encode($visibilitySettings) ?>;
+            var saveVisibilityUrl = "<?= $this->getUrl("requestHandler.php?type=saveVisibilitySettings") ?>";
+
+            UIOWA_AdminDash.setReportVisibility(visibilitySettings, restrictedAccess);
+        </script>
+
+        <div>
+            <?php if (SUPER_USER) : ?>
+            <div style="float: left">
+                <button type="button" class="btn btn-primary open-visibility-settings" data-toggle="modal" data-target="#reportVisibilityModal">
+                    <span class="fas fa-cog"></span> Show/Hide Reports
+                </button>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="reportVisibilityModal" tabindex="-1" role="dialog" aria-labelledby="reportVisibilityModal" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reportVisibilityModalLongTitle" style="text-align: center">Report Visibility Settings</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-striped">
+                                <thead class="report-visibility-table">
+                                <tr>
+                                    <th></th>
+                                    <th style="text-align: center; font-size: 18px"><b>Admin View</b></th>
+                                    <th style="text-align: center; font-size: 18px"><b>Executive View</b></th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary save-visibility-settings" data-dismiss="modal">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <script>
+                    for (var i in reportReference) {
+                        var reportName = reportReference[i]['reportName'];
+
+                        $('.report-visibility-table').append(
+                            '<tr>' +
+                            '<td class="table-report-title" style="text-align:right; vertical-align:middle; padding-right:50px">' + reportName + '</td>' +
+                            '<td class="table-admin-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
+                            '<td class="table-restricted-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
+                            '</tr>'
+                        );
+                    }
+
+                    $('.open-visibility-settings').click(function() {
+                        $('.report-visibility-table tr').each(function () {
+                            var reportName = $(this).find('.table-report-title').html();
+
+                            if (reportName == undefined) {return;}
+
+                            var adminVisible = visibilitySettings[reportName][0];
+                            var restrictedVisible = visibilitySettings[reportName][1];
+                            var adminToggle = $(this).find('.table-admin-visible input');
+                            var restrictedToggle = $(this).find('.table-restricted-visible input');
+
+
+                            adminVisible ? adminToggle.bootstrapToggle('on') : adminToggle.bootstrapToggle('off');
+                            restrictedVisible ? restrictedToggle.bootstrapToggle('on') : restrictedToggle.bootstrapToggle('off');
+                        });
+                    });
+
+                    $('.save-visibility-settings').click(function() {
+                        visibilitySettings = {};
+
+                        $('.report-visibility-table tr').each(function () {
+                            var reportName = $(this).find('.table-report-title').html();
+
+                            if (reportName == undefined) {return;}
+
+                            visibilitySettings[reportName] = [
+                                !$(this).find('.table-admin-visible div').hasClass('off'),
+                                !$(this).find('.table-restricted-visible div').hasClass('off')
+                            ];
+                        });
+
+                        UIOWA_AdminDash.saveReportVisibility(visibilitySettings, saveVisibilityUrl);
+                        UIOWA_AdminDash.setReportVisibility(visibilitySettings, restrictedAccess);
+                    });
+                </script>
+            <?php endif; ?>
+            <?php if (isset($_REQUEST['tab'])): ?>
+                <?php if ($exportEnabled): ?>
+                <div style="float: right; <?= $pageInfo['sql'] == '' ? 'visibility: hidden;' : '' ?>" class="output-button">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-default download"><span class="fas fa-download"></span><b> Export CSV File</b></button>
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <button type="button" class="btn btn-info download"><span class="fas fa-download"></span> Export CSV File</button>
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
                         <span class="sr-only">Toggle Dropdown</span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
                         <li>
                             <label>Separator: <input class="output-separator-input" type="text" size="4" value=","></label><br />
-                            <button type="button" class="output-separator btn btn-default btn-xs active" title="Comma">,</button>
-                            <button type="button" class="output-separator btn btn-default btn-xs" title="Semicolon">;</button>
-                            <button type="button" class="output-separator btn btn-default btn-xs" title="Tab">⇥</button>
-                            <button type="button" class="output-separator btn btn-default btn-xs" title="Space">␣</button>
-                            <button type="button" class="output-separator btn btn-default btn-xs" title="JSON Formatted">json</button>
-                            <button type="button" class="output-separator btn btn-default btn-xs" title="Array Formatted">array</button>
+                            <button class="output-separator btn btn-info btn-xs active" title="Comma">,</button>
+                            <button class="output-separator btn btn-info btn-xs" title="Semicolon">;</button>
+                            <button class="output-separator btn btn-info btn-xs" title="Tab">⇥</button>
+                            <button class="output-separator btn btn-info btn-xs" title="Space">␣</button>
+                            <button class="output-separator btn btn-info btn-xs" title="JSON Formatted">json</button>
+                            <button class="output-separator btn btn-info btn-xs" title="Array Formatted">array</button>
                         </li>
                         <li>
                             <br />
                             <label>Include:</label>
-                            <div class="btn-group output-filter-all" data-toggle="buttons" title="Export all rows or filtered rows only">
-                                <label class="btn btn-default btn-sm active">
-                                    <input type="radio" name="getrows1" class="output-all" checked="checked"> All
+                            <div class="btn-group btn-group-toggle output-filter-all" data-toggle="buttons" title="Export all rows or filtered rows only">
+                                <label class="btn btn-info btn-sm active">
+                                    <input type="radio" name="getrows1" class="output-all" checked> All
                                 </label>
-                                <label class="btn btn-default btn-sm">
+                                <label class="btn btn-info btn-sm">
                                     <input type="radio" name="getrows1" class="output-filter"> Filtered
                                 </label>
                             </div>
@@ -216,20 +339,21 @@ class AdminDash extends AbstractExternalModule {
                         <li>
                             <br />
                             <label>Export to:</label>
-                            <div class="btn-group output-download-popup" data-toggle="buttons" title="Download file or open in popup window">
-                                <label class="btn btn-default btn-sm active output-type">
-                                    <input type="radio" name="delivery1" class="output-download" checked="checked"> Download
+                            <div class="btn-group btn-group-toggle output-download-popup" data-toggle="buttons" title="Download file or open in popup window">
+                                <label class="btn btn-info btn-sm active output-type">
+                                    <input type="radio" name="delivery1" class="output-download" checked> Download
                                 </label>
-                                <label class="btn btn-default btn-sm output-type">
+                                <label class="btn btn-info btn-sm output-type">
                                     <input type="radio" name="delivery1" class="output-popup"> Popup
                                 </label>
                             </div>
                         </li>
-                        <li class="divider filename-field-display"></li>
+                        <li class="dropdown-divider filename-field-display"></li>
                         <li class="filename-field-display"><label title="Choose a download filename">Filename: <input class="output-filename" type="text" size="25" value=""></label></li>
                         <li class="filename-field-display"><label title="Append date and time of report render to filename">Include timestamp: <input class="filename-datetime" type="checkbox" checked></li>
                     </ul>
                 </div>
+                <?php endif; ?>
             </div>
 
             <script>
@@ -238,15 +362,19 @@ class AdminDash extends AbstractExternalModule {
                 $('.output-filename').val(csvFileName);
             </script>
 
-            <p />
+            <br />
+            <br />
+            <br />
+            <br />
 
-            <h3 style="text-align: center">
-              <?= $pageInfo['reportName'] ?>
-              </h3>
+                <h3 style="text-align: center;">
+                <?= $pageInfo['reportName'] ?>
+            </h3>
 
-              <h5 style="text-align: center">
-              <?= $pageInfo['description']; ?>
-              </h5>
+            <div style="text-align: center; font-size: 14px">
+                <?= $pageInfo['description']; ?>
+            </div>
+
 
             <?php if($pageInfo['sql']) : ?>
                  <!-- display tablesorter pager buttons for reports -->
@@ -276,13 +404,20 @@ class AdminDash extends AbstractExternalModule {
                 <?php endforeach; ?>
             </div>
               </div>
+        </div>
 
-            <?php endif; ?>
+    <?php endif; ?>
         <?php else : ?>
             <br />
             <br />
-            <h3 style="text-align: center;">Welcome to the REDCap Admin Dashboard!</h3>
-            <div style="text-align: center;">Click one of the tabs above to view a report. You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.</div>
+            <br/>
+            <br/>
+        <div style="text-align: center;">
+            <h3>Welcome to the REDCap <?= (!$restrictedAccess) ? "Admin" : "Executive" ?> Dashboard!</h3>
+        </div>
+            <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$restrictedAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?></div>
+            <br/>
+            <br/>
         <?php endif; ?>
 
 
@@ -313,9 +448,20 @@ class AdminDash extends AbstractExternalModule {
         elseif ($pageInfo['userDefined']) {
             printf("<div id='deleted'> " . $pageInfo['sqlErrorMsg'] . "</div>");
         }
+
+        if (SUPER_USER) {
+            if ($_REQUEST['page'] == 'executiveView') {
+                echo ("<div style=\"text-align: center\"><a class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl("index.php")) . ">Switch to Admin View</a></div>");
+            }
+            else {
+                echo ("<div style=\"text-align: center\"><a class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl("executiveView.php")) . ">Switch to Executive View</a></div>");
+            }
+        }
    }
 
     public function generateReportReference() {
+        $restrictedAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
+
         $pwordSearchTerms =
             array(
                 'p%word',
@@ -378,6 +524,7 @@ class AdminDash extends AbstractExternalModule {
                 "fileName" => "projectsByUser",
                 "description" => "List of all users and the projects to which they have access.",
                 "tabIcon" => "fa fa-male",
+                "defaultVisibility" => true,
                 "sql" => "
         SELECT
         info.username AS 'Username',
@@ -388,7 +535,6 @@ class AdminDash extends AbstractExternalModule {
         info.user_firstname AS 'First Name',
         info.user_email AS 'Email',
         GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-        GROUP_CONCAT(CAST(projects.app_title AS CHAR(50)) SEPARATOR ', ') AS 'Project CSV Titles (Hidden)',
         GROUP_CONCAT(CAST(CASE projects.status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
@@ -416,6 +562,7 @@ class AdminDash extends AbstractExternalModule {
                 "fileName" => "usersByProject",
                 "description" => "List of all projects and the users which have access.",
                 "tabIcon" => "fas fa-users",
+                "defaultVisibility" => true,
                 "sql" => "
         SELECT
         projects.project_id AS PID,
@@ -462,6 +609,7 @@ class AdminDash extends AbstractExternalModule {
                 "fileName" => "researchProjects",
                 "description" => "List of all projects that are identified as being used for research purposes.",
                 "tabIcon" => "fa fa-flask",
+                "defaultVisibility" => true,
                 "sql" => "
         SELECT
         projects.project_id AS PID,
@@ -498,6 +646,7 @@ class AdminDash extends AbstractExternalModule {
                 "fileName" => "developmentProjects",
                 "description" => "List of all projects that are in Development Mode.",
                 "tabIcon" => "fas fa-wrench",
+                "defaultVisibility" => true,
                 "sql" => "
         SELECT
         projects.project_id AS 'PID',
@@ -531,6 +680,7 @@ class AdminDash extends AbstractExternalModule {
                 "fileName" => "allProjects",
                 "description" => "List of all projects.",
                 "tabIcon" => "fas fa-folder-open",
+                "defaultVisibility" => true,
                 "sql" => "
         SELECT
         projects.project_id AS 'PID',
@@ -564,18 +714,15 @@ class AdminDash extends AbstractExternalModule {
         $formattedWhereFilterSql
         ORDER BY app_title
         "
-            )
-        );
-
-        if (self::getSystemSetting('optional-report-passwords')) {
-            array_push($reportReference,
-                array
-                (
-                    "reportName" => "Credentials Check (Project Titles)",
-                    "fileName" => "projectCredentials",
-                    "description" => "List of projects titles that contain strings related to REDCap login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                    "tabIcon" => "fa fa-key",
-                    "sql" => "
+            ),
+            array
+            (
+                "reportName" => "Credentials Check (Project Titles)",
+                "fileName" => "projectCredentials",
+                "description" => "List of projects titles that contain strings related to login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
+                "tabIcon" => "fa fa-key",
+                "defaultVisibility" => false,
+                "sql" => "
         SELECT projects.project_id AS 'PID',
         app_title AS 'Project Title',
         CAST(CASE status
@@ -592,14 +739,15 @@ class AdminDash extends AbstractExternalModule {
         redcap_user_information AS users
         WHERE (projects.created_by = users.ui_id) AND
         " . $pwordProjectSql
-                ),
-                array
-                (
-                    "reportName" => "Credentials Check (Instruments)",
-                    "fileName" => "instrumentCredentials",
-                    "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                    "tabIcon" => "fa fa-key",
-                    "sql" => "
+            ),
+            array
+            (
+                "reportName" => "Credentials Check (Instruments)",
+                "fileName" => "instrumentCredentials",
+                "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
+                "tabIcon" => "fa fa-key",
+                "defaultVisibility" => false,
+                "sql" => "
         SELECT projects.project_id AS 'PID',
         projects.app_title AS 'Project Title',
         meta.form_menu_description AS 'Instrument Name',
@@ -614,13 +762,14 @@ class AdminDash extends AbstractExternalModule {
         (meta.form_menu_description IS NOT NULL) AND
         " . $pwordInstrumentSql
                 ),
-                array
-                (
-                    "reportName" => "Credentials Check (Fields)",
-                    "fileName" => "fieldCredentials",
-                    "description" => "List of projects that contain strings related to REDCap login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                    "tabIcon" => "fa fa-key",
-                    "sql" => "
+            array
+            (
+                "reportName" => "Credentials Check (Fields)",
+                "fileName" => "fieldCredentials",
+                "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
+                "tabIcon" => "fa fa-key",
+                "defaultVisibility" => false,
+                "sql" => "
         SELECT projects.project_id AS 'PID',
         projects.app_title AS 'Project Title',
         meta.form_name AS 'Form Name',
@@ -638,24 +787,18 @@ class AdminDash extends AbstractExternalModule {
         " . $pwordFieldSql . "
         ORDER BY projects.project_id, form_name, field_name;
         "
-                )
-
-            );
-        }
-
-        if (self::getSystemSetting('optional-report-modules')) {
-            array_push($reportReference,
-                array
-                (
-                    "reportName" => "Projects with External Modules",
-                    "fileName" => "modulesInProjects",
-                    "description" => "List of External Modules and the projects they are enabled in.",
-                    "tabIcon" => "fas fa-plug",
-                    "sql" => "
+                ),
+            array
+            (
+                "reportName" => "Projects with External Modules",
+                "fileName" => "modulesInProjects",
+                "description" => "List of External Modules and the projects they are enabled in.",
+                "tabIcon" => "fas fa-plug",
+                "defaultVisibility" => false,
+                "sql" => "
         SELECT
         REPLACE(directory_prefix, '_', ' ') AS 'Module Title',
         GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-        GROUP_CONCAT(CAST(projects.app_title AS CHAR(50)) SEPARATOR ', ') AS 'Project CSV Titles (Hidden)',
         GROUP_CONCAT(CAST(users.user_email AS CHAR(50)) SEPARATOR ', ') AS 'User Emails',
         GROUP_CONCAT(CAST(CASE projects.status
         WHEN 0 THEN 'Development'
@@ -678,31 +821,27 @@ class AdminDash extends AbstractExternalModule {
         GROUP BY settings.external_module_id
         ORDER BY directory_prefix
         "
-                ));
-        }
+            )
+        );
 
         $customNames = $this->getSystemSetting('custom-report-name');
         $customDescs = $this->getSystemSetting('custom-report-desc');
         $customIcons = $this->getSystemSetting('custom-report-icon');
         $customSqls = $this->getSystemSetting('custom-report-sql');
-        $customToggles = $this->getSystemSetting('custom-report-enabled');
-
 
         for($i = 0; $i < count($customNames); $i++) {
-            if ($customToggles[$i] == "true") {
-                $customFileName = preg_replace('/\s*/', '', $customNames[$i]);
+            $customFileName = preg_replace('/\s*/', '', $customNames[$i]);
 
-                array_push($reportReference,
-                    array
-                    (
-                        "reportName" => $customNames[$i] != '' ? $customNames[$i] : 'Untitled',
-                        "fileName" => $customNames[$i] != '' ? $customFileName : 'untitled',
-                        "description" => $customDescs[$i] != '' ? $customDescs[$i] : 'No description defined.',
-                        "tabIcon" => $customIcons[$i] != '' ? $customIcons[$i] : 'fas fa-question-circle',
-                        "sql" => $customSqls[$i],
-                        "userDefined" => TRUE
-                    ));
-            }
+            array_push($reportReference,
+                array
+                (
+                    "reportName" => $customNames[$i] != '' ? $customNames[$i] : 'Untitled',
+                    "fileName" => $customNames[$i] != '' ? $customFileName : 'untitled',
+                    "description" => $customDescs[$i] != '' ? $customDescs[$i] : 'No description defined.',
+                    "tabIcon" => $customIcons[$i] != '' ? $customIcons[$i] : 'fas fa-question-circle',
+                    "sql" => $customSqls[$i],
+                    "userDefined" => TRUE
+                ));
         }
 
         array_push($reportReference,
@@ -711,7 +850,8 @@ class AdminDash extends AbstractExternalModule {
                 "reportName" => "Visualizations",
                 "fileName" => "visualizations",
                 "description" => "Additional metadata presented in a visual format.",
-                "tabIcon" => "fas fa-chart-pie"
+                "tabIcon" => "fas fa-chart-pie",
+                "defaultVisibility" => true
             ));
 
         return $reportReference;
@@ -749,8 +889,8 @@ class AdminDash extends AbstractExternalModule {
                 $row['Module Title'] = ucwords($row['Module Title']);
             }
 
-            if ($pageInfo['fileName'] == 'modulesByProject' ||
-                strpos($_REQUEST['file'], 'modulesByProject') !== false) {
+            if ($pageInfo['fileName'] == 'modulesInProjects' ||
+                strpos($_REQUEST['file'], 'modulesInProjects') !== false) {
                     $rowArray = explode(', ', $row['Project Titles']);
                     $rowArray = array_unique($rowArray);
                     $row['Project Titles'] = implode(', ', $rowArray);
@@ -815,47 +955,60 @@ class AdminDash extends AbstractExternalModule {
         // initialize value
         $webified = array();
 
+        $restrictedAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
+
         foreach ($row as $key => $value)
         {
-            if ($key == "PID")
-            {
-                $webified[$key] = $this->convertPid2AdminLink($value);
-            }
-            elseif ($key == "Project Title")
-            {
-                $pid = $row['PID'];
-                $hrefStr = $row['Project Title'];
-                $projectStatus = $row['Status'];
-                $projectDeleted = $row['Project Deleted Date (Hidden)'];
-
-                $webified[$key] = $this->convertPid2Link($pid, $hrefStr, $projectStatus, $projectDeleted);
-            }
-            elseif ($key == "Project Titles")
+            if ($key == "Project Titles")
             {
                 $projectStatuses = $row['Project Statuses (Hidden)'];
                 $projectDeleted = $row['Project Deleted Date (Hidden)'];
 
-                $webified[$key] = $this->convertPidList2Links($value, $projectTitles, $projectStatuses, $projectDeleted);
+                $webified[$key] = $this->formatProjectList($value, $projectTitles, $projectStatuses, $projectDeleted, $restrictedAccess);
+            }
+            elseif ($key == "Users")
+            {
+                $suspended = $row['User Suspended Date (Hidden)'];
+
+                $webified[$key] = $this->formatUsernameList($value, $suspended, $restrictedAccess);
+            }
+            elseif ($key == "User Emails")
+            {
+                $webified[$key] = $this->formatEmailList($value, $restrictedAccess);
             }
             elseif ($key == "Purpose Specified")
             {
                 $webified[$key] = $this->convertProjectPurpose2List($value);
             }
-            elseif (($key == "PI Email") ||
-                ($key == "Email"))
-            {
-                $webified[$key] = $this->convertEmail2Link($value);
-            }
-            elseif ($key == "User Emails")
-            {
-                $webified[$key] = $this->convertEmailList2Links($value);
-            }
-            elseif (($key == "Users") ||
-                ($key == "Username"))
-            {
-                $suspended = $row['User Suspended Date (Hidden)'];
+            elseif (!$restrictedAccess) {
+                if ($key == "PID")
+                {
+                    $webified[$key] = $this->convertPid2AdminLink($value);
+                }
+                elseif ($key == "Project Title")
+                {
+                    $pid = $row['PID'];
+                    $hrefStr = $row['Project Title'];
+                    $projectStatus = $row['Status'];
+                    $projectDeleted = $row['Project Deleted Date (Hidden)'];
 
-                $webified[$key] = $this->convertUsername2Link($value, $suspended);
+                    $webified[$key] = $this->convertPid2Link($pid, $hrefStr, $projectStatus, $projectDeleted);
+                }
+                elseif (($key == "PI Email") ||
+                    ($key == "Email"))
+                {
+                    $webified[$key] = $this->convertEmail2Link($value);
+                }
+                elseif ($key == "Username")
+                {
+                    $suspended = $row['User Suspended Date (Hidden)'];
+
+                    $webified[$key] = $this->convertUsername2Link($value, $suspended);
+                }
+                else
+                {
+                    $webified[$key] = $value;
+                }
             }
             else
             {
@@ -874,7 +1027,7 @@ class AdminDash extends AbstractExternalModule {
         return($mailtoLink);
     }
 
-    private function convertEmailList2Links($emailStr)
+    private function formatEmailList($emailStr, $restrictedAccess)
     {
         // convert comma-delimited string to array
         $emailList = explode(", ", $emailStr);
@@ -882,14 +1035,21 @@ class AdminDash extends AbstractExternalModule {
 
         foreach ($emailList as $index=>$email)
         {
-            array_push($emailLinks, $this->convertEmail2Link($email) . ($index < count($emailList) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
+            $formattedEmail = $email;
+
+            if (!$restrictedAccess) {
+                $formattedEmail = $this->convertEmail2Link($email);
+            }
+
+            array_push($emailLinks, $formattedEmail . ($index < count($emailList) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
         }
 
         // convert array back to comma-delimited string
         $emailCell = implode("<br />", $emailLinks);
         $mailtoLink = 'mailto:?bcc=' . str_replace(', ', ';', $emailStr);
 
-        if (count($emailLinks) > 1) {
+
+        if (count($emailLinks) > 1 && !$restrictedAccess) {
             $emailCell .= "<button style='float:right' onclick='location.href=\"" . $mailtoLink . "\"'>Email All</button>";
         }
 
@@ -934,60 +1094,76 @@ class AdminDash extends AbstractExternalModule {
         return($pidLink);
     }
 
-    private function convertPidList2Links($pidStr, $pidTitles, $projectStatuses, $projectDeleted)
+    private function formatProjectList($pidStr, $projectTitles, $projectStatuses, $projectDeleted, $restrictedAccess)
     {
         // convert comma-delimited string to array
         $pidList = explode(", ", $pidStr);
-        $pidLinks = array();
+        $formattedTitles = array();
 
         $statusList = explode(",", $projectStatuses);
         $deletedList = explode(",", $projectDeleted);
 
         foreach ($pidList as $index=>$pid)
         {
-            $hrefStr = $pidTitles[$pid];
-            array_push($pidLinks, $this->convertPid2Link($pid, $hrefStr, $statusList[$index], $deletedList[$index]) . ($index < count($pidList) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
+            $formattedProjectTitle = $projectTitles[$pid];
+
+            if (!$restrictedAccess) {
+                $formattedProjectTitle = $this->convertPid2Link($pid, $formattedProjectTitle, $statusList[$index], $deletedList[$index]);
+            }
+
+            array_push($formattedTitles, $formattedProjectTitle . ($index < count($pidList) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
         }
 
-        // convert array back to comma-delimited string
-        $pidCell = implode("<br />", $pidLinks);
+        $titleCell = implode("<br />", $formattedTitles);
 
-        return($pidCell);
+        return($titleCell);
     }
 
-    private function convertUsername2Link($userIDs, $suspended)
+    private function convertUsername2Link($userID, $suspended)
+    {
+        $urlString =
+            sprintf("https://%s%sControlCenter/view_users.php?username=%s",  // Browse User Page
+                SERVER_NAME,
+                APP_PATH_WEBROOT,
+                $userID);
+
+        $suspendedTag = '';
+
+        if ($suspended != 'N/A' && self::getSystemSetting('show-suspended-tags') && $suspended != null) {
+            $suspendedTag = "<span id='suspended'> [suspended]</span>";
+        }
+
+        $userLink = sprintf("<a href=\"%s\"
+                          target=\"_blank\">%s</a>" . $suspendedTag,
+            $urlString, $userID);
+
+        return($userLink);
+    }
+
+    private function formatUsernameList($userIDs, $suspendedList, $restrictedAccess)
     {
         // convert comma delimited string to array
         $userIDlist = explode(", ", $userIDs);
-        $linkList = array();
+        $formattedUsers = array();
 
-        $suspendedList = explode(",", $suspended);
+        $suspendedList = explode(",", $suspendedList);
 
         foreach ($userIDlist as $index=>$userID)
         {
-            $urlString =
-                sprintf("https://%s%sControlCenter/view_users.php?username=%s",  // Browse User Page
-                    SERVER_NAME,
-                    APP_PATH_WEBROOT,
-                    $userID);
+            $formattedUsername = $userID;
+            $suspended = $suspendedList[$index];
 
-            $suspendedTag = '';
-
-            if ($suspendedList[$index] != 'N/A' && self::getSystemSetting('show-suspended-tags') && $suspendedList[$index] != null) {
-                $suspendedTag = "<span id='suspended'> [suspended]</span>";
+            if (!$restrictedAccess) {
+                $formattedUsername = $this->convertUsername2Link($formattedUsername, $suspended);
             }
 
-            $userLink = sprintf("<a href=\"%s\"
-                              target=\"_blank\">%s</a>" . $suspendedTag,
-                $urlString, $userID . ($index < count($userIDlist) - 1 ? '<span class=\'hide-in-table\'>, </span>' : ''));
-
-            array_push($linkList, $userLink);
+            array_push($formattedUsers, $formattedUsername . ($index < count($userIDlist) - 1 ? '<span class=\'hide-in-table\'>, </span>' : '')
+            );
         }
 
-        // convert array to comma delimited string
-        $linkStr = implode( "<br>", $linkList);
+        $userCell = implode( "<br>", $formattedUsers);
 
-        return($linkStr);
+        return($userCell);
     }
 
     private function convertProjectPurpose2List($purposeList)
@@ -1022,22 +1198,10 @@ class AdminDash extends AbstractExternalModule {
 
     private function getRedcapProjectNames()
     {
-        if (SUPER_USER)
-        {
-            $sql = "SELECT project_id AS pid,
-                     TRIM(app_title) AS title
-              FROM redcap_projects
-              ORDER BY pid";
-        }
-        else
-        {
-            $sql = sprintf("SELECT p.project_id AS pid,
-                              TRIM(p.app_title) AS title
-                       FROM redcap_projects p, redcap_user_rights u
-                       WHERE p.project_id = u.project_id AND
-                             u.username = '%s'
-                       ORDER BY pid", USERID);
-        }
+        $sql = "SELECT project_id AS pid,
+                 TRIM(app_title) AS title
+          FROM redcap_projects
+          ORDER BY pid";
 
         $query = db_query($sql);
 
@@ -1082,6 +1246,24 @@ class AdminDash extends AbstractExternalModule {
         $url = $_SERVER['PHP_SELF'] . '?' . $url;
 
         return ($url);
+    }
+
+    public function getVisData() {
+        $pageInfo = self::$visualizationQueries[ $_REQUEST['vis'] ];
+        $result = db_query($pageInfo['sql']);
+        $data = array();
+
+        while ( $row = db_fetch_assoc( $result ) )
+        {
+            $data[] = $row;
+        }
+
+        echo json_encode($data);
+    }
+
+    public function saveVisibilitySettings() {
+        $visibilityJson = file_get_contents('php://input');
+        self::setSystemSetting('report-visibility', $visibilityJson);
     }
 }
 ?>

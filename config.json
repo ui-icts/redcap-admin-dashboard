@@ -64,43 +64,30 @@
       "required": false
     },
     {
-      "key": "optional-reports",
-      "name": "<b>Enable/Disable optional reports:</b>",
-      "type": "descriptive",
-      "required": false
-    },
-    {
-      "key": "optional-report-modules",
-      "name": "<ul><i>Projects with External Modules</i><br>List of External Modules and the projects they are enabled in",
-      "type": "checkbox",
-      "required": false
-    },
-    {
-      "key": "optional-report-passwords",
-      "name": "<ul><i>Login Credentials Check</i><br>Reports to search for strings related to REDCap usernames/passwords in projects",
-      "type": "checkbox",
-      "required": false
-    },
-    {
-      "key": "optional-reports-settings",
-      "name": "<b>Additional configuration for optional reports:</b>",
-      "type": "descriptive",
-      "branchingLogic": {
-        "field": "optional-report-passwords",
-        "value": "true"
-      },
-      "required": false
-    },
-    {
       "key": "additional-search-terms",
       "name": "Additional search term for Login Credentials Check reports",
       "type": "text",
-      "branchingLogic": {
-        "field": "optional-report-passwords",
-        "value": "true"
-      },
       "required": false,
       "repeatable": true
+    },
+    {
+      "key": "executive-view",
+      "name": "<b>Configuration for Executive View:</b>",
+      "type": "descriptive",
+      "required": false
+    },
+    {
+      "key": "executive-users",
+      "name": "Username to allow access to the Executive View",
+      "type": "text",
+      "required": false,
+      "repeatable": true
+    },
+    {
+      "key": "executive-export-enabled",
+      "name": "Enable Export button in Executive View",
+      "type": "checkbox",
+      "required": false
     },
     {
       "key": "custom-reports",
@@ -134,11 +121,6 @@
           "key": "custom-report-sql",
           "name": "Report SQL",
           "type": "textarea"
-        },
-        {
-          "key": "custom-report-enabled",
-          "name": "Report Enabled",
-          "type": "checkbox"
         }
       ]
     }

@@ -3,14 +3,6 @@ td
    font-size: 14px;
 }
 
-/* Download CSV File button styling */
-a.btn-lg
-{
-   font-size: 1.25em;
-   font-weight: bold;
-
-}
-
 /* Navigation tabs styling */
 .nav-tabs > li > a:hover {
    background-color: #CCCCCC;
@@ -35,16 +27,6 @@ a.btn-lg
 div#outer
 {
    width: 50%;
-}
-
-
-/* display elapsed time at the bottom of the page */
-div#elapsedTime
-{
-   background-color: #E5E5E5;
-   text-align: center;
-   padding: 10px;
-   border-radius: 5px;
 }
 
 #pagecontainer
@@ -84,4 +66,38 @@ div#elapsedTime
 .hide-in-table
 {
    display: none;
+}
+
+.config-button
+{
+   width: 25px;
+   height: 25px;
+   align-content: center;
+}
+
+.pager
+{
+   text-align: center;
+   padding-top: 20px;
+}
+
+/* Bootstrap Toggle v2.2.2 corrections for Bootsrtap 4*/
+.toggle-off {
+   box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+.toggle.off {
+   border-color: rgba(0, 0, 0, .25);
+}
+
+.toggle-handle {
+   background-color: white;
+   border: thin rgba(0, 0, 0, .25) solid;
+}
+
+.toggle-on {
+   font-size: 14px;
+}
+
+.toggle-off {
+   font-size: 14px;
 }

@@ -186,16 +186,6 @@
             return false;
         });
 
-        // Disable / Enable
-        // **************
-        $('.toggle').click(function () {
-            var mode = /Disable/.test($(this).text());
-            // using disablePager or enablePager
-            $table.trigger((mode ? 'disable' : 'enable') + 'Pager');
-            $(this).text((mode ? 'Enable' : 'Disable') + 'Pager');
-            return false;
-        });
-
         // clear storage (page & size)
         $('.clear-pager-data').click(function () {
             // clears user set page & size from local storage, so on page
@@ -233,10 +223,10 @@
             });
             var outputType = $($this.find('.output-type.active'))[0].innerText;
             if (outputType == 'Download') {
-                $this.find('.download').html('<span class="fas fa-download"></span><b> Export ' + filetype.toUpperCase() + ' File</b>');
+                $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
             }
             else {
-                $this.find('.download').html('<span class="far fa-window-maximize"></span><b> Open ' + filetype.toUpperCase() + ' Popup</b>');
+                $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
             }
             return false;
         });
@@ -247,11 +237,11 @@
             var filetype = (txt === 'json' || txt === 'array') ? 'js' :
                 txt === ',' ? 'csv' : 'txt';
             if (outputType == 'Download') {
-                $this.find('.download').html('<span class="fas fa-download"></span><b> Export ' + filetype.toUpperCase() + ' File</b>');
+                $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
                 $this.find('.filename-field-display').removeClass('hidden');
             }
             else {
-                $this.find('.download').html('<span class="far fa-window-maximize"></span><b> Open ' + filetype.toUpperCase() + ' Popup</b>');
+                $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
                 $this.find('.filename-field-display').addClass('hidden');
             }
             //return false;
@@ -339,4 +329,36 @@ UIOWA_AdminDash.getCountsFromJson = function(json, column) {
         }
     }
     return countList;
+};
+
+UIOWA_AdminDash.setReportVisibility = function(settings, restricted) {
+    var keys = Object.keys(settings);
+
+    console.log(settings);
+
+    for (var i in keys) {
+        var reportTitle = keys[i];
+        var adminVisible = settings[reportTitle][0];
+        var restrictedVisible = settings[reportTitle][1];
+        var reportTab = $('li:contains(' + reportTitle + ')');
+
+        if (!adminVisible && !restricted) {
+            reportTab.hide();
+        }
+        else if (!restrictedVisible && restricted) {
+            reportTab.hide();
+        }
+        else {
+            reportTab.show();
+        }
+    }
+};
+
+UIOWA_AdminDash.saveReportVisibility = function(settings, url) {
+    settings = JSON.stringify(settings);
+
+    var request = new XMLHttpRequest();
+    request.open("POST", url, true);
+    request.setRequestHeader("Content-type", "application/json");
+    request.send(settings);
 };
