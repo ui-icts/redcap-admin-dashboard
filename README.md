@@ -20,7 +20,7 @@ All reports (built-in and user-defined) can be toggled on/off via the "Show/Hide
 ### Usage
 After downloading and enabling this module on your REDCap instance, a link to the Admin Dashboard will appear at the bottom of the Control Center sidebar.
 
-####Filtering
+#### Filtering
 Just below the header for each column is an input for filtering. Simple text filtering can be performed as well as more complex filtering with the following:
 
 * **Greater/Less than (equal to):** `< <= >= >`
@@ -45,6 +45,8 @@ Report results can be exported via the button located in the top right (just abo
 Non-admin users with a valid REDCap login can be granted access to a limited version of the dashboard without link formatting (projects, emails, etc). The reports accessible in this view can be customized via the "Show/Hide Reports" button located in the top left of the page. By default, no reports are enabled for Executive View and attempts to access it by non-admin users will display an "access denied" error instead (this will also happen if a user attempts to follow a direct link to a report that is marked as hidden in Executive View).
 
 Access to this view can be granted by whitelisting usernames via the module configuration page. Admins can switch between the "Admin" and "Executive" views by clicking the button located at the bottom of any dashboard page. Admins can also access the "Show/Hide Reports" button from either view, but both of these buttons will be hidden from non-admin users.
+
+For non-admin users, there is no way to directly access this view through the REDCap UI. An admin will need to provide them with a direct link to the page so they can bookmark it for future use.
 
 ### Configuration Options
 * **Default report view:** Selecting one of the default reports here will make it load immediately after opening the Admin Dashboard. Leaving this option unselected will display a simple landing page instead of loading a report (this is recommended, as reports with large result sets can take a while to process and should not be run unless necessary). This setting only affects the main Admin View (the Executive View will always show a landing page regardless).
