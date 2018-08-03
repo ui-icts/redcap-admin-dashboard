@@ -415,7 +415,11 @@ class AdminDash extends AbstractExternalModule {
         <div style="text-align: center;">
             <h3>Welcome to the REDCap <?= (!$restrictedAccess) ? "Admin" : "Executive" ?> Dashboard!</h3>
         </div>
-            <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$restrictedAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?></div>
+            <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$restrictedAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?>
+                <br />
+                <br />
+                <?php if ($restrictedAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username to the whitelist in the module configuration settings, then provide them with this page's URL.<?php endif; ?>
+            </div>
             <br/>
             <br/>
         <?php endif; ?>

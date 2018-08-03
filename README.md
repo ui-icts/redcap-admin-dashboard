@@ -46,6 +46,8 @@ Non-admin users with a valid REDCap login can be granted access to a limited ver
 
 Access to this view can be granted by whitelisting usernames via the module configuration page. Admins can switch between the "Admin" and "Executive" views by clicking the button located at the bottom of any dashboard page. Admins can also access the "Show/Hide Reports" button from either view, but both of these buttons will be hidden from non-admin users.
 
+For non-admin users, there is no way to directly access this view through the REDCap UI. An admin will need to provide them with a direct link to the page so they can bookmark it for future use.
+
 ### Configuration Options
 * **Default report view:** Selecting one of the default reports here will make it load immediately after opening the Admin Dashboard. Leaving this option unselected will display a simple landing page instead of loading a report (this is recommended, as reports with large result sets can take a while to process and should not be run unless necessary). This setting only affects the main Admin View (the Executive View will always show a landing page regardless).
 * **Show "Practice / Just for Fun" projects:** Enabling this option will include projects marked as "Practice / Just for Fun" in report views.
