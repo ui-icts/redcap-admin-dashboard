@@ -36,7 +36,7 @@
 
                     // remove rows from the table to speed up the sort of large tables.
                     // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
-                    pager_removeRows: true, // removing rows in larger tables speeds up the sort
+                    pager_removeRows: false, // removing rows in larger tables speeds up the sort
 
                     // use this format: "http://mydatabase.com?page={page}&size={size}&{sortList:col}&{filterList:fcol}"
                     // where {page} is replaced by the page number, {size} is replaced by the number of records to show,
