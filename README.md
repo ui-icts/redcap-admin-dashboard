@@ -41,6 +41,8 @@ Report results can be exported via the button located in the top right (just abo
 * **Include:** 'All' will export all rows regardless of visibility due to pagination or filtering. 'Filtered' will only return the rows currently visible based on the current column filters set (this also does not care about pagination and will return rows not currently visible as well, so long as they meet the filter criteria).
 * **Export to:** 'Download' will initiate a file download of the exported data. Additionally, the filename can be defined and the appended date/timestamp can be toggled on/off. 'Popup' will open a popup window with the exported data in a text box so it can be easily copied and pasted elsewhere.
 
+When exporting a report that includes the "Purpose Specified" column, it will split the purpose data into separate columns marked as TRUE/FALSE for easier analysis.
+
 #### Executive View
 Non-admin users with a valid REDCap login can be granted access to a limited version of the dashboard without link formatting (projects, emails, etc). The reports accessible in this view can be customized via the "Show/Hide Reports" button located in the top left of the page. By default, no reports are enabled for Executive View and attempts to access it by non-admin users will display an "access denied" error instead (this will also happen if a user attempts to follow a direct link to a report that is marked as hidden in Executive View).
 
