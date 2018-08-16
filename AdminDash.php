@@ -954,7 +954,7 @@ class AdminDash extends AbstractExternalModule {
                 $webData = $this->webifyDataRow($row, $redcapProjects);
                 $this->printTableRow($webData, $hiddenColumns);
 
-                ?> <script>var hideColumns = <?= json_encode($purposeColumns) ?>;</script> <?
+                ?> <script>var hideColumns = <?= json_encode($purposeColumns) ?>;</script> <?php
             }
             elseif ($format == 'text') {
                 $titlesStr = implode("\",\"", $row);
