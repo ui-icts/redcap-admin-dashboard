@@ -908,14 +908,53 @@ class AdminDash extends AbstractExternalModule {
             if ($format == 'html') {
                 if ($isFirstRow)
                 {
+                    if (array_search('Purpose Specified', $headers)) {
+                        $headerIndex = array_search('Purpose Specified', $headers);
+                        $purposeMasterArray = Array();
+
+                        foreach (self::$purposeMaster as $index=>$purposeStr)
+                        {
+                            $purposeMasterArray[$purposeStr] = "FALSE";
+                        }
+
+                        $headers = array_merge(
+                            array_merge(
+                                array_slice($headers, 0, $headerIndex, true),
+                                array_keys($purposeMasterArray)),
+                            array_slice($headers, $headerIndex, NULL, true)
+                        );
+                    }
+
                     // print table header
-                    $this->printTableHeader($headers);
+                    $purposeColumns = $this->printTableHeader($headers);
                     printf("   <tbody>\n");
                     $isFirstRow = FALSE;  // toggle flag
                 }
 
+                if ($purposeMasterArray) {
+                    $headerIndex = array_search('Purpose Specified', $headers);
+                    $purposeArray = explode(',', $row['Purpose Specified']);
+                    $row = array_merge(
+                        array_merge(
+                            array_slice($row, 0, $headerIndex + 2, true),
+                            $purposeMasterArray),
+                        array_slice($row, $headerIndex, NULL, true)
+                    );
+                    foreach (self::$purposeMaster as $index=>$purposeStr) {
+                        if ($row['Purpose Specified'] !== '' &&
+                            array_search($index, $purposeArray) !== FALSE) {
+                            $row[$purposeStr] = 'TRUE';
+                        }
+                        else {
+                            $row[$purposeStr] = 'FALSE';
+                        }
+                    }
+                }
+
                 $webData = $this->webifyDataRow($row, $redcapProjects);
                 $this->printTableRow($webData, $hiddenColumns);
+
+                ?> <script>var hideColumns = <?= json_encode($purposeColumns) ?>;</script> <?
             }
             elseif ($format == 'text') {
                 $titlesStr = implode("\",\"", $row);
@@ -931,13 +970,21 @@ class AdminDash extends AbstractExternalModule {
    <thead>
       <tr>\n", 'reportTable');
 
-        foreach ($columns as $name)
+        $purposeColumns = [];
+
+        foreach ($columns as $index => $name) {
+            if (in_array($name, self::$purposeMaster)) {
+                array_push($purposeColumns, $index + 1);
+            }
+
             printf("         <th> %s </th>\n", $name);
+        }
 
         printf("
       </tr>
    </thead>\n");
 
+        return $purposeColumns;
     }
 
     private function printTableRow($row, $hiddenColumns)

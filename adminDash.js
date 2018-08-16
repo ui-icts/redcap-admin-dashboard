@@ -36,7 +36,7 @@
 
                     // remove rows from the table to speed up the sort of large tables.
                     // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
-                    pager_removeRows: false, // removing rows in larger tables speeds up the sort
+                    pager_removeRows: true, // removing rows in larger tables speeds up the sort
 
                     // use this format: "http://mydatabase.com?page={page}&size={size}&{sortList:col}&{filterList:fcol}"
                     // where {page} is replaced by the page number, {size} is replaced by the number of records to show,
@@ -102,7 +102,7 @@
 
                     output_separator     : ',',         // ',' 'json', 'array' or separator (e.g. ';')
                     output_ignoreColumns : '',         // columns to ignore [0, 1,... ] (zero-based index)
-                    output_hiddenColumns : false,       // include hidden columns in the output
+                    output_hiddenColumns : true,       // include hidden columns in the output
                     output_includeFooter : true,        // include footer rows in the output
                     output_includeHeader : true,        // include header rows in the output
                     output_headerRows    : false,       // output all header rows (if multiple rows)
@@ -282,6 +282,12 @@
             $table.trigger('outputTable');
             return false;
         });
+
+        if (hideColumns) {
+            for (var i in hideColumns) {
+                $('#reportTable tr > *:nth-child(' + hideColumns[i] + ')').hide();
+            }
+        }
     });
 
 }(window.jQuery, window, document));
@@ -333,8 +339,6 @@ UIOWA_AdminDash.getCountsFromJson = function(json, column) {
 
 UIOWA_AdminDash.setReportVisibility = function(settings, restricted) {
     var keys = Object.keys(settings);
-
-    console.log(settings);
 
     for (var i in keys) {
         var reportTitle = keys[i];
