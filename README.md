@@ -1,7 +1,7 @@
 ## Admin Dashboard
 
 ### Description
-The REDCap Admin Dashboard provides a number of reports on various project and user metadata in a sortable table view. This data can also be downloaded as a CSV formatted file (as well as other delimited formats). Additionally, user-defined reports can be included via custom SQL queries.
+The REDCap Admin Dashboard provides a number of reports on various project and user metadata in a sortable table view. This data can also be downloaded as a CSV formatted file (as well as other delimited formats). Additionally, user-defined reports can be included via custom SQL queries. Reports can also optionally be shared with non-admin users in a limited format (see Executive View).
 
 The following reports are enabled by default:
 * **Projects by User** (List of all users and the projects to which they have access)
@@ -44,11 +44,15 @@ Report results can be exported via the button located in the top right (just abo
 When exporting a report that includes the "Purpose Specified" column, it will split the purpose data into separate columns marked as TRUE/FALSE for easier analysis.
 
 #### Executive View
-Non-admin users with a valid REDCap login can be granted access to a limited version of the dashboard without link formatting (projects, emails, etc). The reports accessible in this view can be customized via the "Show/Hide Reports" button located in the top left of the page. By default, no reports are enabled for Executive View and attempts to access it by non-admin users will display an "access denied" error instead (this will also happen if a user attempts to follow a direct link to a report that is marked as hidden in Executive View).
+Non-admin users with a valid REDCap login can be granted access to a limited version of the dashboard without link formatting (projects, emails, etc). The reports accessible in this view can be customized on a per-user basis via the "Show/Hide Reports" button located in the top left of the page. By default, no reports are enabled for Executive View and attempts to access it by non-admin users will display an "access denied" error instead (this will also happen if a user attempts to follow a direct link to a specific report that they do not have permission to access).
 
 Access to this view can be granted by whitelisting usernames via the module configuration page. Admins can switch between the "Admin" and "Executive" views by clicking the button located at the bottom of any dashboard page. Admins can also access the "Show/Hide Reports" button from either view, but both of these buttons will be hidden from non-admin users.
 
-For non-admin users, there is no way to directly access this view through the REDCap UI. An admin will need to provide them with a direct link to the page so they can bookmark it for future use.
+When viewing the Executive Dashboard as an admin, the "Viewing as" dropdown is visible below the page header. This allows you to quickly switch between whitelisted users and preview their dashboard views and ensure the proper set of reports are visible/invisible to them. This dropdown is also available in the Show/Hide Reports modal, where report visibility can be modified per-user.
+
+**NOTE:** Changes made to report visibility will only take effect after the "Save" button is pressed. This means changing one user's permissions and switching to another user via the dropdown will cause any changes to the first user to be lost. This is intentional as it ensures no changes are ever saved without explicit acknowledgement (reducing the chance of an executive user gaining access to a report they should not have access to).
+
+For executive users, there is no way to directly access this view through the REDCap UI. An admin will need to provide them with a direct link to the page so they can bookmark it for future use.
 
 ### Configuration Options
 * **Default report view:** Selecting one of the default reports here will make it load immediately after opening the Admin Dashboard. Leaving this option unselected will display a simple landing page instead of loading a report (this is recommended, as reports with large result sets can take a while to process and should not be run unless necessary). This setting only affects the main Admin View (the Executive View will always show a landing page regardless).

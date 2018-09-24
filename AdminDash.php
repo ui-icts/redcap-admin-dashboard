@@ -5,7 +5,7 @@ use ExternalModules\AbstractExternalModule;
 use ExternalModules\ExternalModules;
 
 class AdminDash extends AbstractExternalModule {
-    public static $purposeMaster = array
+    private static $purposeMaster = array
     (
         "Basic or Bench Research",
         "Clinical Research Study or Trial",
@@ -17,7 +17,7 @@ class AdminDash extends AbstractExternalModule {
         "Other"
     );
 
-    public static $visualizationQueries = array
+    private static $visualizationQueries = array
     (
     array
     (
@@ -91,7 +91,7 @@ class AdminDash extends AbstractExternalModule {
     )
    );
 
-    public static $miscQueryReference = array
+    private static $miscQueryReference = array
     (
     array
     (
@@ -101,6 +101,34 @@ class AdminDash extends AbstractExternalModule {
             "
    )
    );
+
+    public function redcap_module_system_change_version() {
+        // update db for v3.1.2 and older
+        $oldVisibilityJson = $this->getSystemSetting("report-visibility");
+
+        if ($oldVisibilityJson) {
+            $oldVisibilityArray = json_decode($oldVisibilityJson, true);
+            $executiveUsers = $this->getSystemSetting("executive-users");
+
+            $visibilityArrayAdmin = array();
+            $visibilityArrayExecutive = array();
+
+            foreach ($oldVisibilityArray as $key => $oldVisibilityInfo) {
+                $visibilityArrayAdmin[$key] = $oldVisibilityArray[$key][0];
+                $visibilityArrayExecutive[$key] = array();
+
+                foreach ($executiveUsers as $user) {
+                    if ($oldVisibilityArray[$key][1]) {
+                        array_push($visibilityArrayExecutive[$key], $user);
+                    }
+                }
+            }
+
+            $this->setSystemSetting("report-visibility-admin", $visibilityArrayAdmin);
+            $this->setSystemSetting("report-visibility-executive", $visibilityArrayExecutive);
+            $this->removeSystemSetting("report-visibility");
+        }
+    }
 
     public function generateAdminDash() {
 
@@ -119,6 +147,8 @@ class AdminDash extends AbstractExternalModule {
         <script src="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.js") ?>"></script>
 
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
+        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.ice.min.css") ?>" rel="stylesheet">
+
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
         <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
@@ -129,43 +159,32 @@ class AdminDash extends AbstractExternalModule {
 
         <?php
 
-        $restrictedAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
         $reportReference = $this->generateReportReference();
+        $executiveUsers = $this->getSystemSetting("executive-users");
         $defaultTab = $this->getSystemSetting("default-report") - 1;
-        $defaultVisibilitySettings = array();
+        $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $executiveUsers) || SUPER_USER) ? 1 : 0);
+        $exportEnabled = ($this->getSystemSetting("executive-export-enabled") && $executiveAccess) || (SUPER_USER && !$executiveAccess);
 
-        foreach ($reportReference as $index => $reportInfo) {
-            $defaultVisibilitySettings[$reportInfo['reportName']][0] = $reportInfo['defaultVisibility'];
-            $defaultVisibilitySettings[$reportInfo['reportName']][1] = false;
-        }
-
-        if ((!isset($_REQUEST['tab']) && !$restrictedAccess) && $defaultTab != -1) {
-            $_REQUEST['tab'] = $defaultTab;
-        }
-
-        $title = $restrictedAccess ? "Executive Dashboard" : $this->getModuleName();
+        $title = $executiveAccess ? "Executive Dashboard" : $this->getModuleName();
         $pageInfo = $reportReference[$_REQUEST['tab']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
-        $visibilitySettings = self::getSystemSetting('report-visibility') != null ? json_decode(self::getSystemSetting('report-visibility'), true) : $defaultVisibilitySettings;
-        $reportEnabled = $visibilitySettings[$pageInfo['reportName']][$restrictedAccess];
-        $restrictedViewEnabled = false;
-        $exportEnabled = ($this->getSystemSetting("executive-export-enabled") && $restrictedAccess) || (SUPER_USER && !$restrictedAccess);
 
-        foreach ($visibilitySettings as $index => $report) {
-            if ($report[1] == true) {
-                $restrictedViewEnabled = true;
-                break;
-            }
+        $adminVisibility = $this->loadVisibilitySettings('admin', $reportReference);
+        $executiveVisibility = $this->loadVisibilitySettings('executive', $reportReference);
+        $executiveVisible = false;
+
+        if ($pageInfo['reportName']) {
+            $executiveVisible = in_array(USERID, $executiveVisibility->{$pageInfo['reportName']});
         }
 
         if (!SUPER_USER) {
-            if (
-                (!$restrictedAccess) ||
-                (!$reportEnabled && isset($_REQUEST['tab'])) ||
-                (!$restrictedViewEnabled)
-            ) {
+            if (!$executiveAccess || (!$executiveVisible && isset($_REQUEST['tab']))) {
                 die("Access denied! You do not have permission to view this page.");
             }
+        }
+
+        if ((!isset($_REQUEST['tab']) && !$executiveAccess) && $defaultTab != -1) {
+            $_REQUEST['tab'] = $defaultTab;
         }
 
         if (!$pageInfo['sql'] && !$pageInfo['userDefined']) :
@@ -190,9 +209,24 @@ class AdminDash extends AbstractExternalModule {
         endif;
 
         ?>
-        <h2 style="text-align: center; color: #106CD6; font-weight: bold;">
-             <?= $title ?>
-             </h2>
+        <h2 style="text-align: center; color: <?= (!$executiveAccess) ? "#106CD6" : "#4DADAF" ?>; font-weight: bold;">
+            <?= $title ?>
+        </h2>
+            <?php if ($executiveAccess && SUPER_USER) : ?>
+                <div style="text-align: center;" id="currentExecutiveUser">
+                    <b>Viewing as:</b>
+                    <select id="primaryUserSelect" class="executiveUser">
+                        <option value="">[Select User]</option>
+                        <?php
+                        foreach($executiveUsers as $user):
+                            if ($user) {
+                                echo '<option value="' . $user . '">' . $user . '</option>';
+                            }
+                        endforeach;
+                        ?>
+                    </select>
+                </div>
+            <?php endif; ?>
 
              <p />
 
@@ -209,21 +243,25 @@ class AdminDash extends AbstractExternalModule {
          <p />
 
         <script>
-            var csvFileName = '<?= sprintf("%s.csv", $pageInfo['fileName']); ?>';
-            var renderDatetime = '<?= date("Y-m-d_His") ?>';
-            $('.output-filename').val(csvFileName);
+            UIOWA_AdminDash.csvFileName = '<?= sprintf("%s.csv", $pageInfo['fileName']); ?>';
+            UIOWA_AdminDash.renderDatetime = '<?= date("Y-m-d_His") ?>';
 
-            var reportReference = <?= json_encode($reportReference) ?>;
-            var restrictedAccess = <?= $restrictedAccess ?>;
-            var visibilitySettings = <?= json_encode($visibilitySettings) ?>;
-            var saveVisibilityUrl = "<?= $this->getUrl("requestHandler.php?type=saveVisibilitySettings") ?>";
+            UIOWA_AdminDash.executiveAccess = <?= $executiveAccess ?>;
+            UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
+            UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
+            UIOWA_AdminDash.saveVisibilityUrl = "<?= $this->getUrl("requestHandler.php?type=saveVisibilitySettings") ?>";
 
-            UIOWA_AdminDash.setReportVisibility(visibilitySettings, restrictedAccess);
+            UIOWA_AdminDash.hideColumns = [];
+            UIOWA_AdminDash.reportReference = <?= json_encode($reportReference) ?>;
+            UIOWA_AdminDash.superuser = <?= SUPER_USER ?>;
+            UIOWA_AdminDash.theme = UIOWA_AdminDash.executiveAccess ? 'ice' : 'blue';
+
+            UIOWA_AdminDash.userID = '<?= USERID ?>';
         </script>
 
         <div>
             <?php if (SUPER_USER) : ?>
-            <div style="float: left">
+                <div style="float: left">
                 <button type="button" class="btn btn-primary open-visibility-settings" data-toggle="modal" data-target="#reportVisibilityModal">
                     <span class="fas fa-cog"></span> Show/Hide Reports
                 </button>
@@ -234,74 +272,110 @@ class AdminDash extends AbstractExternalModule {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="reportVisibilityModalLongTitle" style="text-align: center">Report Visibility Settings</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                            <div>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary save-visibility-settings" data-dismiss="modal">Save</button>
+                            </div>
                         </div>
                         <div class="modal-body">
                             <table class="table table-striped">
                                 <thead class="report-visibility-table">
                                 <tr>
                                     <th></th>
-                                    <th style="text-align: center; font-size: 18px"><b>Admin View</b></th>
-                                    <th style="text-align: center; font-size: 18px"><b>Executive View</b></th>
+                                    <th style="text-align: center; font-size: 18px">
+                                        <b>Admin View</b>
+                                    </th>
+                                    <th style="text-align: center; font-size: 18px">
+                                        <select id="modalUserSelect" class="executiveUser">
+                                            <option value="">[Select User]</option>
+                                            <?php
+                                            foreach($executiveUsers as $user):
+                                                if ($user) {
+                                                    echo '<option value="' . $user . '">' . $user . '</option>';
+                                                }
+                                            endforeach;
+                                            ?>
+                                        </select>
+                                        <br/>
+                                        <b>Executive View</b>
+                                    </th>
                                 </tr>
                                 </thead>
                             </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary save-visibility-settings" data-dismiss="modal">Save</button>
                         </div>
                     </div>
                 </div>
             </div>
                 <script>
-                    for (var i in reportReference) {
-                        var reportName = reportReference[i]['reportName'];
+                    if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser) {
+                        $('.executiveUser').val( sessionStorage.getItem("selectedUser") );
+                        UIOWA_AdminDash.userID = $('.executiveUser')[0].value;
+                    }
+
+                    for (var i in UIOWA_AdminDash.reportReference) {
+                        var reportName = UIOWA_AdminDash.reportReference[i]['reportName'];
 
                         $('.report-visibility-table').append(
                             '<tr>' +
                             '<td class="table-report-title" style="text-align:right; vertical-align:middle; padding-right:50px">' + reportName + '</td>' +
                             '<td class="table-admin-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
-                            '<td class="table-restricted-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
+                            '<td class="table-executive-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
                             '</tr>'
                         );
                     }
 
+                    $('.executiveUser').change(function() {
+                        $('.executiveUser').not(this).val( this.value );
+                        sessionStorage.setItem("selectedUser", this.value);
+                        UIOWA_AdminDash.updateSettingsModal(this.value);
+                    });
+
                     $('.open-visibility-settings').click(function() {
-                        $('.report-visibility-table tr').each(function () {
-                            var reportName = $(this).find('.table-report-title').html();
+                        var username = null;
 
-                            if (reportName == undefined) {return;}
+                        if (UIOWA_AdminDash.executiveAccess) {
+                            username = $('#primaryUserSelect')[0].value;
 
-                            var adminVisible = visibilitySettings[reportName][0];
-                            var restrictedVisible = visibilitySettings[reportName][1];
-                            var adminToggle = $(this).find('.table-admin-visible input');
-                            var restrictedToggle = $(this).find('.table-restricted-visible input');
+                            if ($('#primaryUserSelect')[0].value) {
+                                $('#modalUserSelect')[0].value = $('#primaryUserSelect')[0].value;
+                            }
+                        }
+                        else {
+                            username = $('#modalUserSelect')[0].value;
+                        }
 
-
-                            adminVisible ? adminToggle.bootstrapToggle('on') : adminToggle.bootstrapToggle('off');
-                            restrictedVisible ? restrictedToggle.bootstrapToggle('on') : restrictedToggle.bootstrapToggle('off');
-                        });
+                        UIOWA_AdminDash.updateSettingsModal(username);
                     });
 
                     $('.save-visibility-settings').click(function() {
-                        visibilitySettings = {};
+                        UIOWA_AdminDash.adminVisibility = {};
+
+                        var selectedUser = $('#modalUserSelect')[0].value;
 
                         $('.report-visibility-table tr').each(function () {
-                            var reportName = $(this).find('.table-report-title').html();
+                            var reportTitle = $(this).find('.table-report-title').html();
+                            var adminVisible = !$(this).find('.table-admin-visible div').hasClass('off');
+                            var executiveVisible = !$(this).find('.table-executive-visible div').hasClass('off');
+                            var prevVisible = $.inArray(selectedUser, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
 
-                            if (reportName == undefined) {return;}
+                            if (reportTitle == undefined) {return;}
 
-                            visibilitySettings[reportName] = [
-                                !$(this).find('.table-admin-visible div').hasClass('off'),
-                                !$(this).find('.table-restricted-visible div').hasClass('off')
-                            ];
+                            UIOWA_AdminDash.adminVisibility[reportTitle] = adminVisible;
+
+                            if (executiveVisible) {
+                                if (prevVisible) {return;}
+
+                                UIOWA_AdminDash.executiveVisibility[reportTitle].push(selectedUser);
+                            }
+                            else {
+                                UIOWA_AdminDash.executiveVisibility[reportTitle] = $.grep(UIOWA_AdminDash.executiveVisibility[reportTitle], function(e){
+                                    return e != selectedUser;
+                                });
+                            }
                         });
 
-                        UIOWA_AdminDash.saveReportVisibility(visibilitySettings, saveVisibilityUrl);
-                        UIOWA_AdminDash.setReportVisibility(visibilitySettings, restrictedAccess);
+                        UIOWA_AdminDash.saveReportSettings();
+                        UIOWA_AdminDash.updateReportTabs(selectedUser);
                     });
                 </script>
             <?php endif; ?>
@@ -353,14 +427,11 @@ class AdminDash extends AbstractExternalModule {
                         <li class="filename-field-display"><label title="Append date and time of report render to filename">Include timestamp: <input class="filename-datetime" type="checkbox" checked></li>
                     </ul>
                 </div>
+                <script>
+                    $('.output-filename').val(UIOWA_AdminDash.csvFileName);
+                </script>
                 <?php endif; ?>
             </div>
-
-            <script>
-                var csvFileName = '<?= sprintf("%s.csv", $pageInfo['fileName']); ?>';
-                var renderDatetime = '<?= date("Y-m-d_His") ?>';
-                $('.output-filename').val(csvFileName);
-            </script>
 
             <br />
             <br />
@@ -413,12 +484,12 @@ class AdminDash extends AbstractExternalModule {
             <br/>
             <br/>
         <div style="text-align: center;">
-            <h3>Welcome to the REDCap <?= (!$restrictedAccess) ? "Admin" : "Executive" ?> Dashboard!</h3>
+            <h3>Welcome to the REDCap <?= (!$executiveAccess) ? "Admin" : "Executive" ?> Dashboard!</h3>
         </div>
-            <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$restrictedAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?>
+            <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$executiveAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?>
                 <br />
                 <br />
-                <?php if ($restrictedAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username to the whitelist in the module configuration settings, then provide them with this page's URL.<?php endif; ?>
+                <?php if ($executiveAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username to the whitelist in the module configuration settings, then provide them with this page's URL. Use the "Show/Hide Reports" menu to configure report access.<?php endif; ?>
             </div>
             <br/>
             <br/>
@@ -455,16 +526,23 @@ class AdminDash extends AbstractExternalModule {
 
         if (SUPER_USER) {
             if ($_REQUEST['page'] == 'executiveView') {
-                echo ("<div style=\"text-align: center\"><a class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl("index.php")) . ">Switch to Admin View</a></div>");
+                $viewUrl = 'index.php';
+                $buttonText = 'Switch to Admin View';
             }
             else {
-                echo ("<div style=\"text-align: center\"><a class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl("executiveView.php")) . ">Switch to Executive View</a></div>");
+                $viewUrl = 'executiveView.php';
+                $buttonText = 'Switch to Executive View';
             }
+
+            if (isset($_REQUEST['tab'])) {
+                $viewUrl .= '?tab=' . $_REQUEST['tab'];
+            }
+
+            echo ("<div style=\"text-align: center\"><a id=\"switchView\" class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl($viewUrl)) . ">" . $buttonText . "</a></div>");
         }
    }
 
-    public function generateReportReference() {
-        $restrictedAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
+    private function generateReportReference() {
 
         $pwordSearchTerms =
             array(
@@ -861,7 +939,7 @@ class AdminDash extends AbstractExternalModule {
         return $reportReference;
     }
 
-    public function formatQueryResults($result, $format, $pageInfo)
+    private function formatQueryResults($result, $format, $pageInfo)
     {
         $redcapProjects = $this->getRedcapProjectNames();
         $isFirstRow = TRUE;
@@ -954,7 +1032,7 @@ class AdminDash extends AbstractExternalModule {
                 $webData = $this->webifyDataRow($row, $redcapProjects);
                 $this->printTableRow($webData, $hiddenColumns);
 
-                ?> <script>var hideColumns = <?= json_encode($purposeColumns) ?>;</script> <?php
+                ?> <script>UIOWA_AdminDash.hideColumns = <?= json_encode($purposeColumns) ?>;</script> <?php
             }
             elseif ($format == 'text') {
                 $titlesStr = implode("\",\"", $row);
@@ -1006,7 +1084,7 @@ class AdminDash extends AbstractExternalModule {
         // initialize value
         $webified = array();
 
-        $restrictedAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
+        $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $this->getSystemSetting("executive-users")) || SUPER_USER) ? 1 : 0);
 
         foreach ($row as $key => $value)
         {
@@ -1015,23 +1093,23 @@ class AdminDash extends AbstractExternalModule {
                 $projectStatuses = $row['Project Statuses (Hidden)'];
                 $projectDeleted = $row['Project Deleted Date (Hidden)'];
 
-                $webified[$key] = $this->formatProjectList($value, $projectTitles, $projectStatuses, $projectDeleted, $restrictedAccess);
+                $webified[$key] = $this->formatProjectList($value, $projectTitles, $projectStatuses, $projectDeleted, $executiveAccess);
             }
             elseif ($key == "Users")
             {
                 $suspended = $row['User Suspended Date (Hidden)'];
 
-                $webified[$key] = $this->formatUsernameList($value, $suspended, $restrictedAccess);
+                $webified[$key] = $this->formatUsernameList($value, $suspended, $executiveAccess);
             }
             elseif ($key == "User Emails")
             {
-                $webified[$key] = $this->formatEmailList($value, $restrictedAccess);
+                $webified[$key] = $this->formatEmailList($value, $executiveAccess);
             }
             elseif ($key == "Purpose Specified")
             {
                 $webified[$key] = $this->convertProjectPurpose2List($value);
             }
-            elseif (!$restrictedAccess) {
+            elseif (!$executiveAccess) {
                 if ($key == "PID")
                 {
                     $webified[$key] = $this->convertPid2AdminLink($value);
@@ -1078,7 +1156,7 @@ class AdminDash extends AbstractExternalModule {
         return($mailtoLink);
     }
 
-    private function formatEmailList($emailStr, $restrictedAccess)
+    private function formatEmailList($emailStr, $executiveAccess)
     {
         // convert comma-delimited string to array
         $emailList = explode(", ", $emailStr);
@@ -1088,7 +1166,7 @@ class AdminDash extends AbstractExternalModule {
         {
             $formattedEmail = $email;
 
-            if (!$restrictedAccess) {
+            if (!$executiveAccess) {
                 $formattedEmail = $this->convertEmail2Link($email);
             }
 
@@ -1100,7 +1178,7 @@ class AdminDash extends AbstractExternalModule {
         $mailtoLink = 'mailto:?bcc=' . str_replace(', ', ';', $emailStr);
 
 
-        if (count($emailLinks) > 1 && !$restrictedAccess) {
+        if (count($emailLinks) > 1 && !$executiveAccess) {
             $emailCell .= "<button style='float:right' onclick='location.href=\"" . $mailtoLink . "\"'>Email All</button>";
         }
 
@@ -1145,7 +1223,7 @@ class AdminDash extends AbstractExternalModule {
         return($pidLink);
     }
 
-    private function formatProjectList($pidStr, $projectTitles, $projectStatuses, $projectDeleted, $restrictedAccess)
+    private function formatProjectList($pidStr, $projectTitles, $projectStatuses, $projectDeleted, $executiveAccess)
     {
         // convert comma-delimited string to array
         $pidList = explode(", ", $pidStr);
@@ -1158,7 +1236,7 @@ class AdminDash extends AbstractExternalModule {
         {
             $formattedProjectTitle = $projectTitles[$pid];
 
-            if (!$restrictedAccess) {
+            if (!$executiveAccess) {
                 $formattedProjectTitle = $this->convertPid2Link($pid, $formattedProjectTitle, $statusList[$index], $deletedList[$index]);
             }
 
@@ -1191,7 +1269,7 @@ class AdminDash extends AbstractExternalModule {
         return($userLink);
     }
 
-    private function formatUsernameList($userIDs, $suspendedList, $restrictedAccess)
+    private function formatUsernameList($userIDs, $suspendedList, $executiveAccess)
     {
         // convert comma delimited string to array
         $userIDlist = explode(", ", $userIDs);
@@ -1204,7 +1282,7 @@ class AdminDash extends AbstractExternalModule {
             $formattedUsername = $userID;
             $suspended = $suspendedList[$index];
 
-            if (!$restrictedAccess) {
+            if (!$executiveAccess) {
                 $formattedUsername = $this->convertUsername2Link($formattedUsername, $suspended);
             }
 
@@ -1312,9 +1390,33 @@ class AdminDash extends AbstractExternalModule {
         echo json_encode($data);
     }
 
+    private function loadVisibilitySettings($type, $reportReference) {
+        $storedVisibility = $this->getSystemSetting("report-visibility-" . $type);
+
+        if ($storedVisibility) {
+            $visibilityArray = $storedVisibility;
+        }
+        else {
+            $visibilityArray = array();
+
+            foreach ($reportReference as $index => $reportInfo) {
+                if ($type == 'admin') {
+                    $visibilityArray[$reportInfo['reportName']] = $reportInfo['defaultVisibility'];
+                }
+                if ($type == 'executive') {
+                    $visibilityArray[$reportInfo['reportName']] = array();
+                }
+            }
+        }
+
+        return $visibilityArray;
+    }
+
     public function saveVisibilitySettings() {
-        $visibilityJson = file_get_contents('php://input');
-        self::setSystemSetting('report-visibility', $visibilityJson);
+        $visibilitySettings = json_decode(file_get_contents('php://input'));
+
+        $this->setSystemSetting('report-visibility-admin', $visibilitySettings->admin);
+        $this->setSystemSetting('report-visibility-executive', $visibilitySettings->executive);
     }
 }
 ?>

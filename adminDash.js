@@ -4,7 +4,7 @@
     $(document).ready(function () {
         $("#reportTable")
             .tablesorter({
-                theme: 'blue',
+                theme: UIOWA_AdminDash.theme,
                 widthFixed: true,
                 usNumberFormat: false,
                 sortReset: false,
@@ -115,7 +115,7 @@
                     output_trimSpaces    : true,       // remove extra white-space characters from beginning & end
                     output_wrapQuotes    : false,       // wrap every cell output in quotes
                     output_popupStyle    : 'width=580,height=310',
-                    output_saveFileName  : csvFileName,
+                    output_saveFileName  : UIOWA_AdminDash.csvFileName,
                     // callback executed after the content of the table has been processed
                     output_formatContent : function(config, widgetOptions, data) {
                         // data.isHeader (boolean) = true if processing a header cell
@@ -129,7 +129,11 @@
                     output_callback      : function(config, data, url) {
                         // return false to stop delivery & do something else with the data
                         // return true OR modified data (v2.25.1) to continue download/output
-                        data = '\ufeff' + data;
+
+                        if (config['widgetOptions']['output_delivery'] == 'd') {
+                            data = '\ufeff' + data;
+                        }
+
                         return data;
                     },
                     // callbackJSON used when outputting JSON & any header cells has a colspan - unique names required
@@ -272,7 +276,7 @@
 
             if ($this.find('.filename-datetime').is(':checked')) {
                 var splitFilename = filename.split('.');
-                splitFilename.splice(-1, 0, renderDatetime);
+                splitFilename.splice(-1, 0, UIOWA_AdminDash.renderDatetime);
                 wo.output_saveFileName = splitFilename.join('.');
             }
             else {
@@ -283,11 +287,14 @@
             return false;
         });
 
-        if (hideColumns) {
-            for (var i in hideColumns) {
-                $('#reportTable tr > *:nth-child(' + hideColumns[i] + ')').hide();
+        if (UIOWA_AdminDash.hideColumns) {
+            for (var i in UIOWA_AdminDash.hideColumns) {
+                $('#reportTable tr > *:nth-child(' + UIOWA_AdminDash.hideColumns[i] + ')').hide();
+                $('#reportTable-sticky tr > *:nth-child(' + UIOWA_AdminDash.hideColumns[i] + ')').hide();
             }
         }
+
+        UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
     });
 
 }(window.jQuery, window, document));
@@ -337,19 +344,52 @@ UIOWA_AdminDash.getCountsFromJson = function(json, column) {
     return countList;
 };
 
-UIOWA_AdminDash.setReportVisibility = function(settings, restricted) {
-    var keys = Object.keys(settings);
+UIOWA_AdminDash.updateSettingsModal = function(selectedUser) {
+
+    $('.report-visibility-table tr').each(function () {
+        var reportTitle = $(this).find('.table-report-title').html();
+
+        if (reportTitle == undefined) {return;}
+
+        var adminVisible = UIOWA_AdminDash.adminVisibility[reportTitle];
+        var executiveVisible = $.inArray(selectedUser, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
+        var adminToggle = $(this).find('.table-admin-visible input');
+        var executiveToggle = $(this).find('.table-executive-visible input');
+        var executiveToggleGroup = $(this).find('.table-executive-visible .toggle-off');
+
+        if (selectedUser == '' || selectedUser == null) {
+            executiveToggle.bootstrapToggle('off');
+
+            executiveToggle.prop('disabled', true);
+            executiveToggleGroup.addClass('disabled');
+        }
+        else {
+            executiveToggle.prop('disabled', false);
+            executiveToggleGroup.removeClass('disabled');
+
+            executiveVisible ? executiveToggle.bootstrapToggle('on') : executiveToggle.bootstrapToggle('off');
+        }
+
+        adminVisible ? adminToggle.bootstrapToggle('on') : adminToggle.bootstrapToggle('off');
+
+    });
+
+    UIOWA_AdminDash.updateReportTabs(selectedUser);
+};
+
+UIOWA_AdminDash.updateReportTabs = function(user) {
+    var keys = Object.keys(UIOWA_AdminDash.adminVisibility);
 
     for (var i in keys) {
         var reportTitle = keys[i];
-        var adminVisible = settings[reportTitle][0];
-        var restrictedVisible = settings[reportTitle][1];
+        var adminVisible = UIOWA_AdminDash.adminVisibility[reportTitle];
+        var executiveVisible = $.inArray(user, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
         var reportTab = $('li:contains(' + reportTitle + ')');
 
-        if (!adminVisible && !restricted) {
+        if (!adminVisible && !UIOWA_AdminDash.executiveAccess) {
             reportTab.hide();
         }
-        else if (!restrictedVisible && restricted) {
+        else if (!executiveVisible && UIOWA_AdminDash.executiveAccess) {
             reportTab.hide();
         }
         else {
@@ -358,11 +398,14 @@ UIOWA_AdminDash.setReportVisibility = function(settings, restricted) {
     }
 };
 
-UIOWA_AdminDash.saveReportVisibility = function(settings, url) {
-    settings = JSON.stringify(settings);
+UIOWA_AdminDash.saveReportSettings = function() {
+    var visibilitySettings = JSON.stringify({
+        'admin': UIOWA_AdminDash.adminVisibility,
+        'executive': UIOWA_AdminDash.executiveVisibility
+    });
 
     var request = new XMLHttpRequest();
-    request.open("POST", url, true);
+    request.open("POST", UIOWA_AdminDash.saveVisibilityUrl, true);
     request.setRequestHeader("Content-type", "application/json");
-    request.send(settings);
+    request.send(visibilitySettings);
 };

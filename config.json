@@ -24,6 +24,10 @@
     ]
   },
 
+  "permissions": [
+    "redcap_module_system_change_version"
+  ],
+
   "system-settings": [
     {
       "key": "default-report",
