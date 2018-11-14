@@ -404,6 +404,7 @@ UIOWA_AdminDash.saveReportConfiguration = function() {
         'reportName': newReportTitle,
         'description': $('#reportDescription').val(),
         'tabIcon': $('#reportIcon').val(),
+        'customID': $('#reportCustomId').val(),
         'sql': editor.getValue(),
         'type': 'table'
 };
@@ -602,7 +603,6 @@ UIOWA_AdminDash.saveReportSettingsToDb = function(type) {
 
     var allSettings = JSON.stringify({
         'reportReference': type == 'all' || type == 'reports' ? customReports : null,
-        'customReportIDs': type == 'all' || type == 'reports' ? UIOWA_AdminDash.reportIDs : null,
         'adminVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.adminVisibility : null,
         'executiveVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.executiveVisibility : null
     });

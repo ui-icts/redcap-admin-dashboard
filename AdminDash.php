@@ -235,28 +235,19 @@ class AdminDash extends AbstractExternalModule {
         $defaultTab = $this->getSystemSetting("default-report") - 1;
         $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $executiveUsers) || SUPER_USER) ? 1 : 0);
         $exportEnabled = ($this->getSystemSetting("executive-export-enabled") && $executiveAccess) || (SUPER_USER && !$executiveAccess);
+        $reportIDlookup = [];
 
-        $reportIDs = $this->getSystemSetting("custom-report-ids");
-
-        if ($reportIDs == null) {
-            $reportIDs = [];
-
-            foreach ($reportReference as $index => $index) {
-                array_push($reportIDs, $index['fileName']);
-            }
+        foreach($reportReference as $index => $reportInfo) {
+            array_push($reportIDlookup, $reportInfo['customID']);
         }
 
         if (isset($_REQUEST['report']) && !is_numeric($_REQUEST['report'])) {
-            $_REQUEST['report'] = array_search($_REQUEST['report'], $reportIDs);
+            $_REQUEST['report'] = array_search($_REQUEST['report'], $reportIDlookup);
         }
 
         $title = $executiveAccess ? "Executive Dashboard" : $this->getModuleName();
         $pageInfo = $reportReference[$_REQUEST['report']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
-
-        if (!isset($pageInfo['fileName'])) {
-            $pageInfo['fileName'] = $reportIDs[$_REQUEST['report']];
-        }
 
         $adminVisibility = $this->loadVisibilitySettings('admin', $reportReference);
         $executiveVisibility = $this->loadVisibilitySettings('executive', $reportReference);
@@ -302,7 +293,7 @@ class AdminDash extends AbstractExternalModule {
              <ul class='nav nav-tabs report-tabs'>
              <?php foreach($reportReference as $index => $reportInfo): ?>
              <li class="nav-item <?= $_REQUEST['report'] == $index && isset($_REQUEST['report']) ? "active" : "" ?>" style="display:none" >
-             <a class="nav-link" href="<?= $this->formatUrl($reportIDs[$index] != '' ? $reportIDs[$index] : $index) ?>">
+             <a class="nav-link" href="<?= $this->formatUrl($reportIDlookup[$index] != '' ? $reportIDlookup[$index] : $index) ?>">
              <span class="report-icon fas fa-<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <span class="report-title"><?= $reportInfo['reportName'] ?></span></a>
          </li>
         <?php endforeach; ?>
@@ -311,13 +302,13 @@ class AdminDash extends AbstractExternalModule {
          <p />
 
         <script>
-            UIOWA_AdminDash.csvFileName = '<?= sprintf("%s.csv", $pageInfo['fileName']); ?>';
+            UIOWA_AdminDash.csvFileName = '<?= sprintf("%s.csv", $pageInfo['customID']); ?>';
             UIOWA_AdminDash.renderDatetime = '<?= date("Y-m-d_His") ?>';
 
             UIOWA_AdminDash.executiveAccess = <?= $executiveAccess ?>;
             UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
             UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
-            UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDs) ?>;
+            UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDlookup) ?>;
             UIOWA_AdminDash.saveSettingsUrl = "<?= $this->getUrl("requestHandler.php?type=saveReportSettings") ?>";
             UIOWA_AdminDash.reportUrlTemplate = "<?= $this->getUrl(
                 $executiveAccess ? "executiveView" : "index" . ".php", false, true) ?>";
@@ -925,7 +916,7 @@ FROM redcap_projects</textarea>
             array // Projects by User
             (
                 "reportName" => "Projects by User",
-                "fileName" => "projectsByUser",
+                "customID" => "projectsByUser",
                 "description" => "List of all users and the projects to which they have access.",
                 "tabIcon" => "male",
                 "defaultVisibility" => true,
@@ -966,7 +957,7 @@ ORDER BY info.user_lastname,
             array // Users by Project
             (
                 "reportName" => "Users by Project",
-                "fileName" => "usersByProject",
+                "customID" => "usersByProject",
                 "description" => "List of all projects and the users which have access.",
                 "tabIcon" => "users",
                 "defaultVisibility" => true,
@@ -1014,7 +1005,7 @@ ORDER BY app_title"
             array // Research Projects
             (
                 "reportName" => "Research Projects",
-                "fileName" => "researchProjects",
+                "customID" => "researchProjects",
                 "description" => "List of all projects that are identified as being used for research purposes.",
                 "tabIcon" => "flask",
                 "defaultVisibility" => true,
@@ -1051,7 +1042,7 @@ ORDER BY app_title"
             array // Development Projects
             (
                 "reportName" => "Development Projects",
-                "fileName" => "developmentProjects",
+                "customID" => "developmentProjects",
                 "description" => "List of all projects that are in Development Mode.",
                 "tabIcon" => "wrench",
                 "defaultVisibility" => true,
@@ -1087,7 +1078,7 @@ ORDER BY app_title"
             array // All Projects
             (
                 "reportName" => "All Projects",
-                "fileName" => "allProjects",
+                "customID" => "allProjects",
                 "description" => "List of all projects.",
                 "tabIcon" => "folder-open",
                 "defaultVisibility" => true,
@@ -1129,7 +1120,7 @@ ORDER BY app_title"
             array
             (
                 "reportName" => "Credentials Check (Project Titles)",
-                "fileName" => "projectCredentials",
+                "customID" => "projectCredentials",
                 "description" => "List of projects titles that contain strings related to login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "key",
                 "defaultVisibility" => false,
@@ -1155,7 +1146,7 @@ WHERE (projects.created_by = users.ui_id) AND
             array
             (
                 "reportName" => "Credentials Check (Instruments)",
-                "fileName" => "instrumentCredentials",
+                "customID" => "instrumentCredentials",
                 "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "key",
                 "defaultVisibility" => false,
@@ -1178,7 +1169,7 @@ WHERE (projects.created_by = users.ui_id) AND
             array
             (
                 "reportName" => "Credentials Check (Fields)",
-                "fileName" => "fieldCredentials",
+                "customID" => "fieldCredentials",
                 "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "key",
                 "defaultVisibility" => false,
@@ -1209,7 +1200,7 @@ ORDER BY
             array
             (
                 "reportName" => "Projects with External Modules",
-                "fileName" => "modulesInProjects",
+                "customID" => "modulesInProjects",
                 "description" => "List of External Modules and the projects they are enabled in.",
                 "tabIcon" => "plug",
                 "defaultVisibility" => false,
@@ -1262,7 +1253,7 @@ ORDER BY directory_prefix
 //            array // Visualizations
 //            (
 //                "reportName" => "Visualizations",
-//                "fileName" => "visualizations",
+//                "customID" => "visualizations",
 //                "description" => "Additional metadata presented in a visual format.",
 //                "tabIcon" => "fas fa-chart-pie",
 //                "defaultVisibility" => true
@@ -1303,7 +1294,7 @@ ORDER BY directory_prefix
                 $row['Module Title'] = ucwords($row['Module Title']);
             }
 
-            if ($pageInfo['fileName'] == 'modulesInProjects' ||
+            if ($pageInfo['customID'] == 'modulesInProjects' ||
                 strpos($_REQUEST['file'], 'modulesInProjects') !== false) {
                     $rowArray = explode(', ', $row['Project Titles']);
                     $rowArray = array_unique($rowArray);
@@ -1758,9 +1749,6 @@ ORDER BY directory_prefix
             else {
                 $this->setSystemSetting('custom-reports', $allSettings->reportReference);
             }
-        }
-        if ($allSettings->customReportIDs) {
-            $this->setSystemSetting('custom-report-ids', $allSettings->customReportIDs);
         }
         if ($allSettings->adminVisibility) {
             $this->setSystemSetting('report-visibility-admin', $allSettings->adminVisibility);
