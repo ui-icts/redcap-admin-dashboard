@@ -89,44 +89,9 @@
     },
     {
       "key": "executive-export-enabled",
-      "name": "Enable Export button in Executive View",
+      "name": "Enable export options in Executive View",
       "type": "checkbox",
       "required": false
-    },
-    {
-      "key": "custom-reports",
-      "name": "<b>Define custom reports (see documentation for more info):</b>",
-      "type": "descriptive",
-      "required": false
-    },
-    {
-      "key": "custom-report",
-      "name": "Define custom report",
-      "type": "sub_settings",
-      "required": false,
-      "repeatable": true,
-      "sub_settings":[
-        {
-          "key": "custom-report-name",
-          "name": "Report Name",
-          "type": "text"
-        },
-        {
-          "key": "custom-report-desc",
-          "name": "Report Description",
-          "type": "text"
-        },
-        {
-          "key": "custom-report-icon",
-          "name": "Report Icon",
-          "type": "text"
-        },
-        {
-          "key": "custom-report-sql",
-          "name": "Report SQL",
-          "type": "textarea"
-        }
-      ]
     }
   ]
 }

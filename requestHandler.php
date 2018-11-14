@@ -5,6 +5,6 @@ $module = new \UIOWA\AdminDash\AdminDash();
 if ($_REQUEST['type'] == 'getVisData') {
     $module->getVisData();
 }
-elseif ($_REQUEST['type'] == 'saveVisibilitySettings') {
-    $module->saveVisibilitySettings();
+elseif ($_REQUEST['type'] == 'saveReportSettings') {
+    $module->saveReportSettings();
 }

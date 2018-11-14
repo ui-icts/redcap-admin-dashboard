@@ -51,9 +51,16 @@ div#outer
    font-size: 10px;
 }
 
-.dropdown-menu
+.export-menu
 {
    width: 250px;
+   padding: 10px;
+}
+
+.report-edit-menu
+{
+   font-size: 18px;
+   min-width: 100px;
    padding: 10px;
 }
 
@@ -79,6 +86,33 @@ div#outer
 {
    text-align: center;
    padding-top: 20px;
+}
+
+.ace_editor {
+   border: 1px solid lightgray;
+   margin: auto;
+   height: 500px;
+}
+
+.reportSpecialFormatting {
+   height: 500px;
+}
+
+.modal {
+   overflow-y:auto;
+}
+
+.secondary-modal {
+   width: 80%;
+   margin: 0 auto;
+}
+
+.dropdown-item {
+   font-size: inherit;
+}
+
+.report-settings-button {
+   margin-left: 5px;
 }
 
 /* Bootstrap Toggle v2.2.2 corrections for Bootsrtap 4*/

@@ -35,7 +35,45 @@ class AdminDash extends AbstractExternalModule {
             ELSE status
             END AS CHAR(50)) AS 'Status'
             FROM redcap_projects
-            "
+            ",
+    "type" => "\"bar\"",
+    "data" => "
+        {
+            labels: [\"Red\", \"Blue\", \"Yellow\", \"Green\", \"Purple\", \"Orange\"],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        }
+    ",
+    "options" => "
+        {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    }
+                }]
+            }
+        }
+    "
    ),
     array
     (
@@ -103,7 +141,7 @@ class AdminDash extends AbstractExternalModule {
    );
 
     public function redcap_module_system_change_version() {
-        // update db for v3.1.2 and older
+        // update db for compatibility with v3.2
         $oldVisibilityJson = $this->getSystemSetting("report-visibility");
 
         if ($oldVisibilityJson) {
@@ -128,6 +166,39 @@ class AdminDash extends AbstractExternalModule {
             $this->setSystemSetting("report-visibility-executive", $visibilityArrayExecutive);
             $this->removeSystemSetting("report-visibility");
         }
+
+        // update db for compatibility with v3.3
+        $oldNameData = $this->getSystemSetting("custom-report-name");
+        $oldDescData = $this->getSystemSetting("custom-report-desc");
+        $oldIconData = $this->getSystemSetting("custom-report-icon");
+        $oldSqlData = $this->getSystemSetting("custom-report-sql");
+
+        if ($oldNameData) {
+            $newCustomReportData = array();
+            $untitledCount = 0;
+
+            foreach ($oldNameData as $index => $oldName) {
+                array_push($newCustomReportData, array(
+                    'reportName' => empty($oldNameData[$index]) ? 'Untitled' : $oldNameData[$index],
+                    'description' => empty($oldDescData[$index]) ? 'No description defined.' : $oldDescData[$index],
+                    'tabIcon' => empty($oldIconData[$index]) ? 'fas fa-question-circle' : str_replace('fas fa', '', $oldIconData[$index]),
+                    'sql' => $oldSqlData[$index],
+                    'type' => 'table'
+                ));
+
+                if ($newCustomReportData[$index]['reportName'] == 'Untitled') {
+                    $untitledCount += 1;
+                    $newCustomReportData[$index]['reportName'] .= $untitledCount;
+                }
+            }
+
+            $this->setSystemSetting("custom-reports", $newCustomReportData);
+            $this->removeSystemSetting("custom-report");
+            $this->removeSystemSetting("custom-report-name");
+            $this->removeSystemSetting("custom-report-desc");
+            $this->removeSystemSetting("custom-report-icon");
+            $this->removeSystemSetting("custom-report-sql");
+        }
     }
 
     public function generateAdminDash() {
@@ -144,7 +215,8 @@ class AdminDash extends AbstractExternalModule {
         <script src="<?= $this->getUrl("/resources/c3/c3.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/parsers/parser-input-select.min.js") ?>"></script>
         <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-output.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/Chart.min.js") ?>"></script>
+        <script src="<?= $this->getUrl("/resources/jquery.validate.min.js") ?>"></script>
 
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.ice.min.css") ?>" rel="stylesheet">
@@ -153,7 +225,6 @@ class AdminDash extends AbstractExternalModule {
         <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
         <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
         <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.bootstrap_4.min.css") ?>" rel="stylesheet">
-        <link href="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.css") ?>" rel="stylesheet">
 
         <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
 
@@ -165,9 +236,27 @@ class AdminDash extends AbstractExternalModule {
         $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $executiveUsers) || SUPER_USER) ? 1 : 0);
         $exportEnabled = ($this->getSystemSetting("executive-export-enabled") && $executiveAccess) || (SUPER_USER && !$executiveAccess);
 
+        $reportIDs = $this->getSystemSetting("custom-report-ids");
+
+        if ($reportIDs == null) {
+            $reportIDs = [];
+
+            foreach ($reportReference as $index => $index) {
+                array_push($reportIDs, $index['fileName']);
+            }
+        }
+
+        if (isset($_REQUEST['report']) && !is_numeric($_REQUEST['report'])) {
+            $_REQUEST['report'] = array_search($_REQUEST['report'], $reportIDs);
+        }
+
         $title = $executiveAccess ? "Executive Dashboard" : $this->getModuleName();
-        $pageInfo = $reportReference[$_REQUEST['tab']];
+        $pageInfo = $reportReference[$_REQUEST['report']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
+
+        if (!isset($pageInfo['fileName'])) {
+            $pageInfo['fileName'] = $reportIDs[$_REQUEST['report']];
+        }
 
         $adminVisibility = $this->loadVisibilitySettings('admin', $reportReference);
         $executiveVisibility = $this->loadVisibilitySettings('executive', $reportReference);
@@ -178,35 +267,14 @@ class AdminDash extends AbstractExternalModule {
         }
 
         if (!SUPER_USER) {
-            if (!$executiveAccess || (!$executiveVisible && isset($_REQUEST['tab']))) {
+            if (!$executiveAccess || (!$executiveVisible && isset($_REQUEST['report']))) {
                 die("Access denied! You do not have permission to view this page.");
             }
         }
 
-        if ((!isset($_REQUEST['tab']) && !$executiveAccess) && $defaultTab != -1) {
-            $_REQUEST['tab'] = $defaultTab;
+        if ((!isset($_REQUEST['report']) && !$executiveAccess) && $defaultTab != -1) {
+            $_REQUEST['report'] = $defaultTab;
         }
-
-        if (!$pageInfo['sql'] && !$pageInfo['userDefined']) :
-         foreach (self::$visualizationQueries as $vis => $visInfo):
-            ?>
-               <script>
-               d3.json("<?= $this->getUrl("requestHandler.php?type=getVisData&vis=" . $vis) ?>", function (error, json) {
-                   if (error) return console.warn(error);
-
-                    UIOWA_AdminDash.createPieChart(
-                      UIOWA_AdminDash.getCountsFromJson(
-                          json,
-                          <?php echo json_encode($visInfo['countColumns']) ?>
-                    ),
-                     <?= $visInfo['visName'] ?>,
-                     <?= $visInfo['visID'] ?>
-                   );
-               });
-               </script>
-            <?php
-         endforeach;
-        endif;
 
         ?>
         <h2 style="text-align: center; color: <?= (!$executiveAccess) ? "#106CD6" : "#4DADAF" ?>; font-weight: bold;">
@@ -231,11 +299,11 @@ class AdminDash extends AbstractExternalModule {
              <p />
 
                 <!-- create navigation tabs -->
-             <ul class='nav nav-tabs'>
-             <?php foreach($reportReference as $report => $reportInfo): ?>
-             <li class="nav-item <?= $_REQUEST['tab'] == $report && isset($_REQUEST['tab']) ? "active" : "" ?>" style="display:none" >
-             <a class="nav-link" href="<?= $this->formatUrl($report) ?>">
-             <span class="<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <?= $reportInfo['reportName'] ?></a>
+             <ul class='nav nav-tabs report-tabs'>
+             <?php foreach($reportReference as $index => $reportInfo): ?>
+             <li class="nav-item <?= $_REQUEST['report'] == $index && isset($_REQUEST['report']) ? "active" : "" ?>" style="display:none" >
+             <a class="nav-link" href="<?= $this->formatUrl($reportIDs[$index] != '' ? $reportIDs[$index] : $index) ?>">
+             <span class="report-icon fas fa-<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <span class="report-title"><?= $reportInfo['reportName'] ?></span></a>
          </li>
         <?php endforeach; ?>
          </ul>
@@ -249,21 +317,31 @@ class AdminDash extends AbstractExternalModule {
             UIOWA_AdminDash.executiveAccess = <?= $executiveAccess ?>;
             UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
             UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
-            UIOWA_AdminDash.saveVisibilityUrl = "<?= $this->getUrl("requestHandler.php?type=saveVisibilitySettings") ?>";
+            UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDs) ?>;
+            UIOWA_AdminDash.saveSettingsUrl = "<?= $this->getUrl("requestHandler.php?type=saveReportSettings") ?>";
+            UIOWA_AdminDash.reportUrlTemplate = "<?= $this->getUrl(
+                $executiveAccess ? "executiveView" : "index" . ".php", false, true) ?>";
 
             UIOWA_AdminDash.hideColumns = [];
             UIOWA_AdminDash.reportReference = <?= json_encode($reportReference) ?>;
+            UIOWA_AdminDash.showArchivedReports = false;
             UIOWA_AdminDash.superuser = <?= SUPER_USER ?>;
             UIOWA_AdminDash.theme = UIOWA_AdminDash.executiveAccess ? 'ice' : 'blue';
 
             UIOWA_AdminDash.userID = '<?= USERID ?>';
+
         </script>
 
         <div>
             <?php if (SUPER_USER) : ?>
+                <script src="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.js") ?>"></script>
+                <link href="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.css") ?>" rel="stylesheet">
+
+                <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
+
                 <div style="float: left">
                 <button type="button" class="btn btn-primary open-visibility-settings" data-toggle="modal" data-target="#reportVisibilityModal">
-                    <span class="fas fa-cog"></span> Show/Hide Reports
+                    <span class="fas fa-cog"></span> Configure Reports
                 </button>
             </div>
             <!-- Modal -->
@@ -271,7 +349,7 @@ class AdminDash extends AbstractExternalModule {
                 <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="reportVisibilityModalLongTitle" style="text-align: center">Report Visibility Settings</h5>
+                            <h5 class="modal-title" id="reportVisibilityModalLongTitle" style="text-align: center">Report Settings</h5>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                 <button type="button" class="btn btn-primary save-visibility-settings" data-dismiss="modal">Save</button>
@@ -279,8 +357,9 @@ class AdminDash extends AbstractExternalModule {
                         </div>
                         <div class="modal-body">
                             <table class="table table-striped">
-                                <thead class="report-visibility-table">
+                                <thead>
                                 <tr>
+                                    <th></th>
                                     <th></th>
                                     <th style="text-align: center; font-size: 18px">
                                         <b>Admin View</b>
@@ -301,7 +380,134 @@ class AdminDash extends AbstractExternalModule {
                                     </th>
                                 </tr>
                                 </thead>
+                                <tbody class="report-visibility-table">
+                                    <tr>
+                                        <td style="text-align: center;" colspan="4">
+                                            <button type="button" class="btn btm-sm btn-success open-report-setup add-report-button" aria-haspopup="true" aria-expanded="false" data-toggle="modal" data-target="#reportSetupModal">
+                                                <span class="fas fa-plus"></span> Add New Report
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="reportSetupModal" tabindex="-1" role="dialog" aria-labelledby="reportSetupModal" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content secondary-modal">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reportSetupModalLongTitle" style="text-align: center">Configure Report</h5>
+                            <div>
+                                <button type="button" class="btn btn-secondary close-report-setup" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary save-report-setup">Save</button>
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            <div id="reportIndex" style="display: none;"></div>
+                            <form id="reportConfiguration" novalidate data-toggle="validator">
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="reportName">Title:</label>
+                                        <input id="reportName" name="reportName" class="form-control" required>
+                                        <small id="titleValidation" class="invalid-feedback">
+                                            Report name must be unique.
+                                        </small>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="reportIcon">Icon:</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i id="reportIconPreview" class="fas fa-question"></i></span>
+                                            </div>
+                                            <input id="reportIcon" data-placement="bottomRight" class="form-control" value="question" type="text" aria-describedby="iconHelpBlock">
+                                        </div>
+                                        <small id="iconHelpBlock" class="form-text text-muted">
+                                            Accepts most Solid Icons from Font Awesome (<a href="https://fontawesome.com/cheatsheet#solid" style="font-size: inherit" target="_blank">reference</a>)
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reportDescription">Description:</label>
+                                    <input id="reportDescription" class="form-control">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6" hidden>
+                                        <label for="reportDisplayType">Display Type:</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="reportDisplayType" aria-describedby="displayHelpBlock">
+                                                <option>Table</option>
+                                                <option>Chart</option>
+                                            </select>
+                                            <small id="displayHelpBlock" class="form-text text-muted">
+                                                Display query results in a sortable table view or in a custom visualization.
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="reportCustomId">Report ID:</label>
+                                        <div class="input-group">
+                                            <input id="reportCustomId" data-placement="bottomRight" class="form-control" type="text" aria-describedby="idHelpBlock">
+                                            <div class="input-group-append">
+                                                <span id="reportId" class="input-group-text" readonly="true"></span>
+                                            </div>
+                                        </div>
+                                        <small id="idHelpBlock" class="form-text text-muted">
+                                            Define optional alphanumeric string for easier bookmarking. The report index (in grey) is used by default.
+                                        </small>
+                                    </div>
+                                </div>
+                                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="sql-tab" data-toggle="tab" href="#sql" role="tab" aria-controls="sql" aria-selected="true">SQL Query</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="formatting-tab" data-toggle="tab" href="#formatting" role="tab" aria-controls="formatting" aria-selected="false" hidden>Special Formatting</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content" id="myTabContent">
+                                    <div class="tab-pane fade show active" id="sql" role="tabpanel" aria-labelledby="sql-tab">
+                                        <div class="form-group">
+                                            <small id="queryHelpBlock" class="form-text text-muted">
+                                                SELECT queries only.
+                                            </small>
+                                            <textarea id="reportQuery" aria-describedby="queryHelpBlock">
+SELECT
+    project_id AS "PID",
+    app_title AS "Project Title"
+FROM redcap_projects</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="formatting" role="tabpanel" aria-labelledby="formatting-tab">
+                                        <table class="reportSpecialFormatting table table-striped">
+                                            <thead>
+                                                <th>Column Name</th>
+                                                <th>Format As...</th>
+                                                <th></th>
+                                                <th></th>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <input class="column-name">
+                                                    </td>
+                                                    <td>
+                                                        <select>
+                                                            <option>Link</option>
+                                                            <option>Email</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input class="">
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -312,16 +518,17 @@ class AdminDash extends AbstractExternalModule {
                         UIOWA_AdminDash.userID = $('.executiveUser')[0].value;
                     }
 
+                    var reportTable = $('.report-visibility-table');
+                    var addButtonRow = $('.add-report-button').closest('tr');
+
                     for (var i in UIOWA_AdminDash.reportReference) {
                         var reportName = UIOWA_AdminDash.reportReference[i]['reportName'];
+                        var readOnly = UIOWA_AdminDash.reportReference[i]['readOnly'];
+                        var reportRow = UIOWA_AdminDash.createReportRow(reportName).insertBefore(addButtonRow);
 
-                        $('.report-visibility-table').append(
-                            '<tr>' +
-                            '<td class="table-report-title" style="text-align:right; vertical-align:middle; padding-right:50px">' + reportName + '</td>' +
-                            '<td class="table-admin-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
-                            '<td class="table-executive-visible" style="text-align:center"><input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide"></td>' +
-                            '</tr>'
-                        );
+                        if (readOnly) {
+                            $('.custom-report-only', reportRow).hide();
+                        }
                     }
 
                     $('.executiveUser').change(function() {
@@ -362,6 +569,10 @@ class AdminDash extends AbstractExternalModule {
 
                             UIOWA_AdminDash.adminVisibility[reportTitle] = adminVisible;
 
+                            if (!UIOWA_AdminDash.executiveVisibility[reportTitle]) {
+                                UIOWA_AdminDash.executiveVisibility[reportTitle] = [];
+                            }
+
                             if (executiveVisible) {
                                 if (prevVisible) {return;}
 
@@ -374,12 +585,115 @@ class AdminDash extends AbstractExternalModule {
                             }
                         });
 
-                        UIOWA_AdminDash.saveReportSettings();
+                        UIOWA_AdminDash.saveReportSettingsToDb('visibility');
                         UIOWA_AdminDash.updateReportTabs(selectedUser);
+                    });
+
+                    reportTable.on('click', '.open-report-setup', function() {
+                        var reportTr = $(this).closest('tr');
+                        UIOWA_AdminDash.newReport = $('.add-report-button', reportTr).length !== 0;
+
+                        UIOWA_AdminDash.currentReportConfigIndex = reportTr.index();
+                        UIOWA_AdminDash.updateReportSetupModal();
+                    });
+
+                    $('.save-report-setup').click(function() {
+
+                        var form = $('#reportConfiguration');
+                        var reportName = $('#reportName');
+                        var reportCustomId = $('#reportCustomId');
+                        var existingReports = Object.keys(UIOWA_AdminDash.adminVisibility);
+
+                        jQuery.validator.addMethod("notInArray", function(value, element, param) {
+                            var index = $.inArray(value, param);
+                            return index == -1 || index == UIOWA_AdminDash.currentReportConfigIndex;
+                        }, "Value must be unique.");
+
+                        form.validate();
+
+                        reportName.rules("add", {
+                            notInArray: existingReports
+                        });
+
+//                        reportCustomId.rules("add", {
+//                            notInArray: UIOWA_AdminDash.reportIDs
+//                        });
+
+                        var valid = form.valid();
+
+                        if (!valid) {
+                            return;
+                        }
+
+                        if (UIOWA_AdminDash.newReport) {
+                            var addButtonRow = $('.add-report-button').closest('tr');
+                            var navBar = $('.report-tabs');
+                            var reportRow = $(UIOWA_AdminDash.createReportRow('Untitled')).insertBefore(addButtonRow);
+
+                            $('input', reportRow).bootstrapToggle();
+
+                            if (!$('#modalUserSelect')[0].value) {
+                                $('.table-executive-visible input', reportRow).prop('disabled', true);
+                                $('.table-executive-visible .toggle-off', reportRow).addClass('disabled');
+                            }
+
+                            var newTab = $(
+                                '<li class="nav-item" style="display:none">' +
+                                '<a class="nav-link" href="' +
+                                    UIOWA_AdminDash.reportUrlTemplate +
+                                    '&report=' + ($('#reportCustomId').val() != '' ?
+                                        $('#reportCustomId').val() : UIOWA_AdminDash.currentReportConfigIndex) + '">' +
+                                '<span class="report-icon fas fa-' + $('#reportIcon').val() + '">' +
+                                '</span>&nbsp; <span class="report-title">' + $('#reportName').val() + '</span>' +
+                                '</a>'
+                            ).appendTo(navBar);
+                        }
+
+                        UIOWA_AdminDash.saveReportConfiguration();
+
+                        $('#reportSetupModal').modal('toggle');
+                    });
+
+                    $('#reportSetupModal').on('hidden.bs.modal', function() {
+                        var $alertas = $('#reportConfiguration');
+                        $alertas.validate().resetForm();
+                        $alertas.find('.error').removeClass('error');
+                    });
+
+//                    $('#reportName').on('input', function() {
+//                        var input = $('#reportName');
+//                        var reportTitles = $.map(UIOWA_AdminDash.reportReference, function (i) {
+//                            return i['reportName'];
+//                        });
+//                        var titleHelpText = $('#titleHelpBlock');
+//                        var saveButton = $('.save-report-setup');
+//
+//                        if ($.inArray(input.val(), reportTitles) != -1) {
+//                            titleHelpText.show();
+//                            saveButton.prop('disabled', 'disabled')
+//                        }
+//                        else {
+//                            titleHelpText.hide();
+//                            saveButton.prop('disabled', '')
+//                        }
+//                    });
+
+                    $('#reportIcon').on('input', function() {
+                        var input = $('#reportIcon');
+                        var icon = $('#reportIconPreview');
+
+                        icon.removeClass();
+                        icon.addClass('fas fa-' + input.val());
+                    });
+
+                    var editor = ace.edit("reportQuery", {
+                        theme: "ace/theme/monokai",
+                        mode: "ace/mode/sql",
+                        minLines: 10
                     });
                 </script>
             <?php endif; ?>
-            <?php if (isset($_REQUEST['tab'])): ?>
+            <?php if (isset($_REQUEST['report'])): ?>
                 <?php if ($exportEnabled): ?>
                 <div style="float: right; <?= $pageInfo['sql'] == '' ? 'visibility: hidden;' : '' ?>" class="output-button">
                 <div class="btn-group">
@@ -388,7 +702,7 @@ class AdminDash extends AbstractExternalModule {
                         <span class="caret"></span>
                         <span class="sr-only">Toggle Dropdown</span>
                     </button>
-                    <ul class="dropdown-menu" role="menu">
+                    <ul class="dropdown-menu export-menu" role="menu">
                         <li>
                             <label>Separator: <input class="output-separator-input" type="text" size="4" value=","></label><br />
                             <button class="output-separator btn btn-info btn-xs active" title="Comma">,</button>
@@ -447,7 +761,7 @@ class AdminDash extends AbstractExternalModule {
             </div>
 
 
-            <?php if($pageInfo['sql']) : ?>
+            <?php if($pageInfo['type'] == 'table' && $pageInfo['sql'] != '') : ?>
                  <!-- display tablesorter pager buttons for reports -->
               <div id="pager" class="pager">
               <form>
@@ -465,13 +779,21 @@ class AdminDash extends AbstractExternalModule {
             </select>
             </form>
             </div>
-            <?php else : ?>
+            <?php elseif($pageInfo['type'] == 'chart') : ?>
                 <br />
              <!-- display graphs -->
             <div style="display: inline-block; margin: 0 auto;">
               <div style="width: 100%; display: table; max-height: 500px;">
                 <?php foreach (self::$visualizationQueries as $vis => $visInfo): ?>
-                    <div style="width: 500px; display: table-row;" id=<?= $visInfo['visID'] ?>></div>
+                    <canvas id=<?= $visInfo['visID'] ?> width="400" height="400"></canvas>
+                    <script>
+                        UIOWA_AdminDash.createPieChart(
+                            <?= $visInfo['visID'] ?>,
+                            <?= $visInfo['type'] ?>,
+                            <?= $visInfo['data'] ?>,
+                            <?= $visInfo['options'] ?>
+                        );
+                    </script>
                 <?php endforeach; ?>
             </div>
               </div>
@@ -497,7 +819,7 @@ class AdminDash extends AbstractExternalModule {
 
 
         <?php
-        if(!$isSelectQuery && $pageInfo['userDefined'] && $pageInfo['sql'] != '') {
+        if(!$isSelectQuery && $pageInfo['type'] == 'table' && $pageInfo['sql'] != '') {
             $pageInfo['sql'] = '';
             $pageInfo['sqlErrorMsg'] = 'ERROR: SQL query is not a SELECT query.';
         }
@@ -515,12 +837,12 @@ class AdminDash extends AbstractExternalModule {
          printf("   </tbody>\n");
          printf("</table>\n");  // <table> created by PrintTableHeader
 
-         if ($_REQUEST['tab'] == 0) {
+         if ($_REQUEST['report'] == 0) {
             $result = db_query(self::$miscQueryReference[0]['sql']);
             printf($this->formatQueryResults($result, "text", $pageInfo) . " users are currently suspended.");
          }
         }
-        elseif ($pageInfo['userDefined']) {
+        elseif ($pageInfo['type'] == 'table') {
             printf("<div id='deleted'> " . $pageInfo['sqlErrorMsg'] . "</div>");
         }
 
@@ -534,8 +856,8 @@ class AdminDash extends AbstractExternalModule {
                 $buttonText = 'Switch to Executive View';
             }
 
-            if (isset($_REQUEST['tab'])) {
-                $viewUrl .= '?tab=' . $_REQUEST['tab'];
+            if (isset($_REQUEST['report'])) {
+                $viewUrl .= '?report=' . $_REQUEST['report'];
             }
 
             echo ("<div style=\"text-align: center\"><a id=\"switchView\" class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl($viewUrl)) . ">" . $buttonText . "</a></div>");
@@ -605,269 +927,283 @@ class AdminDash extends AbstractExternalModule {
                 "reportName" => "Projects by User",
                 "fileName" => "projectsByUser",
                 "description" => "List of all users and the projects to which they have access.",
-                "tabIcon" => "fa fa-male",
+                "tabIcon" => "male",
                 "defaultVisibility" => true,
-                "sql" => "
-        SELECT
-        info.username AS 'Username',
-        CAST(CASE WHEN info.user_suspended_time IS NULL THEN 'N/A'
+                "readOnly" => true,
+                "sql" => "SELECT
+    info.username AS 'Username',
+    CAST(CASE
+        WHEN info.user_suspended_time IS NULL THEN 'N/A'
         ELSE info.user_suspended_time
-        END AS CHAR(50)) AS 'User Suspended Date (Hidden)',
-        info.user_lastname AS 'Last Name',
-        info.user_firstname AS 'First Name',
-        info.user_email AS 'Email',
-        GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-        GROUP_CONCAT(CAST(CASE projects.status
+    END AS CHAR(50)) AS 'User Suspended Date (Hidden)',
+    info.user_lastname AS 'Last Name',
+    info.user_firstname AS 'First Name',
+    info.user_email AS 'Email',
+    GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
+    GROUP_CONCAT(CAST(CASE projects.status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
         ELSE projects.status
-        END AS CHAR(50))) AS 'Project Statuses (Hidden)',
-        GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50))) AS 'Project Statuses (Hidden)',
+    GROUP_CONCAT(CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-        COUNT(projects.project_id) AS 'Total Projects'
-        FROM redcap_user_information AS info,
-        redcap_projects AS projects,
-        redcap_user_rights AS access
-        WHERE info.username = access.username AND
-        access.project_id = projects.project_id
-        $formattedFilterSql
-        GROUP BY info.ui_id
-        ORDER BY info.user_lastname, info.user_firstname, info.username
-        "
+    END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
+    COUNT(projects.project_id) AS 'Total Projects'
+FROM redcap_user_information AS info,
+    redcap_projects AS projects,
+    redcap_user_rights AS access
+WHERE info.username = access.username AND
+    access.project_id = projects.project_id
+    $formattedFilterSql
+GROUP BY info.ui_id
+ORDER BY info.user_lastname,
+    info.user_firstname,
+    info.username"
             ),
             array // Users by Project
             (
                 "reportName" => "Users by Project",
                 "fileName" => "usersByProject",
                 "description" => "List of all projects and the users which have access.",
-                "tabIcon" => "fas fa-users",
+                "tabIcon" => "users",
                 "defaultVisibility" => true,
-                "sql" => "
-        SELECT
-        projects.project_id AS PID,
-        app_title AS 'Project Title',
-        CAST(CASE status
+                "readOnly" => true,
+                "sql" => "SELECT
+    projects.project_id AS PID,
+    app_title AS 'Project Title',
+    CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
         ELSE status
-        END AS CHAR(50)) AS 'Status',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50)) AS 'Status',
+    CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        record_count AS 'Record Count',
-        CAST(CASE purpose
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+    record_count AS 'Record Count',
+    CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
         WHEN 4 THEN 'Operational Support'
         WHEN 2 THEN 'Research'
         WHEN 3 THEN 'Quality Improvement'
         WHEN 1 THEN 'Other'
         ELSE purpose
-        END AS CHAR(50)) AS 'Purpose',
-        GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Users',
-        GROUP_CONCAT(CAST(CASE WHEN redcap_user_information.user_suspended_time IS NULL THEN 'N/A'
+    END AS CHAR(50)) AS 'Purpose',
+    GROUP_CONCAT((redcap_user_rights.username) SEPARATOR ', ') AS 'Users',
+    GROUP_CONCAT(CAST(CASE
+        WHEN redcap_user_information.user_suspended_time IS NULL THEN 'N/A'
         ELSE redcap_user_information.user_suspended_time
-        END AS CHAR(50))) AS 'User Suspended Date (Hidden)',
-        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
-        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
-        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
-        COUNT(redcap_user_rights.username) AS 'Total Users'
-        FROM redcap_projects AS projects
-        LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
-        LEFT JOIN redcap_user_rights ON projects.project_id = redcap_user_rights.project_id
-        LEFT JOIN redcap_user_information ON redcap_user_rights.username = redcap_user_information.username
-        $formattedWhereFilterSql
-        GROUP BY projects.project_id
-        ORDER BY app_title
-        "
+    END AS CHAR(50))) AS 'User Suspended Date (Hidden)',
+    DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
+    DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+    DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event',
+    COUNT(redcap_user_rights.username) AS 'Total Users'
+FROM redcap_projects AS projects
+LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+LEFT JOIN redcap_user_rights ON projects.project_id = redcap_user_rights.project_id
+LEFT JOIN redcap_user_information ON redcap_user_rights.username = redcap_user_information.username
+$formattedWhereFilterSql
+GROUP BY projects.project_id
+ORDER BY app_title"
             ),
             array // Research Projects
             (
                 "reportName" => "Research Projects",
                 "fileName" => "researchProjects",
                 "description" => "List of all projects that are identified as being used for research purposes.",
-                "tabIcon" => "fa fa-flask",
+                "tabIcon" => "flask",
                 "defaultVisibility" => true,
-                "sql" => "
-        SELECT
-        projects.project_id AS PID,
-        app_title AS 'Project Title',
-        CAST(CASE status
+                "readOnly" => true,
+                "sql" => "SELECT
+    projects.project_id AS PID,
+    app_title AS 'Project Title',
+    CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
         ELSE status
-        END AS CHAR(50)) AS 'Status',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50)) AS 'Status',
+    CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        record_count AS 'Record Count',
-        purpose_other AS 'Purpose Specified',
-        project_pi_lastname AS 'PI Last Name',
-        project_pi_firstname AS 'PI First Name',
-        project_pi_email AS 'PI Email',
-        project_irb_number AS 'IRB Number',
-        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
-        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
-        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
-        FROM redcap_projects as projects
-        LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
-        WHERE purpose = 2  -- 'Research'
-        $formattedFilterSql
-        ORDER BY app_title
-        "
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+    record_count AS 'Record Count',
+    purpose_other AS 'Purpose Specified',
+    project_pi_lastname AS 'PI Last Name',
+    project_pi_firstname AS 'PI First Name',
+    project_pi_email AS 'PI Email',
+    project_irb_number AS 'IRB Number',
+    DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
+    DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+    DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
+FROM redcap_projects as projects
+LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+WHERE purpose = 2  -- 'Research'
+    $formattedFilterSql
+ORDER BY app_title"
             ),
             array // Development Projects
             (
                 "reportName" => "Development Projects",
                 "fileName" => "developmentProjects",
                 "description" => "List of all projects that are in Development Mode.",
-                "tabIcon" => "fas fa-wrench",
+                "tabIcon" => "wrench",
                 "defaultVisibility" => true,
-                "sql" => "
-        SELECT
-        projects.project_id AS 'PID',
-        app_title AS 'Project Title',
-        CAST(CASE WHEN record_count IS NULL THEN 0
-        ELSE record_count END AS CHAR(10)) AS 'Record Count',
-        CAST(CASE purpose
+                "readOnly" => true,
+                "sql" => "SELECT
+    projects.project_id AS 'PID',
+    app_title AS 'Project Title',
+    CAST(CASE
+        WHEN record_count IS NULL THEN 0
+        ELSE record_count
+    END AS CHAR(10)) AS 'Record Count',
+    CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
         WHEN 4 THEN 'Operational Support'
         WHEN 2 THEN 'Research'
         WHEN 3 THEN 'Quality Improvement'
         WHEN 1 THEN 'Other'
         ELSE purpose
-        END AS CHAR(50)) AS 'Purpose',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50)) AS 'Purpose',
+    CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
-        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
-        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
-        FROM redcap_projects AS projects
-        LEFT JOIN redcap_record_counts ON redcap_record_counts.project_id = projects.project_id
-        WHERE projects.status = 0
-        $formattedFilterSql
-        ORDER BY app_title
-        "
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+    DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
+    DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+    DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
+FROM redcap_projects AS projects
+LEFT JOIN redcap_record_counts ON redcap_record_counts.project_id = projects.project_id
+WHERE projects.status = 0
+    $formattedFilterSql
+ORDER BY app_title"
             ),
             array // All Projects
             (
                 "reportName" => "All Projects",
                 "fileName" => "allProjects",
                 "description" => "List of all projects.",
-                "tabIcon" => "fas fa-folder-open",
+                "tabIcon" => "folder-open",
                 "defaultVisibility" => true,
-                "sql" => "
-        SELECT
-        projects.project_id AS 'PID',
-        app_title AS 'Project Title',
-        CAST(CASE WHEN record_count IS NULL THEN 0
+                "readOnly" => true,
+                "sql" => "SELECT
+    projects.project_id AS 'PID',
+    app_title AS 'Project Title',
+    CAST(CASE
+        WHEN record_count IS NULL THEN 0
         ELSE record_count
-        END AS CHAR(50)) AS 'Record Count',
-        CAST(CASE status
+    END AS CHAR(50)) AS 'Record Count',
+    CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
         ELSE status
-        END AS CHAR(50)) AS 'Status',
-        CAST(CASE purpose
+    END AS CHAR(50)) AS 'Status',
+    CAST(CASE purpose
         WHEN 0 THEN 'Practice / Just for fun'
         WHEN 4 THEN 'Operational Support'
         WHEN 2 THEN 'Research'
         WHEN 3 THEN 'Quality Improvement'
         WHEN 1 THEN 'Other'
         ELSE purpose
-        END AS CHAR(50)) AS 'Purpose',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50)) AS 'Purpose',
+    CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
-        DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
-        DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
-        DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
-        FROM redcap_projects AS projects
-        LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
-        $formattedWhereFilterSql
-        ORDER BY app_title
-        "
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)',
+    DATE_FORMAT(creation_time, '%Y-%m-%d') AS 'Creation Date',
+    DATE_FORMAT(last_logged_event, '%Y-%m-%d') AS 'Last Logged Event Date',
+    DATEDIFF(now(), last_logged_event) AS 'Days Since Last Event'
+FROM redcap_projects AS projects
+LEFT JOIN redcap_record_counts ON projects.project_id = redcap_record_counts.project_id
+$formattedWhereFilterSql
+ORDER BY app_title"
             ),
             array
             (
                 "reportName" => "Credentials Check (Project Titles)",
                 "fileName" => "projectCredentials",
                 "description" => "List of projects titles that contain strings related to login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                "tabIcon" => "fa fa-key",
+                "tabIcon" => "key",
                 "defaultVisibility" => false,
-                "sql" => "
-        SELECT projects.project_id AS 'PID',
-        app_title AS 'Project Title',
-        CAST(CASE status
+                "readOnly" => true,
+                "sql" => "SELECT
+    projects.project_id AS 'PID',
+    app_title AS 'Project Title',
+    CAST(CASE status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
         ELSE status
-        END AS CHAR(50)) AS 'Status',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50)) AS 'Status',
+    CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-        FROM redcap_projects AS projects,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        " . $pwordProjectSql
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
+FROM redcap_projects AS projects,
+    redcap_user_information AS users
+WHERE (projects.created_by = users.ui_id) AND
+    " . $pwordProjectSql
             ),
             array
             (
                 "reportName" => "Credentials Check (Instruments)",
                 "fileName" => "instrumentCredentials",
                 "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                "tabIcon" => "fa fa-key",
+                "tabIcon" => "key",
                 "defaultVisibility" => false,
-                "sql" => "
-        SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Title',
-        meta.form_menu_description AS 'Instrument Name',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+                "readOnly" => true,
+                "sql" => "SELECT projects.project_id AS 'PID',
+    projects.app_title AS 'Project Title',
+    meta.form_menu_description AS 'Instrument Name',
+    CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-        FROM redcap_projects AS projects,
-        redcap_metadata AS meta,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        (projects.project_id = meta.project_id) AND
-        (meta.form_menu_description IS NOT NULL) AND
-        " . $pwordInstrumentSql
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
+FROM redcap_projects AS projects,
+    redcap_metadata AS meta,
+    redcap_user_information AS users
+WHERE (projects.created_by = users.ui_id) AND
+    (projects.project_id = meta.project_id) AND
+    (meta.form_menu_description IS NOT NULL) AND
+    " . $pwordInstrumentSql
                 ),
             array
             (
                 "reportName" => "Credentials Check (Fields)",
                 "fileName" => "fieldCredentials",
                 "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                "tabIcon" => "fa fa-key",
+                "tabIcon" => "key",
                 "defaultVisibility" => false,
-                "sql" => "
-        SELECT projects.project_id AS 'PID',
-        projects.app_title AS 'Project Title',
-        meta.form_name AS 'Form Name',
-        meta.field_name AS 'Variable Name',
-        meta.element_label AS 'Field Label',
-        meta.element_note AS 'Field Note',
-        CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+                "readOnly" => true,
+                "sql" => "SELECT
+    projects.project_id AS 'PID',
+    projects.app_title AS 'Project Title',
+    meta.form_name AS 'Form Name',
+    meta.field_name AS 'Variable Name',
+    meta.element_label AS 'Field Label',
+    meta.element_note AS 'Field Note',
+    CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-        FROM redcap_projects AS projects,
-        redcap_metadata AS meta,
-        redcap_user_information AS users
-        WHERE (projects.created_by = users.ui_id) AND
-        (projects.project_id = meta.project_id) AND
-        " . $pwordFieldSql . "
-        ORDER BY projects.project_id, form_name, field_name;
+    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
+FROM redcap_projects AS projects,
+    redcap_metadata AS meta,
+    redcap_user_information AS users
+WHERE (projects.created_by = users.ui_id) AND
+    (projects.project_id = meta.project_id) AND
+    " . $pwordFieldSql . "
+ORDER BY
+    projects.project_id,
+    form_name,
+    field_name;
         "
                 ),
             array
@@ -875,66 +1211,62 @@ class AdminDash extends AbstractExternalModule {
                 "reportName" => "Projects with External Modules",
                 "fileName" => "modulesInProjects",
                 "description" => "List of External Modules and the projects they are enabled in.",
-                "tabIcon" => "fas fa-plug",
+                "tabIcon" => "plug",
                 "defaultVisibility" => false,
-                "sql" => "
-        SELECT
-        REPLACE(directory_prefix, '_', ' ') AS 'Module Title',
-        GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-        GROUP_CONCAT(CAST(users.user_email AS CHAR(50)) SEPARATOR ', ') AS 'User Emails',
-        GROUP_CONCAT(CAST(CASE projects.status
+                "readOnly" => true,
+                "sql" => "SELECT
+    REPLACE(directory_prefix, '_', ' ') AS 'Module Title',
+    GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
+    GROUP_CONCAT(CAST(users.user_email AS CHAR(50)) SEPARATOR ', ') AS 'User Emails',
+    GROUP_CONCAT(CAST(CASE projects.status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
         WHEN 2 THEN 'Inactive'
         WHEN 3 THEN 'Archived'
         ELSE projects.status
-        END AS CHAR(50))) AS 'Project Statuses (Hidden)',
-        GROUP_CONCAT(CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
+    END AS CHAR(50))) AS 'Project Statuses (Hidden)',
+    GROUP_CONCAT(CAST(CASE
+        WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
-        END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-        COUNT(projects.project_id) AS 'Total Projects'
-        FROM redcap_external_module_settings AS settings
-        LEFT JOIN redcap_external_modules ON redcap_external_modules.external_module_id = settings.external_module_id
-        LEFT JOIN redcap_projects AS projects ON projects.project_id = settings.project_id
-        LEFT JOIN redcap_user_rights AS rights ON rights.project_id = projects.project_id
-        LEFT JOIN redcap_user_information AS users ON users.username = rights.username
-        WHERE settings.key = 'enabled' AND settings.value = 'true' AND settings.project_id IS NOT NULL
-        $formattedFilterSql
-        GROUP BY settings.external_module_id
-        ORDER BY directory_prefix
+    END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
+    COUNT(projects.project_id) AS 'Total Projects'
+FROM redcap_external_module_settings AS settings
+LEFT JOIN redcap_external_modules ON redcap_external_modules.external_module_id = settings.external_module_id
+LEFT JOIN redcap_projects AS projects ON projects.project_id = settings.project_id
+LEFT JOIN redcap_user_rights AS rights ON rights.project_id = projects.project_id
+LEFT JOIN redcap_user_information AS users ON users.username = rights.username
+WHERE settings.key = 'enabled' AND (settings.value = true OR settings.value = 'enabled') AND settings.project_id IS NOT NULL
+    $formattedFilterSql
+GROUP BY settings.external_module_id
+ORDER BY directory_prefix
         "
             )
         );
 
-        $customNames = $this->getSystemSetting('custom-report-name');
-        $customDescs = $this->getSystemSetting('custom-report-desc');
-        $customIcons = $this->getSystemSetting('custom-report-icon');
-        $customSqls = $this->getSystemSetting('custom-report-sql');
+        ?>
+            <script>
+                var defaultReports = <?= json_encode($reportReference) ?>;
+                UIOWA_AdminDash.defaultReportNames = $.map(defaultReports, function(report) {
+                    return report['reportName'];
+                });
+            </script>
+        <?php
 
-        for($i = 0; $i < count($customNames); $i++) {
-            $customFileName = preg_replace('/\s*/', '', $customNames[$i]);
+        $customReports = $this->getSystemSetting('custom-reports');
 
-            array_push($reportReference,
-                array
-                (
-                    "reportName" => $customNames[$i] != '' ? $customNames[$i] : 'Untitled',
-                    "fileName" => $customNames[$i] != '' ? $customFileName : 'untitled',
-                    "description" => $customDescs[$i] != '' ? $customDescs[$i] : 'No description defined.',
-                    "tabIcon" => $customIcons[$i] != '' ? $customIcons[$i] : 'fas fa-question-circle',
-                    "sql" => $customSqls[$i],
-                    "userDefined" => TRUE
-                ));
+        foreach ($customReports as $report) {
+            array_push($reportReference, $report);
         }
 
-        array_push($reportReference,
-            array // Visualizations
-            (
-                "reportName" => "Visualizations",
-                "fileName" => "visualizations",
-                "description" => "Additional metadata presented in a visual format.",
-                "tabIcon" => "fas fa-chart-pie",
-                "defaultVisibility" => true
-            ));
+//        array_push($reportReference,
+//            array // Visualizations
+//            (
+//                "reportName" => "Visualizations",
+//                "fileName" => "visualizations",
+//                "description" => "Additional metadata presented in a visual format.",
+//                "tabIcon" => "fas fa-chart-pie",
+//                "defaultVisibility" => true
+//            ));
 
         return $reportReference;
     }
@@ -1088,6 +1420,8 @@ class AdminDash extends AbstractExternalModule {
 
         foreach ($row as $key => $value)
         {
+            $value = htmlentities($value);
+
             if ($key == "Project Titles")
             {
                 $projectStatuses = $row['Project Statuses (Hidden)'];
@@ -1369,10 +1703,12 @@ class AdminDash extends AbstractExternalModule {
     private function formatUrl($tab)
     {
         $query = $_GET;
-        $query['tab'] = $tab;
+        $moduleParam = array('type' => 'module');
+        $query = $moduleParam + $query;
+        $query['report']     = $tab;
 
         $url = http_build_query($query);
-        $url = $_SERVER['PHP_SELF'] . '?' . $url;
+        $url = APP_PATH_WEBROOT_FULL . 'api/?' . $url;
 
         return ($url);
     }
@@ -1412,11 +1748,26 @@ class AdminDash extends AbstractExternalModule {
         return $visibilityArray;
     }
 
-    public function saveVisibilitySettings() {
-        $visibilitySettings = json_decode(file_get_contents('php://input'));
+    public function saveReportSettings() {
+        $allSettings = json_decode(file_get_contents('php://input'));
 
-        $this->setSystemSetting('report-visibility-admin', $visibilitySettings->admin);
-        $this->setSystemSetting('report-visibility-executive', $visibilitySettings->executive);
+        if ($allSettings->reportReference) {
+            if ($allSettings->reportReference == 'none') {
+                $this->removeSystemSetting('custom-reports');
+            }
+            else {
+                $this->setSystemSetting('custom-reports', $allSettings->reportReference);
+            }
+        }
+        if ($allSettings->customReportIDs) {
+            $this->setSystemSetting('custom-report-ids', $allSettings->customReportIDs);
+        }
+        if ($allSettings->adminVisibility) {
+            $this->setSystemSetting('report-visibility-admin', $allSettings->adminVisibility);
+        }
+        if ($allSettings->executiveVisibility) {
+            $this->setSystemSetting('report-visibility-executive', $allSettings->executiveVisibility);
+        }
     }
 }
 ?>

@@ -153,58 +153,6 @@
 
             })
 
-            // bind to pager events
-            // *********************
-            .bind('pagerChange pagerComplete pagerInitialized pageMoved', function (e, c) {
-                var p = c.pager, // NEW with the widget... it returns config, instead of config.pager
-                    msg = '"</span> event triggered, ' + (e.type === 'pagerChange' ? 'going to' : 'now on') +
-                        ' page <span class="typ">' + (p.page + 1) + '/' + p.totalPages + '</span>';
-                $('#display')
-                    .append('<li><span class="str">"' + e.type + msg + '</li>')
-                    .find('li:first').remove();
-            })
-
-        // Add two new rows using the "addRows" method
-        // the "update" method doesn't work here because not all rows are
-        // present in the table when the pager is applied ("removeRows" is false)
-        // ***********************************************************************
-        var r, $row, num = 50,
-            row = '<tr><td>Student{i}</td><td>{m}</td><td>{g}</td><td>{r}</td><td>{r}</td><td>{r}</td><td>{r}</td><td><button type="button" class="remove" title="Remove this row">X</button></td></tr>' +
-                '<tr><td>Student{j}</td><td>{m}</td><td>{g}</td><td>{r}</td><td>{r}</td><td>{r}</td><td>{r}</td><td><button type="button" class="remove" title="Remove this row">X</button></td></tr>';
-        $('button:contains(Add)').click(function () {
-            // add two rows of random data!
-            r = row.replace(/\{[gijmr]\}/g, function (m) {
-                return {
-                    '{i}': num + 1,
-                    '{j}': num + 2,
-                    '{r}': Math.round(Math.random() * 100),
-                    '{g}': Math.random() > 0.5 ? 'male' : 'female',
-                    '{m}': Math.random() > 0.5 ? 'Mathematics' : 'Languages'
-                }[m];
-            });
-            num = num + 2;
-            $row = $(r);
-            $table
-                .find('tbody').append($row)
-                .trigger('addRows', [$row]);
-            return false;
-        });
-
-        // clear storage (page & size)
-        $('.clear-pager-data').click(function () {
-            // clears user set page & size from local storage, so on page
-            // reload the page & size resets to the original settings
-            $.tablesorter.storage($table, 'tablesorter-pager', '');
-        });
-
-        // go to page 1 showing 10 rows
-        $('.goto').click(function () {
-            // triggering "pageAndSize" without parameters will reset the
-            // pager to page 1 and the original set size (10 by default)
-            // $('table').trigger('pageAndSize')
-            $table.trigger('pageAndSize', [1, 10]);
-        });
-
         var $this = $(".output-button");
 
         $this.find('.dropdown-toggle').click(function(e) {
@@ -287,6 +235,14 @@
             return false;
         });
 
+        $(document).on('show.bs.modal', '.modal', function () {
+            var zIndex = 1040 + (10 * $('.modal:visible').length);
+            $(this).css('z-index', zIndex);
+            setTimeout(function() {
+                $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+            }, 0);
+        });
+
         if (UIOWA_AdminDash.hideColumns) {
             for (var i in UIOWA_AdminDash.hideColumns) {
                 $('#reportTable tr > *:nth-child(' + UIOWA_AdminDash.hideColumns[i] + ')').hide();
@@ -302,29 +258,37 @@
 var UIOWA_AdminDash = {};
 
 // generate pie chart with c3.js
-UIOWA_AdminDash.createPieChart = function(json, title, chartID) {
-    var chart = c3.generate({
-        data: {
-            json: json,
-            type: 'pie'
-        },
-        title: {
-            text: title
-        },
-        legend: {
-            position: 'inset',
-            width: '50%',
-            inset: {
-                anchor: 'top-right',
-                x: 100,
-                y: 0
-            }
-        },
-        tooltip: {
-            show: false
-        },
-        bindto: "#" + chartID
+UIOWA_AdminDash.createPieChart = function(id, type, data, options) {
+    var ctx = document.getElementById(id).getContext('2d');
+
+    var myChart = new Chart(ctx, {
+        type: type,
+        data: data,
+        options: options
     });
+
+    //var chart = c3.generate({
+    //    data: {
+    //        json: json,
+    //        type: 'pie'
+    //    },
+    //    title: {
+    //        text: title
+    //    },
+    //    legend: {
+    //        position: 'inset',
+    //        width: '50%',
+    //        inset: {
+    //            anchor: 'top-right',
+    //            x: 100,
+    //            y: 0
+    //        }
+    //    },
+    //    tooltip: {
+    //        show: false
+    //    },
+    //    bindto: "#" + chartID
+    //});
 };
 
 // flatten REDCap data json into counts
@@ -377,6 +341,231 @@ UIOWA_AdminDash.updateSettingsModal = function(selectedUser) {
     UIOWA_AdminDash.updateReportTabs(selectedUser);
 };
 
+UIOWA_AdminDash.updateReportSetupModal = function() {
+    var index = UIOWA_AdminDash.currentReportConfigIndex;
+    var reportInfo = UIOWA_AdminDash.reportReference[index];
+    var nameInput = $('#reportName');
+    var descInput = $('#reportDescription');
+    var iconInput = $('#reportIcon');
+    var idInput = $('#reportId');
+    var customIdInput = $('#reportCustomId');
+
+    //$('#reportConfiguration input').not('#reportCustomId').attr('readonly', false);
+    $('#reportConfiguration input').attr('readonly', false);
+    $('#reportConfiguration select').attr('disabled', false);
+    editor.setReadOnly(false);
+    $('.save-report-setup').show();
+
+    if (UIOWA_AdminDash.newReport) {
+        nameInput.val('');
+        descInput.val('');
+        iconInput.val('question');
+        iconInput.trigger('input');
+        idInput.html(index);
+        customIdInput.val('');
+        editor.setValue('');
+    }
+    else {
+        nameInput.val(reportInfo['reportName']);
+        descInput.val(reportInfo['description']);
+        iconInput.val(reportInfo['tabIcon']);
+        iconInput.trigger('input');
+        idInput.html(index);
+        customIdInput.val(UIOWA_AdminDash.reportIDs[index]);
+        editor.setValue(reportInfo['sql'] ? reportInfo['sql'] : '');
+
+        if (reportInfo['readOnly']) {
+            //$('#reportConfiguration input').not('#reportCustomId').attr('readonly', true);
+            $('#reportConfiguration input').attr('readonly', true);
+            $('#reportConfiguration select').attr('disabled', true);
+            editor.setReadOnly(true);
+            $('.save-report-setup').hide();
+        }
+    }
+};
+
+UIOWA_AdminDash.saveReportConfiguration = function() {
+    var index = UIOWA_AdminDash.currentReportConfigIndex;
+    var newReportTitle = $('#reportName').val();
+    var reportRow = $('.table-report-title')[index];
+    var reportNavTitle = $('.report-title')[index];
+    var reportNavIcon = $('.report-icon')[index];
+    var oldReportTitle = $(reportRow).html();
+
+    $(reportRow).html(newReportTitle);
+    $(reportNavTitle).html(newReportTitle);
+
+    $(reportNavIcon).removeClass (function (index, className) {
+        return (className.match (/(^|\s)fa-\S+/g) || []).join(' ');
+    });
+    $(reportNavIcon).addClass('fa-' + $('#reportIcon').val());
+
+    UIOWA_AdminDash.reportReference[index] = {
+        'reportName': newReportTitle,
+        'description': $('#reportDescription').val(),
+        'tabIcon': $('#reportIcon').val(),
+        'sql': editor.getValue(),
+        'type': 'table'
+};
+
+    UIOWA_AdminDash.reportIDs[index] = $('#reportCustomId').val();
+
+    if (!UIOWA_AdminDash.newReport) {
+        UIOWA_AdminDash.adminVisibility = UIOWA_AdminDash.updateVisibilityReportTitle(
+            UIOWA_AdminDash.adminVisibility,
+            oldReportTitle,
+            newReportTitle
+        );
+        UIOWA_AdminDash.executiveVisibility = UIOWA_AdminDash.updateVisibilityReportTitle(
+            UIOWA_AdminDash.executiveVisibility,
+            oldReportTitle,
+            newReportTitle
+        );
+    }
+    else {
+        UIOWA_AdminDash.adminVisibility[newReportTitle] = false;
+        UIOWA_AdminDash.executiveVisibility[newReportTitle] = [];
+    }
+
+    UIOWA_AdminDash.saveReportSettingsToDb('all');
+};
+
+UIOWA_AdminDash.updateVisibilityReportTitle = function(array, oldTitle, newTitle) {
+    if (oldTitle !== newTitle) {
+        Object.defineProperty(array, newTitle,
+            Object.getOwnPropertyDescriptor(array, oldTitle));
+        delete array[oldTitle];
+    }
+
+    return array;
+};
+
+UIOWA_AdminDash.createReportRow = function(reportName) {
+    return $(
+        '<tr>' +
+            '<td class="table-report-title" style="text-align:right; vertical-align:middle; padding-right:10px">'+
+                reportName +
+            '</td>' +
+            '<td style="text-align:left; vertical-align:middle;">' +
+                '<button type="button" class="btn btm-sm btn-primary open-report-setup report-settings-button" aria-haspopup="true" aria-expanded="false" data-toggle="modal" data-target="#reportSetupModal">' +
+                    '<i class="fas fa-edit"></i>' +
+                    '<span class="sr-only">Edit report</span>' +
+                '</button>' +
+                //'<button type="button" class="btn btm-sm btn-success report-settings-button" aria-haspopup="true" aria-expanded="false" data-target="#" onclick="UIOWA_AdminDash.copyReport(this)">' +
+                //    '<i class="fas fa-copy"></i>' +
+                //    '<span class="sr-only">Copy report</span>' +
+                //'</button>' +
+                '<button type="button" class="btn btm-sm btn-danger report-settings-button custom-report-only" aria-haspopup="true" aria-expanded="false" data-target="#" onclick="UIOWA_AdminDash.deleteReport(this)">' +
+                    '<i class="fas fa-trash"></i>' +
+                    '<span class="sr-only">Delete report</span>' +
+                '</button>' +
+            '</td>' +
+            '<td class="table-admin-visible" style="text-align:center">' +
+                '<input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide">' +
+            '</td>' +
+            '<td class="table-executive-visible" style="text-align:center">' +
+                '<input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide">' +
+            '</td>' +
+        '</tr>'
+    );
+};
+
+//todo add to reportReference
+UIOWA_AdminDash.copyReport = function(copyLink) {
+    var copyReportRow = $(copyLink).closest('tr');
+    var addButtonRow = $('.add-report-button').closest('tr');
+    var reportName = $('.table-report-title', copyReportRow).text();
+    var existingReportCopy = $.inArray(reportName, UIOWA_AdminDash.reportReference) != -1;
+
+    if (!existingReportCopy) {
+        var reportRow = $(UIOWA_AdminDash.createReportRow(reportName + ' (Copy)')).insertBefore(addButtonRow);
+
+        $('input', reportRow).bootstrapToggle();
+
+        var reportInfoCopy = $.grep(UIOWA_AdminDash.reportReference, function (report) {
+            return report['reportName'] == reportName;
+        })[0];
+
+        reportInfoCopy['reportName'] = reportName + ' (Copy)';
+        delete reportInfoCopy['defaultVisibility'];
+        delete reportInfoCopy['readOnly'];
+
+        UIOWA_AdminDash.reportReference.push(reportInfoCopy);
+
+        UIOWA_AdminDash.saveReportSettingsToDb('reports');
+
+
+    }
+    else {
+        alert('A copy of this report already exists. Please rename the original copy before creating another.')
+    }
+
+    //
+    //var reportNav = $('.report-title').filter(function () {
+    //    return $(this).html() == reportName;
+    //}).closest('li').first();
+    //
+    //reportRow.remove();
+    //reportNav.remove();
+    //UIOWA_AdminDash.saveReportSettingsToDb('reports');
+};
+
+UIOWA_AdminDash.deleteReport = function(deleteLink) {
+    var reportRow = $(deleteLink).closest('tr');
+    var reportName = $('.table-report-title', reportRow).text();
+
+    var confirmed = confirm('Are you sure you want to delete ' + reportName + '?');
+
+    if (confirmed) {
+        UIOWA_AdminDash.reportReference = $.grep(UIOWA_AdminDash.reportReference, function (report) {
+            return report['reportName'] != reportName;
+        });
+
+        UIOWA_AdminDash.reportIDs.splice(reportRow.index());
+        delete UIOWA_AdminDash.adminVisibility[reportName];
+        delete UIOWA_AdminDash.executiveVisibility[reportName];
+
+        var reportNav = $('.report-title').filter(function () {
+            return $(this).html() == reportName;
+        }).closest('li').first();
+
+        reportRow.remove();
+        reportNav.remove();
+        UIOWA_AdminDash.saveReportSettingsToDb('all');
+    }
+};
+
+//UIOWA_AdminDash.archiveReport = function(archiveLink) {
+//    var reportRow = $(archiveLink).closest('tr');
+//    var settingsButton = $('button', reportRow);
+//    var settingsButtonIcon = $('button > i', reportRow);
+//
+//    settingsButton.removeClass('btn-primary');
+//    settingsButton.addClass('btn-warning');
+//
+//    settingsButtonIcon.removeClass();
+//    settingsButtonIcon.addClass('fas fa-eye-slash');
+//
+//    reportRow.hide();
+//};
+//
+//UIOWA_AdminDash.toggleArchivedReports = function() {
+//    UIOWA_AdminDash.showArchivedReports = !UIOWA_AdminDash.showArchivedReports;
+//
+//    $('.report-visibility-table tr').each(function () {
+//        var reportName = $('td', this).html();
+//
+//        if (UIOWA_AdminDash.showArchivedReports == true) {
+//            $(this).show();
+//        }
+//        else if (UIOWA_AdminDash.showArchivedReports == false) {
+//            if ($.inArray(reportName, UIOWA_AdminDash.archivedReports) != -1) {
+//                $(this).hide();
+//            }
+//        }
+//    });
+//};
+
 UIOWA_AdminDash.updateReportTabs = function(user) {
     var keys = Object.keys(UIOWA_AdminDash.adminVisibility);
 
@@ -384,7 +573,9 @@ UIOWA_AdminDash.updateReportTabs = function(user) {
         var reportTitle = keys[i];
         var adminVisible = UIOWA_AdminDash.adminVisibility[reportTitle];
         var executiveVisible = $.inArray(user, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
-        var reportTab = $('li:contains(' + reportTitle + ')');
+        var reportTab = $('.report-tabs > li ').filter(function() {
+            return $('.report-title', this).text() === reportTitle;
+        });
 
         if (!adminVisible && !UIOWA_AdminDash.executiveAccess) {
             reportTab.hide();
@@ -398,14 +589,26 @@ UIOWA_AdminDash.updateReportTabs = function(user) {
     }
 };
 
-UIOWA_AdminDash.saveReportSettings = function() {
-    var visibilitySettings = JSON.stringify({
-        'admin': UIOWA_AdminDash.adminVisibility,
-        'executive': UIOWA_AdminDash.executiveVisibility
+UIOWA_AdminDash.saveReportSettingsToDb = function(type) {
+    var customReports = $.grep(UIOWA_AdminDash.reportReference, function(report) {
+        if ($.inArray(report['reportName'], UIOWA_AdminDash.defaultReportNames) == -1) {
+            return report;
+        }
+    });
+
+    if (customReports.length == 0) {
+        customReports = 'none';
+    }
+
+    var allSettings = JSON.stringify({
+        'reportReference': type == 'all' || type == 'reports' ? customReports : null,
+        'customReportIDs': type == 'all' || type == 'reports' ? UIOWA_AdminDash.reportIDs : null,
+        'adminVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.adminVisibility : null,
+        'executiveVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.executiveVisibility : null
     });
 
     var request = new XMLHttpRequest();
-    request.open("POST", UIOWA_AdminDash.saveVisibilityUrl, true);
+    request.open("POST", UIOWA_AdminDash.saveSettingsUrl, true);
     request.setRequestHeader("Content-type", "application/json");
-    request.send(visibilitySettings);
+    request.send(allSettings);
 };
