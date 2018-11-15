@@ -175,21 +175,24 @@ class AdminDash extends AbstractExternalModule {
 
         if ($oldNameData) {
             $newCustomReportData = array();
-            $untitledCount = 0;
+            $untitledCount = 1;
 
             foreach ($oldNameData as $index => $oldName) {
+                if (empty($oldNameData[$index])) {
+                    $newName = 'Untitled ' . $untitledCount;
+                    $untitledCount += 1;
+                }
+                else {
+                    $newName = $oldNameData[$index];
+                }
+
                 array_push($newCustomReportData, array(
-                    'reportName' => empty($oldNameData[$index]) ? 'Untitled' : $oldNameData[$index],
+                    'reportName' => $newName,
                     'description' => empty($oldDescData[$index]) ? 'No description defined.' : $oldDescData[$index],
                     'tabIcon' => empty($oldIconData[$index]) ? 'fas fa-question-circle' : str_replace('fas fa', '', $oldIconData[$index]),
                     'sql' => $oldSqlData[$index],
                     'type' => 'table'
                 ));
-
-                if ($newCustomReportData[$index]['reportName'] == 'Untitled') {
-                    $untitledCount += 1;
-                    $newCustomReportData[$index]['reportName'] .= $untitledCount;
-                }
             }
 
             $this->setSystemSetting("custom-reports", $newCustomReportData);
