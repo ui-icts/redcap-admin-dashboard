@@ -191,7 +191,8 @@ class AdminDash extends AbstractExternalModule {
                     'description' => empty($oldDescData[$index]) ? 'No description defined.' : $oldDescData[$index],
                     'tabIcon' => empty($oldIconData[$index]) ? 'fas fa-question-circle' : str_replace('fas fa', '', $oldIconData[$index]),
                     'sql' => $oldSqlData[$index],
-                    'type' => 'table'
+                    'type' => 'table',
+                    "customID" => "",
                 ));
             }
 
@@ -969,7 +970,6 @@ FROM redcap_projects</textarea>
                 "description" => "List of all users and the projects to which they have access.",
                 "tabIcon" => "male",
                 "defaultVisibility" => true,
-                "readOnly" => true,
                 "sql" => "SELECT
     info.username AS 'Username',
     CAST(CASE
@@ -1010,7 +1010,6 @@ ORDER BY info.user_lastname,
                 "description" => "List of all projects and the users which have access.",
                 "tabIcon" => "users",
                 "defaultVisibility" => true,
-                "readOnly" => true,
                 "sql" => "SELECT
     projects.project_id AS PID,
     app_title AS 'Project Title',
@@ -1058,7 +1057,6 @@ ORDER BY app_title"
                 "description" => "List of all projects that are identified as being used for research purposes.",
                 "tabIcon" => "flask",
                 "defaultVisibility" => true,
-                "readOnly" => true,
                 "sql" => "SELECT
     projects.project_id AS PID,
     app_title AS 'Project Title',
@@ -1095,7 +1093,6 @@ ORDER BY app_title"
                 "description" => "List of all projects that are in Development Mode.",
                 "tabIcon" => "wrench",
                 "defaultVisibility" => true,
-                "readOnly" => true,
                 "sql" => "SELECT
     projects.project_id AS 'PID',
     app_title AS 'Project Title',
@@ -1131,7 +1128,6 @@ ORDER BY app_title"
                 "description" => "List of all projects.",
                 "tabIcon" => "folder-open",
                 "defaultVisibility" => true,
-                "readOnly" => true,
                 "sql" => "SELECT
     projects.project_id AS 'PID',
     app_title AS 'Project Title',
@@ -1173,7 +1169,6 @@ ORDER BY app_title"
                 "description" => "List of projects titles that contain strings related to login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "key",
                 "defaultVisibility" => false,
-                "readOnly" => true,
                 "sql" => "SELECT
     projects.project_id AS 'PID',
     app_title AS 'Project Title',
@@ -1199,7 +1194,6 @@ WHERE (projects.created_by = users.ui_id) AND
                 "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "key",
                 "defaultVisibility" => false,
-                "readOnly" => true,
                 "sql" => "SELECT projects.project_id AS 'PID',
     projects.app_title AS 'Project Title',
     meta.form_menu_description AS 'Instrument Name',
@@ -1222,7 +1216,6 @@ WHERE (projects.created_by = users.ui_id) AND
                 "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
                 "tabIcon" => "key",
                 "defaultVisibility" => false,
-                "readOnly" => true,
                 "sql" => "SELECT
     projects.project_id AS 'PID',
     projects.app_title AS 'Project Title',
@@ -1253,11 +1246,10 @@ ORDER BY
                 "description" => "List of External Modules and the projects they are enabled in.",
                 "tabIcon" => "plug",
                 "defaultVisibility" => false,
-                "readOnly" => true,
                 "sql" => "SELECT
     REPLACE(directory_prefix, '_', ' ') AS 'Module Title',
-    GROUP_CONCAT(CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
-    GROUP_CONCAT(CAST(users.user_email AS CHAR(50)) SEPARATOR ', ') AS 'User Emails',
+    GROUP_CONCAT(DISTINCT CAST(projects.project_id AS CHAR(50)) SEPARATOR ', ') AS 'Project Titles',
+    GROUP_CONCAT(DISTINCT CAST(users.user_email AS CHAR(50)) SEPARATOR ', ') AS 'User Emails',
     GROUP_CONCAT(CAST(CASE projects.status
         WHEN 0 THEN 'Development'
         WHEN 1 THEN 'Production'
@@ -1269,19 +1261,26 @@ ORDER BY
         WHEN projects.date_deleted IS NULL THEN 'N/A'
         ELSE projects.date_deleted
     END AS CHAR(50))) AS 'Project Deleted Date (Hidden)',
-    COUNT(projects.project_id) AS 'Total Projects'
+    COUNT(DISTINCT projects.project_id) AS 'Total Projects'
 FROM redcap_external_module_settings AS settings
 LEFT JOIN redcap_external_modules ON redcap_external_modules.external_module_id = settings.external_module_id
 LEFT JOIN redcap_projects AS projects ON projects.project_id = settings.project_id
 LEFT JOIN redcap_user_rights AS rights ON rights.project_id = projects.project_id
 LEFT JOIN redcap_user_information AS users ON users.username = rights.username
-WHERE settings.key = 'enabled' AND (settings.value = true OR settings.value = 'enabled') AND settings.project_id IS NOT NULL
-    $formattedFilterSql
+WHERE settings.key = 'enabled'
+  AND (settings.value = 'true' OR settings.value = 'enabled')
+  AND settings.project_id IS NOT NULL
+  $formattedFilterSql
 GROUP BY settings.external_module_id
 ORDER BY directory_prefix
         "
             )
         );
+
+        foreach ($reportReference as $index => $report) {
+            $reportReference[$index]['readOnly'] = true;
+            $reportReference[$index]['type'] = 'table';
+        }
 
         ?>
             <script>

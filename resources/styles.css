@@ -99,11 +99,11 @@ div#outer
 }
 
 .modal {
+   margin: 0 auto;
    overflow-y:auto;
 }
 
 .secondary-modal {
-   width: 80%;
    margin: 0 auto;
 }
 
