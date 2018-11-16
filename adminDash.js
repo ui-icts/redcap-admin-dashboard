@@ -354,7 +354,7 @@ UIOWA_AdminDash.updateReportSetupModal = function() {
     $('#reportConfiguration input').attr('readonly', false);
     $('#reportConfiguration select').attr('disabled', false);
     editor.setReadOnly(false);
-    $('.save-report-setup').show();
+    $('.save-report').show();
 
     if (UIOWA_AdminDash.newReport) {
         nameInput.val('');
@@ -379,9 +379,11 @@ UIOWA_AdminDash.updateReportSetupModal = function() {
             $('#reportConfiguration input').attr('readonly', true);
             $('#reportConfiguration select').attr('disabled', true);
             editor.setReadOnly(true);
-            $('.save-report-setup').hide();
+            $('.save-report').hide();
         }
     }
+
+    editor.clearSelection();
 };
 
 UIOWA_AdminDash.saveReportConfiguration = function() {
@@ -607,8 +609,19 @@ UIOWA_AdminDash.saveReportSettingsToDb = function(type) {
         'executiveVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.executiveVisibility : null
     });
 
-    var request = new XMLHttpRequest();
-    request.open("POST", UIOWA_AdminDash.saveSettingsUrl, true);
-    request.setRequestHeader("Content-type", "application/json");
-    request.send(allSettings);
+    //var request = new XMLHttpRequest();
+    //request.open("POST", UIOWA_AdminDash.saveSettingsUrl, true);
+    //request.setRequestHeader("Content-type", "application/json");
+    //request.send(allSettings);
+
+    $.ajax({
+            method: 'POST',
+            url: UIOWA_AdminDash.saveSettingsUrl,
+            data: allSettings
+        })
+        .done(function() {
+            if (UIOWA_AdminDash.loadReportAfterSave) {
+                window.location.href = UIOWA_AdminDash.lastSavedReportUrl;
+            }
+        })
 };

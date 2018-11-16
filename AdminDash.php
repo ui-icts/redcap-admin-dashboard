@@ -244,12 +244,24 @@ class AdminDash extends AbstractExternalModule {
             array_push($reportIDlookup, $reportInfo['customID']);
         }
 
-        if (isset($_REQUEST['report']) && !is_numeric($_REQUEST['report'])) {
-            $_REQUEST['report'] = array_search($_REQUEST['report'], $reportIDlookup);
+        if (isset($_REQUEST['report'])) {
+            $reportIndex = array_search($_REQUEST['report'], $reportIDlookup);
+
+            if ($reportIndex !== false) {
+                $_REQUEST['id'] = $reportIndex;
+            }
+            else {
+                unset($_REQUEST['report']);
+                unset($_REQUEST['id']);
+            }
+        }
+
+        if (intval($_REQUEST['id']) > sizeof($reportReference)) {
+            unset($_REQUEST['id']);
         }
 
         $title = $executiveAccess ? "Executive Dashboard" : $this->getModuleName();
-        $pageInfo = $reportReference[$_REQUEST['report']];
+        $pageInfo = $reportReference[$_REQUEST['id']];
         $isSelectQuery = (strtolower(substr($pageInfo['sql'], 0, 6)) == "select");
 
         $adminVisibility = $this->loadVisibilitySettings('admin', $reportReference);
@@ -261,13 +273,13 @@ class AdminDash extends AbstractExternalModule {
         }
 
         if (!SUPER_USER) {
-            if (!$executiveAccess || (!$executiveVisible && isset($_REQUEST['report']))) {
+            if (!$executiveAccess || (!$executiveVisible && isset($_REQUEST['id']))) {
                 die("Access denied! You do not have permission to view this page.");
             }
         }
 
-        if ((!isset($_REQUEST['report']) && !$executiveAccess) && $defaultTab != -1) {
-            $_REQUEST['report'] = $defaultTab;
+        if ((!isset($_REQUEST['id']) && !$executiveAccess) && $defaultTab != -1) {
+            $_REQUEST['id'] = $defaultTab;
         }
 
         ?>
@@ -295,8 +307,8 @@ class AdminDash extends AbstractExternalModule {
                 <!-- create navigation tabs -->
              <ul class='nav nav-tabs report-tabs'>
              <?php foreach($reportReference as $index => $reportInfo): ?>
-             <li class="nav-item <?= $_REQUEST['report'] == $index && isset($_REQUEST['report']) ? "active" : "" ?>" style="display:none" >
-             <a class="nav-link" href="<?= $this->formatUrl($reportIDlookup[$index] != '' ? $reportIDlookup[$index] : $index) ?>">
+             <li class="nav-item <?= $_REQUEST['id'] == $index && isset($_REQUEST['id']) ? "active" : "" ?>" style="display:none" >
+             <a class="nav-link" href="<?= $this->formatUrl($index, $reportInfo['customID']) ?>">
              <span class="report-icon fas fa-<?= $reportInfo['tabIcon'] ?>"></span>&nbsp; <span class="report-title"><?= $reportInfo['reportName'] ?></span></a>
          </li>
         <?php endforeach; ?>
@@ -396,7 +408,15 @@ class AdminDash extends AbstractExternalModule {
                             <h5 class="modal-title" id="reportSetupModalLongTitle" style="text-align: center">Configure Report</h5>
                             <div>
                                 <button type="button" class="btn btn-secondary close-report-setup" data-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary save-report-setup">Save</button>
+                                <div class="btn-group save-report">
+                                    <button type="button" class="btn btn-primary save-report-setup">Save</button>
+                                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item save-report-setup" href="#">Save & View Report</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-body">
@@ -443,13 +463,13 @@ class AdminDash extends AbstractExternalModule {
                                     <div class="form-group col-md-6">
                                         <label for="reportCustomId">Report ID:</label>
                                         <div class="input-group">
-                                            <input id="reportCustomId" data-placement="bottomRight" class="form-control" type="text" aria-describedby="idHelpBlock">
+                                            <input id="reportCustomId" name="reportCustomId" data-placement="bottomRight" class="form-control custom-error" type="text" aria-describedby="idHelpBlock">
                                             <div class="input-group-append">
                                                 <span id="reportId" class="input-group-text" readonly="true"></span>
                                             </div>
                                         </div>
                                         <small id="idHelpBlock" class="form-text text-muted">
-                                            Define optional alphanumeric string for easier bookmarking. The report index (in grey) is used by default.
+                                            Define optional string for easier bookmarking. The report index (in grey) is used by default.
                                         </small>
                                     </div>
                                 </div>
@@ -599,25 +619,47 @@ FROM redcap_projects</textarea>
                         var existingReports = Object.keys(UIOWA_AdminDash.adminVisibility);
 
                         jQuery.validator.addMethod("notInArray", function(value, element, param) {
-                            var index = $.inArray(value, param);
+                            var index = -1;
+
+                            if (value != '') {
+                                index = $.inArray(value, param);
+                            }
+
                             return index == -1 || index == UIOWA_AdminDash.currentReportConfigIndex;
                         }, "Value must be unique.");
 
-                        form.validate();
+                        jQuery.validator.addMethod("lettersonly", function(value, element) {
+                            return this.optional(element) || /^[a-z]+$/i.test(value);
+                        }, "Alphabetical characters only.");
+
+                        form.validate({
+                            errorPlacement: function(error, element) {
+                                if (element.hasClass('custom-error')) {
+                                    $('#idHelpBlock').before(error);
+                                }
+                                else {
+                                    element.after(error); // default error placement
+                                }
+                            }
+                        });
 
                         reportName.rules("add", {
                             notInArray: existingReports
                         });
 
-//                        reportCustomId.rules("add", {
-//                            notInArray: UIOWA_AdminDash.reportIDs
-//                        });
+                        reportCustomId.rules("add", {
+                            notInArray: UIOWA_AdminDash.reportIDs,
+                            lettersonly: 'opt'
 
-                        var valid = form.valid();
+                        });
 
-                        if (!valid) {
+                        if (!form.valid()) {
                             return;
                         }
+
+                        UIOWA_AdminDash.lastSavedReportUrl = UIOWA_AdminDash.reportUrlTemplate +
+                            ($('#reportCustomId').val() != '' ?
+                                '&report=' + $('#reportCustomId').val() : '&id=' + UIOWA_AdminDash.currentReportConfigIndex);
 
                         if (UIOWA_AdminDash.newReport) {
                             var addButtonRow = $('.add-report-button').closest('tr');
@@ -633,14 +675,15 @@ FROM redcap_projects</textarea>
 
                             var newTab = $(
                                 '<li class="nav-item" style="display:none">' +
-                                '<a class="nav-link" href="' +
-                                    UIOWA_AdminDash.reportUrlTemplate +
-                                    '&report=' + ($('#reportCustomId').val() != '' ?
-                                        $('#reportCustomId').val() : UIOWA_AdminDash.currentReportConfigIndex) + '">' +
+                                '<a class="nav-link" href="' + UIOWA_AdminDash.lastSavedReportUrl + '">' +
                                 '<span class="report-icon fas fa-' + $('#reportIcon').val() + '">' +
                                 '</span>&nbsp; <span class="report-title">' + $('#reportName').val() + '</span>' +
                                 '</a>'
                             ).appendTo(navBar);
+                        }
+
+                        if ($(this).text() == 'Save & View Report') {
+                            UIOWA_AdminDash.loadReportAfterSave = true;
                         }
 
                         UIOWA_AdminDash.saveReportConfiguration();
@@ -687,7 +730,7 @@ FROM redcap_projects</textarea>
                     });
                 </script>
             <?php endif; ?>
-            <?php if (isset($_REQUEST['report'])): ?>
+            <?php if (isset($_REQUEST['id'])): ?>
                 <?php if ($exportEnabled): ?>
                 <div style="float: right; <?= $pageInfo['sql'] == '' ? 'visibility: hidden;' : '' ?>" class="output-button">
                 <div class="btn-group">
@@ -831,7 +874,7 @@ FROM redcap_projects</textarea>
          printf("   </tbody>\n");
          printf("</table>\n");  // <table> created by PrintTableHeader
 
-         if ($_REQUEST['report'] == 0) {
+         if ($_REQUEST['id'] == 0) {
             $result = db_query(self::$miscQueryReference[0]['sql']);
             printf($this->formatQueryResults($result, "text", $pageInfo) . " users are currently suspended.");
          }
@@ -852,6 +895,9 @@ FROM redcap_projects</textarea>
 
             if (isset($_REQUEST['report'])) {
                 $viewUrl .= '?report=' . $_REQUEST['report'];
+            }
+            else {
+                $viewUrl .= '?id=' . $_REQUEST['id'];
             }
 
             echo ("<div style=\"text-align: center\"><a id=\"switchView\" class=\"btn btn-success\" style=\"color: #FFFFFF\" href=" . urldecode($this->getUrl($viewUrl)) . ">" . $buttonText . "</a></div>");
@@ -1694,12 +1740,21 @@ ORDER BY directory_prefix
 
     }
 
-    private function formatUrl($tab)
+    private function formatUrl($reportIndex, $customID)
     {
+        unset($_GET['report']);
+        unset($_GET['id']);
+
         $query = $_GET;
         $moduleParam = array('type' => 'module');
         $query = $moduleParam + $query;
-        $query['report']     = $tab;
+
+        if ($customID !== '') {
+            $query['report'] = $customID;
+        }
+        else {
+            $query['id'] = $reportIndex;
+        }
 
         $url = http_build_query($query);
         $url = APP_PATH_WEBROOT_FULL . 'api/?' . $url;
