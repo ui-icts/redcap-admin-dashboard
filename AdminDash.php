@@ -848,7 +848,7 @@ FROM redcap_projects</textarea>
             <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$executiveAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?>
                 <br />
                 <br />
-                <?php if ($executiveAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username to the whitelist in the module configuration settings, then provide them with this page's URL. Use the "Show/Hide Reports" menu to configure report access.<?php endif; ?>
+                <?php if ($executiveAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username to the whitelist in the module configuration settings, then provide them with this page's URL. Use the "Configure Reports" menu to configure report access.<?php endif; ?>
             </div>
             <br/>
             <br/>
@@ -896,7 +896,7 @@ FROM redcap_projects</textarea>
             if (isset($_REQUEST['report'])) {
                 $viewUrl .= '?report=' . $_REQUEST['report'];
             }
-            else {
+            else if (isset($_REQUEST['report'])) {
                 $viewUrl .= '?id=' . $_REQUEST['id'];
             }
 
