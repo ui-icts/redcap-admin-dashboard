@@ -30,23 +30,10 @@
 
   "system-settings": [
     {
-      "key": "default-report",
-      "name": "Default report view",
-      "type": "dropdown",
-      "required": false,
-      "choices": [
-        {"value": 0, "name": ""},
-        {"value": 1, "name": "Projects by User"},
-        {"value": 2, "name": "Users by Project"},
-        {"value": 3, "name": "Research Projects"},
-        {"value": 4, "name": "Development Projects"},
-        {"value": 5, "name": "All Projects"}
-      ]
-    },
-    {
       "key": "show-practice-projects",
       "name": "Show \"Practice / Just for Fun\" projects",
       "type": "checkbox",
+      "default": true,
       "required": false
     },
     {

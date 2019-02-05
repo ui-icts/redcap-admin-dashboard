@@ -140,6 +140,42 @@ class AdminDash extends AbstractExternalModule {
    )
    );
 
+    private static $configSettings = array(
+        array(
+            "key" => "show-suspended-tags",
+            "name" => "Include [suspended] tag next to suspended usernames",
+            "type" => "checkbox",
+            "default" => true
+        ),
+        array(
+            "key" => "additional-search-terms",
+            "name" => "Additional search term for Login Credentials Check reports",
+            "type" => "text",
+            "repeatable" => true
+        ),
+        array(
+            "name" => "<b>NOTE: The following settings will only affect built-in reports.</b>",
+        ),
+        array(
+            "key" =>"show-practice-projects",
+            "name" => "\"Practice / Just for Fun\" projects",
+            "type" => "checkbox",
+            "default" => true
+        ),
+        array(
+            "key" => "show-archived-projects",
+            "name" => "Archived projects",
+            "type" => "checkbox",
+            "default" => true
+        ),
+        array(
+            "key" => "show-deleted-projects",
+            "name" => "Deleted projects",
+            "type" => "checkbox",
+            "default" => true
+        )
+    );
+
     public function redcap_module_system_change_version() {
         // update db for compatibility with v3.2
         $oldVisibilityJson = $this->getSystemSetting("report-visibility");
@@ -325,7 +361,7 @@ class AdminDash extends AbstractExternalModule {
             UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
             UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
             UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDlookup) ?>;
-            UIOWA_AdminDash.saveSettingsUrl = "<?= $this->getUrl("requestHandler.php?type=saveReportSettings") ?>";
+            UIOWA_AdminDash.requestHandlerUrl = "<?= $this->getUrl("requestHandler.php") ?>";
             UIOWA_AdminDash.reportUrlTemplate = "<?= $this->getUrl(
                 $executiveAccess ? "executiveView" : "index" . ".php", false, true) ?>";
 
@@ -348,55 +384,212 @@ class AdminDash extends AbstractExternalModule {
 
                 <div style="float: left">
                 <button type="button" class="btn btn-primary open-visibility-settings" data-toggle="modal" data-target="#reportVisibilityModal">
-                    <span class="fas fa-cog"></span> Configure Reports
+                    <span class="fas fa-cog"></span> Settings
                 </button>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="reportVisibilityModal" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateModal" style="text-align: center">Update Notes</h5>
+                            <div>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            v3.3.2 - changed some stuff
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- Modal -->
             <div class="modal fade" id="reportVisibilityModal" tabindex="-1" role="dialog" aria-labelledby="reportVisibilityModal" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="reportVisibilityModalLongTitle" style="text-align: center">Report Settings</h5>
+                            <h5 class="modal-title" id="reportVisibilityModalLongTitle" style="text-align: center">Settings</h5>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                 <button type="button" class="btn btn-primary save-visibility-settings" data-dismiss="modal">Save</button>
                             </div>
                         </div>
                         <div class="modal-body">
-                            <table class="table table-striped">
-                                <thead>
-                                <tr>
-                                    <th></th>
-                                    <th></th>
-                                    <th style="text-align: center; font-size: 18px">
-                                        <b>Admin View</b>
-                                    </th>
-                                    <th style="text-align: center; font-size: 18px">
-                                        <select id="modalUserSelect" class="executiveUser">
-                                            <option value="">[Select User]</option>
-                                            <?php
-                                            foreach($executiveUsers as $user):
-                                                if ($user) {
-                                                    echo '<option value="' . $user . '">' . $user . '</option>';
-                                                }
-                                            endforeach;
-                                            ?>
-                                        </select>
-                                        <br/>
-                                        <b>Executive View</b>
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody class="report-visibility-table">
-                                    <tr>
-                                        <td style="text-align: center;" colspan="4">
-                                            <button type="button" class="btn btm-sm btn-success open-report-setup add-report-button" aria-haspopup="true" aria-expanded="false" data-toggle="modal" data-target="#reportSetupModal">
-                                                <span class="fas fa-plus"></span> Add New Report
+                            <div id="accordion">
+                                <div class="card">
+                                    <div class="card-header" id="headingOne">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                <span class="fas fa-file"></span>
+                                                Reports
                                             </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        </h5>
+                                    </div>
+
+                                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                                        <div class="card-body">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th style="text-align: center; font-size: 18px">
+                                                        <b>Admin View</b>
+                                                    </th>
+                                                    <th style="text-align: center; font-size: 18px">
+                                                        <select id="modalUserSelect" class="executiveUser">
+                                                            <option value="">[Select User]</option>
+                                                            <?php
+                                                            foreach($executiveUsers as $user):
+                                                                if ($user) {
+                                                                    echo '<option value="' . $user . '">' . $user . '</option>';
+                                                                }
+                                                            endforeach;
+                                                            ?>
+                                                        </select>
+                                                        <br/>
+                                                        <b>Executive View</b>
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody class="report-visibility-table">
+                                                <tr>
+                                                    <td style="text-align: center;" colspan="4">
+                                                        <button type="button" class="btn btm-sm btn-success open-report-setup add-report-button" aria-haspopup="true" aria-expanded="false" data-toggle="modal" data-target="#reportSetupModal">
+                                                            <span class="fas fa-plus"></span> Add New Report
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" id="headingTwo">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                <span class="fas fa-id-card"></span>
+                                                Executive User Management
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                                        <div class="card-body">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                    <?php
+                                                    foreach($executiveUsers as $user):
+                                                        echo '<tr>
+                                                            <td>
+                                                                <button
+                                                                    type="button"
+                                                                    class="btn btm-sm btn-danger"
+                                                                    aria-haspopup="true"
+                                                                    aria-expanded="false"
+                                                                    data-target="#"
+                                                                    onclick="UIOWA_AdminDash.deleteReport(this)"
+                                                                >
+                                                                    <i class="fas fa-trash"></i>
+                                                                    <span class="sr-only">Delete report</span>
+                                                                </button>
+                                                            </td>
+                                                            <td style="text-align:center; vertical-align:middle; padding-right:10px">' . $user . '</td>
+                                                            <td>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    data-toggle="toggle"
+                                                                    data-width="160"
+                                                                    data-on="Exporting Enabled"
+                                                                    data-off="Exporting Disabled"
+                                                                    name="' . $user . '"
+                                                                    class="module-config"
+                                                                    value="false"
+                                                                >
+                                                            </td>
+                                                        </tr>';
+                                                    endforeach;
+                                                    ?>
+
+                                                    </tbody>
+                                                </table>
+                                                <div class="col-sm-4">
+                                                    <button type="button" class="btn btn-info add-new"><i class="fa fa-plus"></i> Add New</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <div class="card">
+                                    <div class="card-header" id="headingThree">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                                <span class="fas fa-desktop"></span>
+                                                Display Options
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                                        <div class="card-body">
+                                            <table class="table table-no-top-row-border">
+                                                <tbody>
+                                                <?php
+                                                foreach(self::$configSettings as $setting):
+                                                    echo '<tr><td><label>' . $setting['name'] . '</label></td>';
+                                                    if ($setting['type'] == 'checkbox') {
+                                                        echo '<td>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        data-toggle="toggle"
+                                                                        data-width="75"
+                                                                        data-on="Show"
+                                                                        data-off="Hide"
+                                                                        name="' . $setting['key'] . '"
+                                                                        class="module-config"
+                                                                        value="false"
+                                                                    >
+                                                                </td>';
+                                                    }
+                                                    else if ($setting['text']) {
+                                                        echo '<td>
+                                                                <input>
+                                                            </td>';
+                                                    }
+                                                    else {
+                                                        echo '<td></td>';
+                                                    }
+                                                    echo '</tr>';
+                                                endforeach;
+                                                ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header" id="headingFour">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                                <span class="fas fa-question"></span>
+                                                Help
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
+                                        <div class="card-body">
+                                            <p>The REDCap Admin Dashboard provides a number of reports on various project and user metadata in a sortable table view. This data can also be downloaded as a CSV formatted file (as well as other delimited formats). Additionally, user-defined reports can be included via custom SQL queries. Reports can also optionally be shared with non-admin users in a limited format (Executive View).</p>
+                                            <p>Please refer to the included <a href="<?= $this->getUrl('README.md') ?>">README</a> for extensive documentation.</p>
+
+                                            <p>Feedback is welcome, as are any questions/concerns/issues you may have. Please send an email to <a href="mailto:eric-neuhaus@uiowa.edu?subject=Admin Dashboard">eric-neuhaus@uiowa.edu</a> or create a post mentioning me (@eric.neuhaus) on the REDCap community. If you are having an issue, it is recommended that you include a diagnostic file, as it can be immensely helpful for troubleshooting purposes.</p>
+
+                                            <p>The diagnostic file includes all Admin Dashboard settings stored in your database (including custom report SQL queries), formatted in JSON.</p>
+
+                                            <div style="text-align: center;">
+                                                <button id="diagnostic" class="btn btn-info">Download diagnostic file</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -528,6 +721,8 @@ FROM redcap_projects</textarea>
                 </div>
             </div>
                 <script>
+//                    $('#updateModal').modal('toggle');
+
                     if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser) {
                         $('.executiveUser').val( sessionStorage.getItem("selectedUser") );
                         UIOWA_AdminDash.userID = $('.executiveUser')[0].value;
@@ -729,7 +924,14 @@ FROM redcap_projects</textarea>
                         mode: "ace/mode/sql",
                         minLines: 10
                     });
+
+                    $('module-config').bootstrapToggle();
+
+                    $('#diagnostic').click(function() {
+                        window.location.href = UIOWA_AdminDash.requestHandlerUrl + '&type=exportDiagnosticFile';
+                    });
                 </script>
+        </div>
             <?php endif; ?>
             <?php if (isset($_REQUEST['id'])): ?>
                 <?php if ($exportEnabled): ?>
@@ -800,23 +1002,8 @@ FROM redcap_projects</textarea>
 
 
             <?php if($pageInfo['type'] == 'table' && $pageInfo['sql'] != '') : ?>
-                 <!-- display tablesorter pager buttons for reports -->
-              <div id="pager" class="pager">
-              <form>
-              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png") ?>" class="first"/>
-              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png") ?>" class="prev"/>
-                 <!-- the "pagedisplay" can be any element, including an input -->
-              <span class="pagedisplay" data-pager-output-filtered="{startRow:input} &ndash; {endRow} / {filteredRows} of {totalRows} total rows"></span>
-              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/next.png") ?>" class="next"/>
-              <img src="<?= $this->getUrl("resources/tablesorter/tablesorter/images/icons/last.png") ?>" class="last"/>
-              <select class="pagesize">
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-            </form>
-            </div>
+                <table id='reportTable'>
+                </table>
             <?php elseif($pageInfo['type'] == 'chart') : ?>
                 <br />
              <!-- display graphs -->
@@ -846,10 +1033,10 @@ FROM redcap_projects</textarea>
         <div style="text-align: center;">
             <h3>Welcome to the REDCap <?= (!$executiveAccess) ? "Admin" : "Executive" ?> Dashboard!</h3>
         </div>
-            <div style="text-align: center;">Click one of the tabs above to view a report. <?php if (!$executiveAccess) : ?>You can choose a report to open by default (instead of seeing this page) via the module's configuration settings.<?php endif; ?>
+            <div style="text-align: center;">Click one of the tabs above to view a report.
                 <br />
                 <br />
-                <?php if ($executiveAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username to the whitelist in the module configuration settings, then provide them with this page's URL. Use the "Configure Reports" menu to configure report access.<?php endif; ?>
+                <?php if ($executiveAccess && SUPER_USER) : ?>To grant a non-admin user access to this dashboard, you must add their username in the "Executive User Management" section of the Settings menu, then provide them with this page's URL.<?php endif; ?>
             </div>
             <br/>
             <br/>
@@ -877,7 +1064,7 @@ FROM redcap_projects</textarea>
 
          if ($_REQUEST['id'] == 0) {
             $result = db_query(self::$miscQueryReference[0]['sql']);
-            printf($this->formatQueryResults($result, "text", $pageInfo) . " users are currently suspended.");
+            printf(db_fetch_assoc($result)[0] . " users are currently suspended.");
          }
         }
         elseif ($pageInfo['type'] == 'table') {
@@ -1319,9 +1506,13 @@ ORDER BY directory_prefix
             printf("No records found.");
         }
 
+        $tableData = array(
+            'headers' => array(),
+            'data' => array()
+        );
+
         while ($row = db_fetch_assoc($result))
         {
-            $originalRow = $row;
 
             if ($isFirstRow) {
                 // use column aliases for column headers
@@ -1336,6 +1527,8 @@ ORDER BY directory_prefix
                     $index = array_search($column, $headers);
                     unset($headers[$index]);
                 }
+
+                $tableData['headers'] = $headers;
             }
 
             if ($row['Module Title']) {
@@ -1355,99 +1548,65 @@ ORDER BY directory_prefix
             }
 
             if ($format == 'html') {
-                if ($isFirstRow)
-                {
-                    if (array_search('Purpose Specified', $headers)) {
-                        $headerIndex = array_search('Purpose Specified', $headers);
-                        $purposeMasterArray = Array();
 
-                        foreach (self::$purposeMaster as $index=>$purposeStr)
-                        {
-                            $purposeMasterArray[$purposeStr] = "FALSE";
-                        }
-
-                        $headers = array_merge(
-                            array_merge(
-                                array_slice($headers, 0, $headerIndex, true),
-                                array_keys($purposeMasterArray)),
-                            array_slice($headers, $headerIndex, NULL, true)
-                        );
-                    }
-
-                    // print table header
-                    $purposeColumns = $this->printTableHeader($headers);
-                    printf("   <tbody>\n");
-                    $isFirstRow = FALSE;  // toggle flag
+                //todo restore per purpose t/f (maybe move to js?)
+//                if ($isFirstRow)
+//                {
+//                    if (array_search('Purpose Specified', $headers)) {
+//                        $headerIndex = array_search('Purpose Specified', $headers);
+//                        $purposeMasterArray = Array();
+//
+//                        foreach (self::$purposeMaster as $index=>$purposeStr)
+//                        {
+//                            $purposeMasterArray[$purposeStr] = "FALSE";
+//                        }
+//
+//                        $headers = array_merge(
+//                            array_merge(
+//                                array_slice($headers, 0, $headerIndex, true),
+//                                array_keys($purposeMasterArray)),
+//                            array_slice($headers, $headerIndex, NULL, true)
+//                        );
+//                    }
+//
+//                    $isFirstRow = FALSE;  // toggle flag
+//                }
+//
+//                if ($purposeMasterArray) {
+//                    $headerIndex = array_search('Purpose Specified', $headers);
+//                    $purposeArray = explode(',', $row['Purpose Specified']);
+//                    $row = array_merge(
+//                        array_merge(
+//                            array_slice($row, 0, $headerIndex + 2, true),
+//                            $purposeMasterArray),
+//                        array_slice($row, $headerIndex, NULL, true)
+//                    );
+//                    foreach (self::$purposeMaster as $index=>$purposeStr) {
+//                        if ($row['Purpose Specified'] !== '' &&
+//                            array_search($index, $purposeArray) !== FALSE) {
+//                            $row[$purposeStr] = 'TRUE';
+//                        }
+//                        else {
+//                            $row[$purposeStr] = 'FALSE';
+//                        }
+//                    }
                 }
 
-                if ($purposeMasterArray) {
-                    $headerIndex = array_search('Purpose Specified', $headers);
-                    $purposeArray = explode(',', $row['Purpose Specified']);
-                    $row = array_merge(
-                        array_merge(
-                            array_slice($row, 0, $headerIndex + 2, true),
-                            $purposeMasterArray),
-                        array_slice($row, $headerIndex, NULL, true)
-                    );
-                    foreach (self::$purposeMaster as $index=>$purposeStr) {
-                        if ($row['Purpose Specified'] !== '' &&
-                            array_search($index, $purposeArray) !== FALSE) {
-                            $row[$purposeStr] = 'TRUE';
-                        }
-                        else {
-                            $row[$purposeStr] = 'FALSE';
-                        }
-                    }
-                }
+            $row = $this->webifyDataRow($row, $redcapProjects);
 
-                $webData = $this->webifyDataRow($row, $redcapProjects);
-                $this->printTableRow($webData, $hiddenColumns);
+                // todo dealing with hidden columns?
+//                $this->printTableRow($webData, $hiddenColumns);
 
-                ?> <script>UIOWA_AdminDash.hideColumns = <?= json_encode($purposeColumns) ?>;</script> <?php
-            }
-            elseif ($format == 'text') {
-                $titlesStr = implode("\",\"", $row);
-                return $titlesStr;
-            }
-        }
-    }
+//            }
 
-    private function printTableHeader($columns)
-    {
-        printf("
-<table id='reportTable' class='tablesorter'>
-   <thead>
-      <tr>\n", 'reportTable');
-
-        $purposeColumns = [];
-
-        foreach ($columns as $index => $name) {
-            if (in_array($name, self::$purposeMaster)) {
-                array_push($purposeColumns, $index + 1);
-            }
-
-            printf("         <th> %s </th>\n", $name);
+            array_push($tableData['data'], $row);
         }
 
-        printf("
-      </tr>
-   </thead>\n");
-
-        return $purposeColumns;
-    }
-
-    private function printTableRow($row, $hiddenColumns)
-    {
-        printf("      <tr>\n");
-
-        foreach ($row as $key => $value)
-        {
-            if (!array_search($key, $hiddenColumns)) {
-                printf("         <td> %s </td>\n", $value);
-            }
-        }
-
-        printf("      </tr>\n");
+        ?>
+        <script>
+            UIOWA_AdminDash.data = <?= json_encode($tableData) ?>;
+        </script>
+        <?
     }
 
     private function webifyDataRow($row, $projectTitles)
@@ -1686,8 +1845,26 @@ ORDER BY directory_prefix
 
     private function sqlQuery($query)
     {
+//        $msc = microtime(true);
+
         // execute the SQL statement
         $result = db_query($query);
+
+//        $msc = microtime(true)-$msc; //seconds
+//        $label = 's';
+//
+//        if ($msc < 1) {
+//            $msc = $msc * 1000; //miliseconds
+//            $label = 'ms';
+//        }
+//        else if ($msc >= 60) {
+//            $msc = $msc / 60; //minutes
+//            $label = 'm';
+//        }
+//
+//        $msc = round($msc, 2);
+//
+//        echo $msc . $label;
 
         if (! $result || $result == 0)  // sql failed
         {
@@ -1761,6 +1938,19 @@ ORDER BY directory_prefix
         return ($url);
     }
 
+    public function getTableData() {
+        $pageInfo = self::$visualizationQueries[ $_REQUEST['vis'] ];
+        $result = db_query($pageInfo['sql']);
+        $data = array();
+
+        while ( $row = db_fetch_assoc( $result ) )
+        {
+            $data[] = $row;
+        }
+
+        return json_encode($data);
+    }
+
     public function getVisData() {
         $pageInfo = self::$visualizationQueries[ $_REQUEST['vis'] ];
         $result = db_query($pageInfo['sql']);
@@ -1813,6 +2003,25 @@ ORDER BY directory_prefix
         if ($allSettings->executiveVisibility) {
             $this->setSystemSetting('report-visibility-executive', $allSettings->executiveVisibility);
         }
+    }
+
+    public function exportDiagnosticFile() {
+        $sql = "select external_module_id from redcap_external_modules where directory_prefix = 'admin_dash'";
+        $moduleID = db_fetch_assoc(db_query($sql))['external_module_id'];
+
+        $sql = "select * from redcap_external_module_settings where external_module_id = $moduleID";
+        $result = db_query($sql);
+
+        $data = array();
+
+        while ( $row = db_fetch_assoc( $result ) )
+        {
+            $data[] = $row;
+        }
+
+        header('Content-disposition: attachment; filename=admin-dash-settings.json');
+        header('Content-type: application/json');
+        echo json_encode($data);
     }
 }
 ?>

@@ -2,8 +2,51 @@
 (function($, window, document) {
     // sort table when document is loaded
     $(document).ready(function () {
-        $("#reportTable")
-            .tablesorter({
+        UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
+
+        if (UIOWA_AdminDash.data) {
+            var data = UIOWA_AdminDash.data['data'] || null;
+            var headers = Object.values(UIOWA_AdminDash.data['headers']);
+            var table = $('#reportTable');
+
+            $.each(data, function (i, row) {
+                var formattedRow = [];
+
+                $.each(headers, function (j, header) {
+                    formattedRow.push(row[header]);
+                });
+
+                data[i] = formattedRow;
+            });
+
+            var strTable = "";
+
+            strTable += "<thead>";
+
+            for (var i = 0; i < headers.length; i++) {
+                strTable += "<th>";
+                strTable += headers[i];
+                strTable += "</th>";
+            }
+
+            strTable += "</thead>";
+
+
+            for (var i = 0; i < data.length; i++) {
+                strTable += "<tr>";
+
+                for (var j = 0; j < data[i].length; j++) {
+                    strTable += "<td>";
+                    strTable += data[i][j];
+                    strTable += "</td>";
+                }
+
+                strTable += "</tr>";
+            }
+
+            table.append(strTable);
+
+            table.tablesorter({
                 theme: UIOWA_AdminDash.theme,
                 widthFixed: true,
                 usNumberFormat: false,
@@ -150,90 +193,91 @@
                      } */
 
                 }
-
-            })
-
-        var $this = $(".output-button");
-
-        $this.find('.dropdown-toggle').click(function(e) {
-            // this is needed because clicking inside the dropdown will close
-            // the menu with only bootstrap controlling it.
-            $this.find('.dropdown-menu').toggle();
-            return false;
-        });
-        // make separator & replace quotes buttons update the value
-        $this.find('.output-separator').click(function() {
-            $this.find('.output-separator').removeClass('active');
-            var txt = $(this).addClass('active').html();
-            $this.find('.output-separator-input').val( txt );
-            var filename = $this.find('.output-filename');
-            var filetype = (txt === 'json' || txt === 'array') ? 'js' :
-                txt === ',' ? 'csv' : 'txt';
-            filename.val(function(i, v) {
-                // change filename extension based on separator
-                return v.replace(/\.\w+$/, '.' + filetype);
             });
-            var outputType = $($this.find('.output-type.active'))[0].innerText;
-            if (outputType == 'Download') {
-                $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
-            }
-            else {
-                $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
-            }
-            return false;
-        });
-        $this.find('.output-type').click(function() {
-            var outputType = $(this)[0].innerText;
-            var filename = $this.find('.output-filename');
-            var txt = $($this.find('.output-separator.active')).html();
-            var filetype = (txt === 'json' || txt === 'array') ? 'js' :
-                txt === ',' ? 'csv' : 'txt';
-            if (outputType == 'Download') {
-                $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
-                $this.find('.filename-field-display').removeClass('hidden');
-            }
-            else {
-                $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
-                $this.find('.filename-field-display').addClass('hidden');
-            }
-            //return false;
-        });
-        // clicking the download button; all you really need is to
-        // trigger an "output" event on the table
-        $this.find('.download').click(function() {
-            var typ,
-                $table = $("#reportTable"),
-                wo = $table[0].config.widgetOptions,
-                val = $this.find('.output-filter-all :checked').attr('class');
 
-            wo.output_saveRows     = val === 'output-filter' ? 'f' :
-                val === 'output-visible' ? 'v' :
-                    // checked class name, see table.config.checkboxClass
-                    val === 'output-selected' ? '.checked' :
-                        val === 'output-sel-vis' ? '.checked:visible' :
-                            'a';
-            val = $this.find('.output-download-popup :checked').attr('class');
-            wo.output_delivery     = val === 'output-download' ? 'd' : 'p';
-            wo.output_separator    = $this.find('.output-separator-input').val();
-            //wo.output_replaceQuote = $this.find('.output-replacequotes').val();
-            //wo.output_trimSpaces   = $this.find('.output-trim').is(':checked');
-            //wo.output_includeHTML  = $this.find('.output-html').is(':checked');
-            //wo.output_wrapQuotes   = $this.find('.output-wrap').is(':checked');
 
-            var filename = $this.find('.output-filename').val();
+            var $this = $(".output-button");
 
-            if ($this.find('.filename-datetime').is(':checked')) {
-                var splitFilename = filename.split('.');
-                splitFilename.splice(-1, 0, UIOWA_AdminDash.renderDatetime);
-                wo.output_saveFileName = splitFilename.join('.');
-            }
-            else {
-                wo.output_saveFileName = filename;
-            }
+            $this.find('.dropdown-toggle').click(function(e) {
+                // this is needed because clicking inside the dropdown will close
+                // the menu with only bootstrap controlling it.
+                $this.find('.dropdown-menu').toggle();
+                return false;
+            });
+            // make separator & replace quotes buttons update the value
+            $this.find('.output-separator').click(function() {
+                $this.find('.output-separator').removeClass('active');
+                var txt = $(this).addClass('active').html();
+                $this.find('.output-separator-input').val( txt );
+                var filename = $this.find('.output-filename');
+                var filetype = (txt === 'json' || txt === 'array') ? 'js' :
+                    txt === ',' ? 'csv' : 'txt';
+                filename.val(function(i, v) {
+                    // change filename extension based on separator
+                    return v.replace(/\.\w+$/, '.' + filetype);
+                });
+                var outputType = $($this.find('.output-type.active'))[0].innerText;
+                if (outputType == 'Download') {
+                    $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
+                }
+                else {
+                    $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
+                }
+                return false;
+            });
+            $this.find('.output-type').click(function() {
+                var outputType = $(this)[0].innerText;
+                var filename = $this.find('.output-filename');
+                var txt = $($this.find('.output-separator.active')).html();
+                var filetype = (txt === 'json' || txt === 'array') ? 'js' :
+                    txt === ',' ? 'csv' : 'txt';
+                if (outputType == 'Download') {
+                    $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
+                    $this.find('.filename-field-display').removeClass('hidden');
+                }
+                else {
+                    $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
+                    $this.find('.filename-field-display').addClass('hidden');
+                }
+                //return false;
+            });
+            // clicking the download button; all you really need is to
+            // trigger an "output" event on the table
+            $this.find('.download').click(function() {
+                var typ,
+                    $table = $("#reportTable"),
+                    wo = $table[0].config.widgetOptions,
+                    val = $this.find('.output-filter-all :checked').attr('class');
 
-            $table.trigger('outputTable');
-            return false;
-        });
+                wo.output_saveRows     = val === 'output-filter' ? 'f' :
+                    val === 'output-visible' ? 'v' :
+                        // checked class name, see table.config.checkboxClass
+                        val === 'output-selected' ? '.checked' :
+                            val === 'output-sel-vis' ? '.checked:visible' :
+                                'a';
+                val = $this.find('.output-download-popup :checked').attr('class');
+                wo.output_delivery     = val === 'output-download' ? 'd' : 'p';
+                wo.output_separator    = $this.find('.output-separator-input').val();
+                //wo.output_replaceQuote = $this.find('.output-replacequotes').val();
+                //wo.output_trimSpaces   = $this.find('.output-trim').is(':checked');
+                //wo.output_includeHTML  = $this.find('.output-html').is(':checked');
+                //wo.output_wrapQuotes   = $this.find('.output-wrap').is(':checked');
+
+                var filename = $this.find('.output-filename').val();
+
+                if ($this.find('.filename-datetime').is(':checked')) {
+                    var splitFilename = filename.split('.');
+                    splitFilename.splice(-1, 0, UIOWA_AdminDash.renderDatetime);
+                    wo.output_saveFileName = splitFilename.join('.');
+                }
+                else {
+                    wo.output_saveFileName = filename;
+                }
+
+                $table.trigger('outputTable');
+                return false;
+            });
+        }
 
         $(document).on('show.bs.modal', '.modal', function () {
             var zIndex = 1040 + (10 * $('.modal:visible').length);
@@ -250,7 +294,6 @@
             }
         }
 
-        UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
     });
 
 }(window.jQuery, window, document));
@@ -609,14 +652,9 @@ UIOWA_AdminDash.saveReportSettingsToDb = function(type) {
         'executiveVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.executiveVisibility : null
     });
 
-    //var request = new XMLHttpRequest();
-    //request.open("POST", UIOWA_AdminDash.saveSettingsUrl, true);
-    //request.setRequestHeader("Content-type", "application/json");
-    //request.send(allSettings);
-
     $.ajax({
             method: 'POST',
-            url: UIOWA_AdminDash.saveSettingsUrl,
+            url: UIOWA_AdminDash.requestHandlerUrl + '&type=saveReportSettings',
             data: allSettings
         })
         .done(function() {
