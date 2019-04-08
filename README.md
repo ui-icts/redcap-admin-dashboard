@@ -1,7 +1,7 @@
 ## Admin Dashboard
 
 ### Description
-The REDCap Admin Dashboard provides a number of reports on various project and user metadata in a sortable table view. This data can also be downloaded as a CSV formatted file (as well as other delimited formats). Additionally, user-defined reports can be included via custom SQL queries. Reports can also optionally be shared with non-admin users in a limited format (see Executive View).
+The REDCap Admin Dashboard provides a number of reports on various project and user metadata in a sortable table view. This data can also be downloaded as a CSV formatted file (as well as other delimited formats). Additionally, user-defined reports can be included via custom SQL queries. Reports can optionally be shared with non-admin users in a limited format (Executive View).
 
 The following reports are enabled by default:
 * **Projects by User** (List of all users and the projects to which they have access)
@@ -44,7 +44,7 @@ Report results can be exported via the button located in the top right (just abo
 
 When exporting a report that includes the "Purpose Specified" column, it will split the purpose data into separate columns marked as TRUE/FALSE for easier analysis.
 
-#### Executive View
+#### Executive Dashboard
 Non-admin users with a valid REDCap login can be granted access to a limited version of the dashboard without link formatting (projects, emails, etc). The reports accessible in this view can be customized on a per-user basis via the "Configure Reports" button located in the top left of the page. By default, no reports are enabled for Executive View and attempts to access it by non-admin users will display an "access denied" error instead (this will also happen if a user attempts to follow a direct link to a specific report that they do not have permission to access).
 
 Access to this view can be granted by whitelisting usernames via the module configuration page. Admins can switch between the "Admin" and "Executive" views by clicking the button located at the bottom of any dashboard page. Admins can also access the Configure Reports button from either view, but both of these buttons will be hidden from non-admin users.

@@ -1,13 +1,16 @@
-// tablesorter js
 (function($, window, document) {
-    // sort table when document is loaded
     $(document).ready(function () {
         UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
 
-        if (UIOWA_AdminDash.data) {
-            var data = UIOWA_AdminDash.data['data'] || null;
+        $('#pagecontainer').css('cursor', 'default');
+        $('#loading').hide();
+
+        // build report table
+        if (UIOWA_AdminDash.data != null) {
+            var data = UIOWA_AdminDash.data['data'];
             var headers = Object.values(UIOWA_AdminDash.data['headers']);
             var table = $('#reportTable');
+            var specialFormatting = {};
 
             $.each(data, function (i, row) {
                 var formattedRow = [];
@@ -19,40 +22,52 @@
                 data[i] = formattedRow;
             });
 
-            var strTable = "";
+            if (UIOWA_AdminDash.reportInfo['formatting']) {
+                specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
+                data = UIOWA_AdminDash.formatTableData(data, headers, specialFormatting);
+            }
 
+            var strTable = "";
             strTable += "<thead>";
 
-            for (var i = 0; i < headers.length; i++) {
+            $.each(headers, function(headerIndex, headerValue) {
                 strTable += "<th>";
-                strTable += headers[i];
+                strTable += headerValue;
                 strTable += "</th>";
-            }
+            });
 
             strTable += "</thead>";
 
-
-            for (var i = 0; i < data.length; i++) {
+            $.each(data, function(rowIndex, rowValue) {
                 strTable += "<tr>";
 
-                for (var j = 0; j < data[i].length; j++) {
+                $.each(rowValue, function(cellIndex, cellValue) {
                     strTable += "<td>";
-                    strTable += data[i][j];
+                    strTable += cellValue;
                     strTable += "</td>";
-                }
+                });
 
                 strTable += "</tr>";
-            }
+            });
+
+            // get column indexes to hide in export
+            var columnId = 0;
+            var hiddenExportColumns = [];
+            $.each(specialFormatting, function(key, value) {
+                if (value['display'] == 1 || value['display'] == 3) {
+                    hiddenExportColumns.push(columnId);
+                }
+                columnId++;
+            });
 
             table.append(strTable);
-
             table.tablesorter({
                 theme: UIOWA_AdminDash.theme,
                 widthFixed: true,
                 usNumberFormat: false,
                 sortReset: false,
                 sortRestart: true,
-                widgets: ['zebra', 'filter', 'resizable', 'stickyHeaders', 'pager', 'output'],
+                widgets: ['zebra', 'filter', 'stickyHeaders', 'pager', 'output'],
 
                 widgetOptions: {
 
@@ -144,12 +159,12 @@
                     stickyHeaders_offset: 50,
 
                     output_separator     : ',',         // ',' 'json', 'array' or separator (e.g. ';')
-                    output_ignoreColumns : '',         // columns to ignore [0, 1,... ] (zero-based index)
+                    output_ignoreColumns : hiddenExportColumns,         // columns to ignore [0, 1,... ] (zero-based index)
                     output_hiddenColumns : true,       // include hidden columns in the output
                     output_includeFooter : true,        // include footer rows in the output
                     output_includeHeader : true,        // include header rows in the output
                     output_headerRows    : false,       // output all header rows (if multiple rows)
-                    output_dataAttrib    : 'data-name', // data-attribute containing alternate cell text
+                    output_dataAttrib    : 'data-export', // data-attribute containing alternate cell text
                     output_delivery      : 'd',         // (p)opup, (d)ownload
                     output_saveRows      : 'a',         // (a)ll, (v)isible, (f)iltered, jQuery filter selector (string only) or filter function
                     output_duplicateSpans: true,        // duplicate output data in tbody colspan/rowspan
@@ -195,6 +210,48 @@
                 }
             });
 
+            // additonal post-tablesorter formatting
+            columnId = 1;
+            $.each(specialFormatting, function(key, value) {
+                var column = $('td:nth-child(' + columnId + ')');
+
+                column.each(function (i, td) {
+                    var links = $('a', td);
+                    var csvList = '';
+                    var mailto = 'mailto:?bcc=';
+
+                    // format link lists into csv for export
+                    if (links.length > 1) {
+                        links.each(function (j, link) {
+                            var linkText = $(link).text();
+
+                            if (value['link'] == 'Email') {
+                                mailto += linkText + ';';
+                            }
+
+                            if (csvList == '') {
+                                csvList = linkText;
+                            }
+                            else {
+                                csvList += ',' + linkText;
+                            }
+                        });
+
+                        if (value['link'] == 'Email') {
+                            // add 'Email All' button where appropriate
+                            $(td).append('<div style="padding-top:10px;"><button style="float:right;" class="btn btn-info btn-sm" onclick="location.href=\'' + mailto + '\'">Email All</button></div>')
+                        }
+
+                        $(td).attr('data-export', csvList);
+                    }
+                });
+
+                if (value['display'] == 2 || value['display'] == 3) {
+                    column = $('td:nth-child(' + columnId + '),th:nth-child(' + columnId + ')');
+                    column.hide();
+                }
+                columnId++;
+            });
 
             var $this = $(".output-button");
 
@@ -217,10 +274,10 @@
                     return v.replace(/\.\w+$/, '.' + filetype);
                 });
                 var outputType = $($this.find('.output-type.active'))[0].innerText;
-                if (outputType == 'Download') {
+                if (outputType == 'File') {
                     $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
                 }
-                else {
+                else if (outputType == 'Popup') {
                     $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
                 }
                 return false;
@@ -231,61 +288,82 @@
                 var txt = $($this.find('.output-separator.active')).html();
                 var filetype = (txt === 'json' || txt === 'array') ? 'js' :
                     txt === ',' ? 'csv' : 'txt';
-                if (outputType == 'Download') {
+                if (outputType == 'File') {
                     $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
                     $this.find('.filename-field-display').removeClass('hidden');
+                    $this.find('.separator-field-display').removeClass('hidden');
+                    $this.find('.include-field-display').removeClass('hidden');
+                    $this.find('.target-field-display').addClass('hidden');
+                    $this.find('.download').prop('disabled', false);
                 }
-                else {
+                else if (outputType == 'Popup') {
                     $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
                     $this.find('.filename-field-display').addClass('hidden');
+                    $this.find('.separator-field-display').removeClass('hidden');
+                    $this.find('.include-field-display').removeClass('hidden');
+                    $this.find('.target-field-display').addClass('hidden');
+                    $this.find('.download').prop('disabled', false);
+                }
+                else if (outputType == 'Project') {
+                    $this.find('.download').html('<span class="far fa-list-alt"></span> Send to REDCap');
+                    $this.find('.filename-field-display').addClass('hidden');
+                    $this.find('.separator-field-display').addClass('hidden');
+                    $this.find('.include-field-display').addClass('hidden');
+                    $this.find('.target-field-display').removeClass('hidden');
+                    $this.find('.download').prop('disabled', true);
                 }
                 //return false;
             });
             // clicking the download button; all you really need is to
             // trigger an "output" event on the table
             $this.find('.download').click(function() {
-                var typ,
-                    $table = $("#reportTable"),
-                    wo = $table[0].config.widgetOptions,
-                    val = $this.find('.output-filter-all :checked').attr('class');
+                var outputType = $($this.find('.output-type.active'))[0].innerText;
 
-                wo.output_saveRows     = val === 'output-filter' ? 'f' :
-                    val === 'output-visible' ? 'v' :
-                        // checked class name, see table.config.checkboxClass
-                        val === 'output-selected' ? '.checked' :
-                            val === 'output-sel-vis' ? '.checked:visible' :
-                                'a';
-                val = $this.find('.output-download-popup :checked').attr('class');
-                wo.output_delivery     = val === 'output-download' ? 'd' : 'p';
-                wo.output_separator    = $this.find('.output-separator-input').val();
-                //wo.output_replaceQuote = $this.find('.output-replacequotes').val();
-                //wo.output_trimSpaces   = $this.find('.output-trim').is(':checked');
-                //wo.output_includeHTML  = $this.find('.output-html').is(':checked');
-                //wo.output_wrapQuotes   = $this.find('.output-wrap').is(':checked');
-
-                var filename = $this.find('.output-filename').val();
-
-                if ($this.find('.filename-datetime').is(':checked')) {
-                    var splitFilename = filename.split('.');
-                    splitFilename.splice(-1, 0, UIOWA_AdminDash.renderDatetime);
-                    wo.output_saveFileName = splitFilename.join('.');
+                if (outputType == 'Project') {
+                    $('#projectImportConfirm').modal({backdrop: 'static', keyboard: false});
                 }
                 else {
-                    wo.output_saveFileName = filename;
+                    var typ,
+                        $table = $("#reportTable"),
+                        wo = $table[0].config.widgetOptions,
+                        val = $this.find('.output-filter-all :checked').attr('class');
+
+                    wo.output_saveRows     = val === 'output-filter' ? 'f' :
+                        val === 'output-visible' ? 'v' :
+                            // checked class name, see table.config.checkboxClass
+                            val === 'output-selected' ? '.checked' :
+                                val === 'output-sel-vis' ? '.checked:visible' :
+                                    'a';
+                    val = $this.find('.output-download-popup :checked').attr('class');
+                    wo.output_delivery     = val === 'output-download' ? 'd' : 'p';
+                    wo.output_separator    = $this.find('.output-separator-input').val();
+                    //wo.output_replaceQuote = $this.find('.output-replacequotes').val();
+                    //wo.output_trimSpaces   = $this.find('.output-trim').is(':checked');
+                    //wo.output_includeHTML  = $this.find('.output-html').is(':checked');
+                    //wo.output_wrapQuotes   = $this.find('.output-wrap').is(':checked');
+
+                    var filename = $this.find('.output-filename').val();
+
+                    if ($this.find('.filename-datetime').is(':checked')) {
+                        var splitFilename = filename.split('.');
+                        splitFilename.splice(-1, 0, UIOWA_AdminDash.renderDatetime);
+                        wo.output_saveFileName = splitFilename.join('.');
+                    }
+                    else {
+                        wo.output_saveFileName = filename;
+                    }
+
+                    $table.trigger('outputTable');
+                    return false;
                 }
-
-                $table.trigger('outputTable');
-                return false;
             });
-        }
 
-        $(document).on('show.bs.modal', '.modal', function () {
-            var zIndex = 1040 + (10 * $('.modal:visible').length);
-            $(this).css('z-index', zIndex);
-            setTimeout(function() {
-                $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
-            }, 0);
-        });
+            $this.show();
+            $('#report-content').show();
+        }
+        else {
+            $('#no-results').show();
+        }
 
         if (UIOWA_AdminDash.hideColumns) {
             for (var i in UIOWA_AdminDash.hideColumns) {
@@ -294,323 +372,306 @@
             }
         }
 
+        //todo ???
+        //if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser) {
+        //    $('.executiveUser').val( sessionStorage.getItem("selectedUser") );
+        //    UIOWA_AdminDash.userID = $('.executiveUser')[0].value;
+        //}
+        //$('.executiveUser').change(function() {
+        //    $('.executiveUser').not(this).val( this.value );
+        //    sessionStorage.setItem("selectedUser", this.value);
+        //    UIOWA_AdminDash.updateSettingsModal(this.value);
+        //});
+
+        $('.output-filename').val(UIOWA_AdminDash.csvFileName);
+
+        $('#exportProjectSelect').change(function() {
+            $('#pagecontainer').css('cursor', 'progress');
+            $this.find('.download').prop('disabled', true);
+
+            var projectLink = $('.target-project-link');
+
+            projectLink.html($('#exportProjectSelect option:selected').text());
+            projectLink.attr('href', UIOWA_AdminDash.redcapVersionUrl + 'ProjectSetup/index.php?pid=' + $('#exportProjectSelect').val());
+
+            if (this.value != '') {
+                $.ajax({
+                    method: 'POST',
+                    url: UIOWA_AdminDash.requestHandlerUrl + '&type=getApiToken',
+                    data: {
+                        pid: $this.find('#exportProjectSelect')[0].value
+                    }
+                })
+                .done(function(token) {
+                    $.ajax({
+                        method: 'POST',
+                        url: UIOWA_AdminDash.redcapBaseUrl + 'api/',
+                        data: {
+                            token: token,
+                            content: 'metadata',
+                            format: 'json',
+                            field: JSON.stringify(UIOWA_AdminDash.data['project_headers'])
+                        },
+                        success: function(data) {
+                            var projectFields = $.map(data, function (field) {
+                                return field['field_name'];
+                            });
+
+                            var requiredFields = UIOWA_AdminDash.data['project_headers'];
+
+                            var validProject = projectFields.filter(function (elem) {
+                                return requiredFields.indexOf(elem) > -1;
+                            }).length == requiredFields.length;
+
+                            // if project contains required fields for import, enable button
+                            if (validProject) {
+                                $this.find('.download').prop('disabled', false);
+                            }
+                            else {
+                                $this.find('.download').prop('disabled', true);
+                                $('#invalidProjectWarning').modal('show');
+                            }
+
+                            $('#pagecontainer').css('cursor', 'default');
+                        }
+                    })
+                });
+            }
+            else {
+                $this.find('.download').prop('disabled', true);
+            }
+        });
+
+        $('#invalidProjectWarning').on('hidden.bs.modal', function () {
+            $('#confirmProjectUpdate').hide();
+            $('.force-import').hide();
+            $('.force-import-close').html('Close');
+        });
+
+        $('.show-project-warning-text').click(function () {
+            $('#confirmProjectUpdate').show();
+
+            $('.force-import').show();
+            $('.force-import-close').html('Cancel');
+        });
+
+        $('.confirm-import').click(function () {
+            $(this).prop('disabled', true);
+            $('.import-close').prop('disabled', true);
+            $(this).html('<i class="fas fa-spinner fa-spin import-progress"></i>');
+
+            // get project api token
+            $.ajax({
+                method: 'POST',
+                url: UIOWA_AdminDash.requestHandlerUrl + '&type=getApiToken',
+                data: {
+                    pid: $this.find('#exportProjectSelect')[0].value
+                }
+            })
+            .done(function(token) {
+                // import data
+                $.ajax({
+                    method: 'POST',
+                    url: UIOWA_AdminDash.redcapBaseUrl + 'api/',
+                    data: {
+                        token: token,
+                        content: 'record',
+                        format: 'json',
+                        data: JSON.stringify(UIOWA_AdminDash.data['project_data'])
+                    },
+                    success: function(data) {
+                        $('.confirm-import').html('<i class="fas fa-check"></i> Success').removeClass('btn-primary').addClass('btn-success');
+                        $('#importInfoText').hide();
+                        $('.import-close').html('Close').prop('disabled', false);
+
+                        if (data['count']) {
+                            $('#importedRecordCount').html(data['count']);
+                            $('#importCompleteText').show();
+                        }
+                    },
+                    error: function(data) {
+                        var response = data['responseJSON'];
+                        $('.confirm-import').html('<i class="fas fa-times"></i> Error').removeClass('btn-primary').addClass('btn-danger');
+                        $('#importInfoText').hide();
+                        $('.import-close').html('Close').prop('disabled', false);
+
+                        if (response['error']) {
+                            $('#redcapApiErrorText').html(response['error']);
+                            $('#importErrorText').show();
+                        }
+                        else {
+                            $('#redcapApiErrorText').html('An unknown error occurred.');
+                            $('#importErrorText').show();
+                        }
+                    }
+                })
+            })
+        });
+
+        $('#projectImportConfirm').on('hidden.bs.modal', function () {
+            $('#importErrorText').hide();
+            $('#importCompleteText').hide();
+            $('#importInfoText').show();
+            $('.import-close').html('Cancel');
+            $('.confirm-import').html('Import').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-primary');
+        });
+
+        $('.force-import').click(function () {
+            $.ajax({
+                method: 'POST',
+                url: UIOWA_AdminDash.requestHandlerUrl + '&type=getApiToken',
+                data: {
+                    pid: $this.find('#exportProjectSelect')[0].value
+                }
+            })
+            .done(function (token) {
+                UIOWA_AdminDash.importProjectMetadata(token);
+            });
+        });
+
+        $('.open-settings').click(function() {
+            window.open(UIOWA_AdminDash.settingsUrl, "_self");
+        });
+
+        UIOWA_AdminDash.updateReportTabs('');
+
+        $('#primaryUserSelect').change(function() {
+            UIOWA_AdminDash.updateReportTabs($('#primaryUserSelect').val());
+        });
+
+        // Enable tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+
     });
 
 }(window.jQuery, window, document));
 
 var UIOWA_AdminDash = {};
 
-// generate pie chart with c3.js
-UIOWA_AdminDash.createPieChart = function(id, type, data, options) {
-    var ctx = document.getElementById(id).getContext('2d');
+UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
+{
+    var formattingReference = UIOWA_AdminDash.formattingReference['links'];
+    var formattedData = {};
 
-    var myChart = new Chart(ctx, {
-        type: type,
-        data: data,
-        options: options
-    });
+    // loop through each row
+    $.each(data, function(rowIndex, row) {
+        //var pidIndex = headers.indexOf('project_id');
+        //var projectIds = (row[pidIndex] == null) ? null : row[pidIndex].split('@@@');
+        //headers = $.grep(headers, function(value) {
+        //    return value != 'project_id';
+        //});
+        //delete row[pidIndex];
 
-    //var chart = c3.generate({
-    //    data: {
-    //        json: json,
-    //        type: 'pie'
-    //    },
-    //    title: {
-    //        text: title
-    //    },
-    //    legend: {
-    //        position: 'inset',
-    //        width: '50%',
-    //        inset: {
-    //            anchor: 'top-right',
-    //            x: 100,
-    //            y: 0
-    //        }
-    //    },
-    //    tooltip: {
-    //        show: false
-    //    },
-    //    bindto: "#" + chartID
-    //});
-};
+        //console.log(JSON.parse(JSON.stringify(projectIds)));
 
-// flatten REDCap data json into counts
-UIOWA_AdminDash.getCountsFromJson = function(json, column) {
-    var countList = {};
+        formattedData[rowIndex] = {};
+        var newHeaders = [];
+        var newValues = [];
 
-    for (var i = 0; i < json.length; i++) {
-        var currentValue = json[i][column] ? json[i][column] : "N/A"; // Value to be tallied
+        // loop through each cell
+        $.each(row, function(cellIndex, cell) {
+            formattedData[rowIndex][cellIndex] = '';
+            var columnHeader = headers[cellIndex];
+            var cellValues = (cell == null) ? [] : cell.split('@@@');
+            // prepare reference columns, otherwise use self
+            var projectIds = (row[headers.indexOf('project_id')]) ? row[headers.indexOf('project_id')].split('@@@') : [];
+            var projectStatuses = (row[headers.indexOf('status')]) ? row[headers.indexOf('status')].split('@@@') : [];
+            var projectDeletedDates = (row[headers.indexOf('date_deleted')]) ? row[headers.indexOf('date_deleted')].split('@@@') : [];
+            var userSuspendedTimes = (row[headers.indexOf('user_suspended_time')]) ? row[headers.indexOf('user_suspended_time')].split('@@@') : [];
 
-        if (!(currentValue in countList)) {
-            countList[currentValue] = 1;
-        }
-        else {
-            countList[currentValue]++;
-        }
-    }
-    return countList;
-};
+            // repeat for each group item in cell
+            $.each(cellValues, function (index, value) {
+                var columnFormatting = formatting[columnHeader] ? formatting[columnHeader] : {
+                    linkGroup: 'none',
+                    link: 'not set'
+                };
+                var linkGroup = columnFormatting['linkGroup'];
+                var linkType = columnFormatting['link'];
 
-UIOWA_AdminDash.updateSettingsModal = function(selectedUser) {
+                if (linkType != 'not set' && linkGroup != 'Code Lookup') {
+                    var linkUrl = '';
+                    var linkStyle = '';
+                    var suspendedTag = '';
 
-    $('.report-visibility-table tr').each(function () {
-        var reportTitle = $(this).find('.table-report-title').html();
+                    if (linkType == 'Custom') {
+                        linkUrl = columnFormatting['custom'].replace('{value}', value);
+                    }
+                    else if (linkType == 'Survey Hash') {
+                        linkUrl = UIOWA_AdminDash.redcapBaseUrl + formattingReference[linkGroup][linkType] + value;
+                    }
+                    else if (linkType == 'Email') {
+                        linkUrl = 'mailto:' + value;
+                    }
+                    else if (linkGroup == 'Project Links (project_id)') {
 
-        if (reportTitle == undefined) {return;}
+                        if (projectDeletedDates != null) {
+                            var status = projectStatuses[index];
+                            var dateDeleted = projectDeletedDates[index];
 
-        var adminVisible = UIOWA_AdminDash.adminVisibility[reportTitle];
-        var executiveVisible = $.inArray(selectedUser, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
-        var adminToggle = $(this).find('.table-admin-visible input');
-        var executiveToggle = $(this).find('.table-executive-visible input');
-        var executiveToggleGroup = $(this).find('.table-executive-visible .toggle-off');
+                            if (status == '3') {
+                                linkStyle = 'id="archived"';
+                            }
+                            if (dateDeleted != 'F' && dateDeleted != null) {
+                                linkStyle = 'id="deleted"';
+                            }
+                        }
 
-        if (selectedUser == '' || selectedUser == null) {
-            executiveToggle.bootstrapToggle('off');
+                        linkUrl = UIOWA_AdminDash.redcapVersionUrl + formattingReference[linkGroup][linkType] + projectIds[index];
+                    }
+                    else if (linkGroup == 'User Links (username)') {
+                        if (userSuspendedTimes != null) {
+                            var suspended = userSuspendedTimes[index];
 
-            executiveToggle.prop('disabled', true);
-            executiveToggleGroup.addClass('disabled');
-        }
-        else {
-            executiveToggle.prop('disabled', false);
-            executiveToggleGroup.removeClass('disabled');
+                            if (suspended != 'F' && suspended != null) {
+                                suspendedTag = '<br /><span id="suspended">[suspended]</span>';
+                            }
+                        }
 
-            executiveVisible ? executiveToggle.bootstrapToggle('on') : executiveToggle.bootstrapToggle('off');
-        }
+                        linkUrl = UIOWA_AdminDash.redcapVersionUrl + formattingReference[linkGroup][linkType] + value;
+                    }
 
-        adminVisible ? adminToggle.bootstrapToggle('on') : adminToggle.bootstrapToggle('off');
+                    formattedData[rowIndex][cellIndex] += '<a href="' + linkUrl + '" target="_blank"' + linkStyle + '>' + value + '</a>' + suspendedTag + '<br />';
+                }
+                else if (linkType == 'Project Purpose' || linkType == 'Project Status') {
+                    formattedData[rowIndex][cellIndex] = formattingReference[linkGroup][linkType][value];
+                }
+                else if (linkType == 'Research Purpose') {
+                    value = value.split(',');
+                    value = $.map(value, function (index, item) {
+                        return formattingReference[linkGroup][linkType][item];
+                    });
 
-    });
+                    formattedData[rowIndex][cellIndex] = value.join(', ');
+                }
+                else if (linkType == 'Research Purpose (Split)') { //todo
+                    value = value.split(',');
 
-    UIOWA_AdminDash.updateReportTabs(selectedUser);
-};
+                    $.each(formattingReference[linkGroup][linkType], function (index, item) {
+                        newHeaders.push(item);
 
-UIOWA_AdminDash.updateReportSetupModal = function() {
-    var index = UIOWA_AdminDash.currentReportConfigIndex;
-    var reportInfo = UIOWA_AdminDash.reportReference[index];
-    var nameInput = $('#reportName');
-    var descInput = $('#reportDescription');
-    var iconInput = $('#reportIcon');
-    var idInput = $('#reportId');
-    var customIdInput = $('#reportCustomId');
-
-    //$('#reportConfiguration input').not('#reportCustomId').attr('readonly', false);
-    $('#reportConfiguration input').attr('readonly', false);
-    $('#reportConfiguration select').attr('disabled', false);
-    editor.setReadOnly(false);
-    $('.save-report').show();
-
-    if (UIOWA_AdminDash.newReport) {
-        nameInput.val('');
-        descInput.val('');
-        iconInput.val('question');
-        iconInput.trigger('input');
-        idInput.html(index);
-        customIdInput.val('');
-        editor.setValue('');
-    }
-    else {
-        nameInput.val(reportInfo['reportName']);
-        descInput.val(reportInfo['description']);
-        iconInput.val(reportInfo['tabIcon']);
-        iconInput.trigger('input');
-        idInput.html(index);
-        customIdInput.val(UIOWA_AdminDash.reportIDs[index]);
-        editor.setValue(reportInfo['sql'] ? reportInfo['sql'] : '');
-
-        if (reportInfo['readOnly']) {
-            //$('#reportConfiguration input').not('#reportCustomId').attr('readonly', true);
-            $('#reportConfiguration input').attr('readonly', true);
-            $('#reportConfiguration select').attr('disabled', true);
-            editor.setReadOnly(true);
-            $('.save-report').hide();
-        }
-    }
-
-    editor.clearSelection();
-};
-
-UIOWA_AdminDash.saveReportConfiguration = function() {
-    var index = UIOWA_AdminDash.currentReportConfigIndex;
-    var newReportTitle = $('#reportName').val();
-    var reportRow = $('.table-report-title')[index];
-    var reportNavTitle = $('.report-title')[index];
-    var reportNavIcon = $('.report-icon')[index];
-    var oldReportTitle = $(reportRow).html();
-
-    $(reportRow).html(newReportTitle);
-    $(reportNavTitle).html(newReportTitle);
-
-    $(reportNavIcon).removeClass (function (index, className) {
-        return (className.match (/(^|\s)fa-\S+/g) || []).join(' ');
-    });
-    $(reportNavIcon).addClass('fa-' + $('#reportIcon').val());
-
-    UIOWA_AdminDash.reportReference[index] = {
-        'reportName': newReportTitle,
-        'description': $('#reportDescription').val(),
-        'tabIcon': $('#reportIcon').val(),
-        'customID': $('#reportCustomId').val(),
-        'sql': editor.getValue(),
-        'type': 'table'
-};
-
-    UIOWA_AdminDash.reportIDs[index] = $('#reportCustomId').val();
-
-    if (!UIOWA_AdminDash.newReport) {
-        UIOWA_AdminDash.adminVisibility = UIOWA_AdminDash.updateVisibilityReportTitle(
-            UIOWA_AdminDash.adminVisibility,
-            oldReportTitle,
-            newReportTitle
-        );
-        UIOWA_AdminDash.executiveVisibility = UIOWA_AdminDash.updateVisibilityReportTitle(
-            UIOWA_AdminDash.executiveVisibility,
-            oldReportTitle,
-            newReportTitle
-        );
-    }
-    else {
-        UIOWA_AdminDash.adminVisibility[newReportTitle] = false;
-        UIOWA_AdminDash.executiveVisibility[newReportTitle] = [];
-    }
-
-    UIOWA_AdminDash.saveReportSettingsToDb('all');
-};
-
-UIOWA_AdminDash.updateVisibilityReportTitle = function(array, oldTitle, newTitle) {
-    if (oldTitle !== newTitle) {
-        Object.defineProperty(array, newTitle,
-            Object.getOwnPropertyDescriptor(array, oldTitle));
-        delete array[oldTitle];
-    }
-
-    return array;
-};
-
-UIOWA_AdminDash.createReportRow = function(reportName) {
-    return $(
-        '<tr>' +
-            '<td class="table-report-title" style="text-align:right; vertical-align:middle; padding-right:10px">'+
-                reportName +
-            '</td>' +
-            '<td style="text-align:left; vertical-align:middle;">' +
-                '<button type="button" class="btn btm-sm btn-primary open-report-setup report-settings-button" aria-haspopup="true" aria-expanded="false" data-toggle="modal" data-target="#reportSetupModal">' +
-                    '<i class="fas fa-edit"></i>' +
-                    '<span class="sr-only">Edit report</span>' +
-                '</button>' +
-                //'<button type="button" class="btn btm-sm btn-success report-settings-button" aria-haspopup="true" aria-expanded="false" data-target="#" onclick="UIOWA_AdminDash.copyReport(this)">' +
-                //    '<i class="fas fa-copy"></i>' +
-                //    '<span class="sr-only">Copy report</span>' +
-                //'</button>' +
-                '<button type="button" class="btn btm-sm btn-danger report-settings-button custom-report-only" aria-haspopup="true" aria-expanded="false" data-target="#" onclick="UIOWA_AdminDash.deleteReport(this)">' +
-                    '<i class="fas fa-trash"></i>' +
-                    '<span class="sr-only">Delete report</span>' +
-                '</button>' +
-            '</td>' +
-            '<td class="table-admin-visible" style="text-align:center">' +
-                '<input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide">' +
-            '</td>' +
-            '<td class="table-executive-visible" style="text-align:center">' +
-                '<input type="checkbox" data-toggle="toggle" data-width="75" data-on="Show" data-off="Hide">' +
-            '</td>' +
-        '</tr>'
-    );
-};
-
-//todo add to reportReference
-UIOWA_AdminDash.copyReport = function(copyLink) {
-    var copyReportRow = $(copyLink).closest('tr');
-    var addButtonRow = $('.add-report-button').closest('tr');
-    var reportName = $('.table-report-title', copyReportRow).text();
-    var existingReportCopy = $.inArray(reportName, UIOWA_AdminDash.reportReference) != -1;
-
-    if (!existingReportCopy) {
-        var reportRow = $(UIOWA_AdminDash.createReportRow(reportName + ' (Copy)')).insertBefore(addButtonRow);
-
-        $('input', reportRow).bootstrapToggle();
-
-        var reportInfoCopy = $.grep(UIOWA_AdminDash.reportReference, function (report) {
-            return report['reportName'] == reportName;
-        })[0];
-
-        reportInfoCopy['reportName'] = reportName + ' (Copy)';
-        delete reportInfoCopy['defaultVisibility'];
-        delete reportInfoCopy['readOnly'];
-
-        UIOWA_AdminDash.reportReference.push(reportInfoCopy);
-
-        UIOWA_AdminDash.saveReportSettingsToDb('reports');
-
-
-    }
-    else {
-        alert('A copy of this report already exists. Please rename the original copy before creating another.')
-    }
-
-    //
-    //var reportNav = $('.report-title').filter(function () {
-    //    return $(this).html() == reportName;
-    //}).closest('li').first();
-    //
-    //reportRow.remove();
-    //reportNav.remove();
-    //UIOWA_AdminDash.saveReportSettingsToDb('reports');
-};
-
-UIOWA_AdminDash.deleteReport = function(deleteLink) {
-    var reportRow = $(deleteLink).closest('tr');
-    var reportName = $('.table-report-title', reportRow).text();
-
-    var confirmed = confirm('Are you sure you want to delete ' + reportName + '?');
-
-    if (confirmed) {
-        UIOWA_AdminDash.reportReference = $.grep(UIOWA_AdminDash.reportReference, function (report) {
-            return report['reportName'] != reportName;
+                        if (value.indexOf(index) != -1) {
+                            newValues.push('TRUE');
+                        }
+                        else {
+                            newValues.push('FALSE');
+                        }
+                    });
+                    //formattedData[rowIndex][cellIndex] = formattingReference[linkGroup][linkType][value];
+                }
+                else {
+                    formattedData[rowIndex][cellIndex] += value + '<br />';
+                }
+            });
         });
 
-        UIOWA_AdminDash.reportIDs.splice(reportRow.index());
-        delete UIOWA_AdminDash.adminVisibility[reportName];
-        delete UIOWA_AdminDash.executiveVisibility[reportName];
+        //console.log(newHeaders);
+        //console.log(newValues);
 
-        var reportNav = $('.report-title').filter(function () {
-            return $(this).html() == reportName;
-        }).closest('li').first();
+        //formattedData.splice(0, 0, newValues)
+    });
 
-        reportRow.remove();
-        reportNav.remove();
-        UIOWA_AdminDash.saveReportSettingsToDb('all');
-    }
+    return formattedData;
 };
-
-//UIOWA_AdminDash.archiveReport = function(archiveLink) {
-//    var reportRow = $(archiveLink).closest('tr');
-//    var settingsButton = $('button', reportRow);
-//    var settingsButtonIcon = $('button > i', reportRow);
-//
-//    settingsButton.removeClass('btn-primary');
-//    settingsButton.addClass('btn-warning');
-//
-//    settingsButtonIcon.removeClass();
-//    settingsButtonIcon.addClass('fas fa-eye-slash');
-//
-//    reportRow.hide();
-//};
-//
-//UIOWA_AdminDash.toggleArchivedReports = function() {
-//    UIOWA_AdminDash.showArchivedReports = !UIOWA_AdminDash.showArchivedReports;
-//
-//    $('.report-visibility-table tr').each(function () {
-//        var reportName = $('td', this).html();
-//
-//        if (UIOWA_AdminDash.showArchivedReports == true) {
-//            $(this).show();
-//        }
-//        else if (UIOWA_AdminDash.showArchivedReports == false) {
-//            if ($.inArray(reportName, UIOWA_AdminDash.archivedReports) != -1) {
-//                $(this).hide();
-//            }
-//        }
-//    });
-//};
 
 UIOWA_AdminDash.updateReportTabs = function(user) {
     var keys = Object.keys(UIOWA_AdminDash.adminVisibility);
@@ -624,42 +685,67 @@ UIOWA_AdminDash.updateReportTabs = function(user) {
         });
 
         if (!adminVisible && !UIOWA_AdminDash.executiveAccess) {
-            reportTab.hide();
+            reportTab.hide("slow");
         }
         else if (!executiveVisible && UIOWA_AdminDash.executiveAccess) {
             reportTab.hide();
         }
         else {
-            reportTab.show();
+            reportTab.show("slow");
         }
     }
 };
 
-UIOWA_AdminDash.saveReportSettingsToDb = function(type) {
-    var customReports = $.grep(UIOWA_AdminDash.reportReference, function(report) {
-        if ($.inArray(report['reportName'], UIOWA_AdminDash.defaultReportNames) == -1) {
-            return report;
-        }
-    });
+UIOWA_AdminDash.importProjectMetadata = function (token) {
+    var reportTitle = $('#reportTitle').html().trim().toLowerCase().split(' ').join('_');
 
-    if (customReports.length == 0) {
-        customReports = 'none';
-    }
+    var metadata = [];
+    var fieldInfo = {
+        field_name: 'record_id',
+        form_name: reportTitle,
+        section_header: '',
+        field_type: 'text',
+        field_label: 'Record ID'
+    };
 
-    var allSettings = JSON.stringify({
-        'reportReference': type == 'all' || type == 'reports' ? customReports : null,
-        'adminVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.adminVisibility : null,
-        'executiveVisibility': type == 'all' || type == 'visibility' ? UIOWA_AdminDash.executiveVisibility : null
+    metadata.push(fieldInfo);
+
+    $.each(UIOWA_AdminDash.data['project_headers'], function (index, value) {
+        fieldInfo = {
+            field_name: value,
+            form_name: reportTitle,
+            section_header: '',
+            field_type: 'text',
+            field_label: UIOWA_AdminDash.data['headers'][index]
+        };
+
+        metadata.push(fieldInfo);
     });
 
     $.ajax({
-            method: 'POST',
-            url: UIOWA_AdminDash.requestHandlerUrl + '&type=saveReportSettings',
-            data: allSettings
-        })
-        .done(function() {
-            if (UIOWA_AdminDash.loadReportAfterSave) {
-                window.location.href = UIOWA_AdminDash.lastSavedReportUrl;
+        method: 'POST',
+        url: UIOWA_AdminDash.redcapBaseUrl + 'api/',
+        data: {
+            token: token,
+            content: 'metadata',
+            format: 'json',
+            data: JSON.stringify(metadata)
+        },
+        success: function(data) {
+            console.log(data);
+
+            $('#invalidProjectWarning').modal('hide');
+            $('#projectImportConfirm').modal({backdrop: 'static', keyboard: false});
+        },
+        error: function(data) {
+            var response = data['responseJSON'];
+
+            if (response['error']) {
+                alert(response['error']);
             }
-        })
+            else {
+                alert('An unknown error occurred when attempting to update your project.');
+            }
+        }
+    })
 };

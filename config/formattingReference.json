@@ -1,0 +1,61 @@
+{
+  "links": {
+    "Project Links (project_id)": {
+      "Project Setup": "ProjectSetup/index.php?pid=",
+      "Online Designer": "Design/online_designer.php?pid=",
+      "Record Status Dashboard": "DataEntry/record_status_dashboard.php?pid=",
+      "User Rights": "UserRights/index.php?pid=",
+      "Project Settings": "ControlCenter/edit_project.php?project="
+    },
+    "User Links (username)": {
+      "User Information": "ControlCenter/view_users.php?username=",
+      "Browse Projects": "ControlCenter/view_projects.php?userid="
+    },
+    "Other Links": {
+      "Survey Hash": "surveys/?s=",
+      "Email": "mailto:",
+      "Custom": "http://httpbin.org/get?column={value}"
+    },
+    "Code Lookup": {
+      "Project Status": [
+        "Development",
+        "Production",
+        "Inactive",
+        "Archived"
+      ],
+      "Project Purpose": [
+        "Practice / Just for fun",
+        "Other",
+        "Research",
+        "Quality Improvement",
+        "Operational Support"
+      ],
+      "Research Purpose": [
+        "Basic or Bench Research",
+        "Clinical Research Study or Trial",
+        "Translational Research 1",
+        "Translational Research 2",
+        "Behavioral or Psychosocial Research Study",
+        "Epidemiology",
+        "Repository",
+        "Other"
+      ],
+      "Research Purpose (Split)": [
+        "Basic or Bench Research",
+        "Clinical Research Study or Trial",
+        "Translational Research 1",
+        "Translational Research 2",
+        "Behavioral or Psychosocial Research Study",
+        "Epidemiology",
+        "Repository",
+        "Other"
+      ],
+    }
+  },
+  "display": [
+    "Show",
+    "Dashboard Only",
+    "Export Only",
+    "Hide"
+  ]
+}

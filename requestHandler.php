@@ -1,16 +1,18 @@
 <?php
+/** @var \UIOWA\AdminDash\AdminDash $module */
 
-$module = new \UIOWA\AdminDash\AdminDash();
-
-if ($_REQUEST['type'] == 'getVisData') {
-    $module->getVisData();
-}
-elseif ($_REQUEST['type'] == 'getTableData') {
-    $module->getTableData();
+if ($_REQUEST['type'] == 'saveConfigSetting') {
+    $module->saveConfigSetting();
 }
 elseif ($_REQUEST['type'] == 'saveReportSettings') {
     $module->saveReportSettings();
 }
 elseif ($_REQUEST['type'] == 'exportDiagnosticFile') {
     $module->exportDiagnosticFile();
+}
+elseif ($_REQUEST['type'] == 'getApiToken') {
+    $module->getApiToken($_POST['pid']);
+}
+elseif ($_REQUEST['type'] == 'testQuery') {
+    $module->testQuery();
 }

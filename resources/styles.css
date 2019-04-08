@@ -3,11 +3,22 @@ td
    font-size: 14px;
 }
 
-/* Navigation tabs styling */
 .nav-tabs > li > a:hover {
    background-color: #CCCCCC;
    color: #000000;
    border-color: #999999 #999999 #dddddd;
+}
+
+td > a:hover {
+   color: #119aff;
+}
+
+#deleted:hover {
+   color: red;
+}
+
+#archived:hover {
+   color: #525252;
 }
 
 .nav-tabs
@@ -32,17 +43,18 @@ div#outer
 #pagecontainer
 {
    max-width: 80%;
-
+   cursor: progress;
 }
 
 #deleted
 {
-   color: red;
+   color: #d80000;
+   text-align: center;
 }
 
 #archived
 {
-   color: darkgrey;
+   color: #969696;
 }
 
 #suspended
@@ -94,13 +106,18 @@ div#outer
    height: 500px;
 }
 
-.reportSpecialFormatting {
-   height: 500px;
+.sql, .report-special-formatting {
+   max-height: 600px;
+   overflow: scroll;
 }
 
 .modal {
    margin: 0 auto;
    overflow-y:auto;
+}
+
+.modal-body > p {
+   font-size: large;
 }
 
 .secondary-modal {
@@ -113,6 +130,62 @@ div#outer
 
 .report-settings-button {
    margin-left: 5px;
+}
+
+.accordion-header {
+   text-decoration: none; !important;
+}
+
+.card-header {
+   padding-left: 30px;
+   cursor: pointer;
+   color: #3d94db;
+}
+
+a.table-report-title, .executive-user {
+   font-size: 16px;
+}
+
+.nav-link {
+   white-space: nowrap;
+   overflow: hidden;
+}
+
+.executive-table {
+   width: 80%;
+}
+
+.executive-table > td {
+  text-align: center;
+}
+
+div.about-text {
+   text-align: center;
+}
+
+.about-text > p {
+   font-size: large;
+   display: inline-block;
+}
+
+.about-text > p > a {
+   font-size: large;
+   text-decoration: underline;
+}
+
+#target-project-link {
+   font-size: large;
+   text-decoration: underline;
+}
+
+.confirmMsg, #confirmProjectUpdate {
+   font-size: large;
+   text-align: center;
+}
+
+.fa-question-circle {
+   cursor: pointer;
+   margin: 0 5px;
 }
 
 /* Bootstrap Toggle v2.2.2 corrections for Bootsrtap 4*/

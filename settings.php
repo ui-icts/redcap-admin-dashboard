@@ -9,4 +9,4 @@ $module->initializeSmarty();
 $module->includeJsAndCss();
 $module->initializeVariables();
 $module->displayTemplate('nav.tpl');
-$module->displayTemplate('table.tpl');
+$module->displayTemplate('settings.tpl');

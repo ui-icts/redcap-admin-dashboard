@@ -30,53 +30,8 @@
 
   "system-settings": [
     {
-      "key": "show-practice-projects",
-      "name": "Show \"Practice / Just for Fun\" projects",
-      "type": "checkbox",
-      "default": true,
-      "required": false
-    },
-    {
-      "key": "show-archived-projects",
-      "name": "Show archived projects",
-      "type": "checkbox",
-      "required": false
-    },
-    {
-      "key": "show-deleted-projects",
-      "name": "Show deleted projects",
-      "type": "checkbox",
-      "required": false
-    },
-    {
-      "key": "show-suspended-tags",
-      "name": "Mark suspended usernames with red [suspended] tag",
-      "type": "checkbox",
-      "required": false
-    },
-    {
-      "key": "additional-search-terms",
-      "name": "Additional search term for Login Credentials Check reports",
-      "type": "text",
-      "required": false,
-      "repeatable": true
-    },
-    {
-      "key": "executive-view",
-      "name": "<b>Configuration for Executive View:</b>",
-      "type": "descriptive",
-      "required": false
-    },
-    {
-      "key": "executive-users",
-      "name": "Username to allow access to the Executive View",
-      "type": "text",
-      "required": false,
-      "repeatable": true
-    },
-    {
-      "key": "executive-export-enabled",
-      "name": "Enable export options in Executive View",
+      "key": "use-api-urls",
+      "name": "Use versionless URLs for easier bookmarking (disable to fix issues with Shibboleth authentication)",
       "type": "checkbox",
       "required": false
     }

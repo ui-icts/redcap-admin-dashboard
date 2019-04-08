@@ -1,0 +1,107 @@
+[
+  {
+    "reportName": "Projects by User",
+    "customID": "projectsByUser",
+    "description": "List of all users and the projects to which they have access.",
+    "tabIcon": "user",
+    "defaultVisibility": true,
+    "readOnly": true,
+    "type": "table",
+    "formatting": {
+      "Username":{
+        "display":0,
+        "link":"User Information",
+        "linkGroup":"Username"
+      },
+      "Last Name":{
+        "display":0,
+        "link":"not set"
+      },
+      "First Name":{
+        "display":0,
+        "link":"not set"
+      },
+      "Email":{
+        "display":0,
+        "link":"Email",
+        "linkGroup":"Other"
+      },
+      "Project Titles":{
+        "display":0,
+        "link":"Project Setup",
+        "linkGroup":"Project ID"
+      },
+      "Total Projects":{
+        "display":0,
+        "link":"not set"
+      },
+      "project_id":{
+        "display":3,
+        "link":"not set"
+      },
+      "status":{
+        "display":3,
+        "link":"not set"
+      },
+      "date_deleted":{
+        "display":3,
+        "link":"not set"
+      },
+      "user_suspended_time":{
+        "display":3,
+        "link":"not set"
+      }
+    },
+    "sql": "config/reports/projectsByUser.sql"
+  },
+  {
+    "reportName": "Users by Project",
+    "customID": "usersByProject",
+    "description": "List of all projects and the users which have access.",
+    "tabIcon": "users",
+    "defaultVisibility": true,
+    "readOnly": true,
+    "type": "table",
+    "sql": "config/reports/usersByProject.sql"
+  },
+  {
+    "reportName": "Research Projects",
+    "customID": "researchProjects",
+    "description": "List of all projects that are identified as being used for research purposes.",
+    "tabIcon": "flask",
+    "defaultVisibility": true,
+    "readOnly": true,
+    "type": "table",
+    "sql": "config/reports/researchProjects.sql"
+  },
+  {
+    "reportName": "Development Projects",
+    "customID": "developmentProjects",
+    "description": "List of all projects that are in Development Mode.",
+    "tabIcon": "wrench",
+    "defaultVisibility": true,
+    "readOnly": true,
+    "type": "table",
+    "sql": "config/reports/developmentProjects.sql"
+  },
+  {
+    "reportName": "All Projects",
+    "customID": "allProjects",
+    "description": "List of all projects.",
+    "tabIcon": "folder-open",
+    "defaultVisibility": true,
+    "readOnly": true,
+    "type": "table",
+    "sql": "config/reports/allProjects.sql"
+  },
+  {
+    "reportName": "Projects with External Modules",
+    "customID": "modulesInProjects",
+    "description": "List of External Modules and the projects they are enabled in.",
+    "tabIcon": "plug",
+    "defaultVisibility": true,
+    "readOnly": true,
+    "type": "table",
+    "sql": "config/reports/modulesInProjects.sql"
+  }
+]
