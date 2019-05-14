@@ -7,51 +7,62 @@
     "defaultVisibility": true,
     "readOnly": true,
     "type": "table",
-    "formatting": {
-      "Username":{
-        "display":0,
-        "link":"User Information",
-        "linkGroup":"Username"
+    "checked": true,
+    "formatting": [
+      {
+        "column": "Username",
+        "display": 0,
+        "link": "User Information",
+        "linkGroup": "User Links (username)"
       },
-      "Last Name":{
-        "display":0,
-        "link":"not set"
+      {
+        "column": "Last Name",
+        "display": 0,
+        "link": "not set"
       },
-      "First Name":{
-        "display":0,
-        "link":"not set"
+      {
+        "column": "First Name",
+        "display": 0,
+        "link": "not set"
       },
-      "Email":{
-        "display":0,
-        "link":"Email",
-        "linkGroup":"Other"
+      {
+        "column": "Email",
+        "display": 0,
+        "link": "Email",
+        "linkGroup": "Other Links"
       },
-      "Project Titles":{
-        "display":0,
-        "link":"Project Setup",
-        "linkGroup":"Project ID"
+      {
+        "column": "Project Titles",
+        "display": 0,
+        "link": "Project Setup",
+        "linkGroup": "Project Links (project_id)"
       },
-      "Total Projects":{
-        "display":0,
-        "link":"not set"
+      {
+        "column": "Total Projects",
+        "display": 0,
+        "link": "not set"
       },
-      "project_id":{
-        "display":3,
-        "link":"not set"
+      {
+        "column": "project_id",
+        "display": 3,
+        "link": "not set"
       },
-      "status":{
-        "display":3,
-        "link":"not set"
+      {
+        "column": "status",
+        "display": 3,
+        "link": "not set"
       },
-      "date_deleted":{
-        "display":3,
-        "link":"not set"
+      {
+        "column": "date_deleted",
+        "display": 3,
+        "link": "not set"
       },
-      "user_suspended_time":{
-        "display":3,
-        "link":"not set"
+      {
+        "column": "user_suspended_time",
+        "display": 3,
+        "link": "not set"
       }
-    },
+    ],
     "sql": "config/reports/projectsByUser.sql"
   },
   {
@@ -62,6 +73,89 @@
     "defaultVisibility": true,
     "readOnly": true,
     "type": "table",
+    "checked": true,
+    "formatting": [
+      {
+        "column": "PID",
+        "display": 0,
+        "link": "Project Settings",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Project Title",
+        "display": 0,
+        "link": "Project Setup",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Status",
+        "display": 0,
+        "link": "Project Status",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Record Count",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Purpose",
+        "display": 0,
+        "link": "Project Purpose",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Users",
+        "display": 0,
+        "link": "User Information",
+        "linkGroup": "User Links (username)"
+      },
+      {
+        "column": "Creation Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Last Logged Event Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Days Since Last Event",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Total Users",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "project_id",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "status",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "date_deleted",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "user_suspended_time",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "user_exists",
+        "display": 3,
+        "link": "not set"
+      }
+    ],
     "sql": "config/reports/usersByProject.sql"
   },
   {
@@ -72,6 +166,95 @@
     "defaultVisibility": true,
     "readOnly": true,
     "type": "table",
+    "checked": true,
+    "formatting": [
+      {
+        "column": "PID",
+        "display": 0,
+        "link": "Project Settings",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Project Title",
+        "display": 0,
+        "link": "Project Setup",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Status",
+        "display": 0,
+        "link": "Project Status",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Record Count",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Purpose Specified",
+        "display": 1,
+        "link": "Research Purpose",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Purpose Specified",
+        "display": 2,
+        "link": "Research Purpose (Split)",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "PI Last Name",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "PI First Name",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "PI Email",
+        "display": 0,
+        "link": "Email",
+        "linkGroup": "Other Links"
+      },
+      {
+        "column": "IRB Number",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Creation Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Last Logged Event Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Days Since Last Event",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "project_id",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "status",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "date_deleted",
+        "display": 3,
+        "link": "not set"
+      }
+    ],
     "sql": "config/reports/researchProjects.sql"
   },
   {
@@ -82,6 +265,62 @@
     "defaultVisibility": true,
     "readOnly": true,
     "type": "table",
+    "checked": true,
+    "formatting": [
+      {
+        "column": "PID",
+        "display": 0,
+        "link": "Project Settings",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Project Title",
+        "display": 0,
+        "link": "Project Setup",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Record Count",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Purpose",
+        "display": 0,
+        "link": "Project Purpose",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Creation Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Last Logged Event Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Days Since Last Event",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "project_id",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "status",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "date_deleted",
+        "display": 3,
+        "link": "not set"
+      }
+    ],
     "sql": "config/reports/developmentProjects.sql"
   },
   {
@@ -92,6 +331,68 @@
     "defaultVisibility": true,
     "readOnly": true,
     "type": "table",
+    "checked": true,
+    "formatting": [
+      {
+        "column": "PID",
+        "display": 0,
+        "link": "Project Settings",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Project Title",
+        "display": 0,
+        "link": "Project Setup",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "Record Count",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Status",
+        "display": 0,
+        "link": "Project Status",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Purpose",
+        "display": 0,
+        "link": "Project Purpose",
+        "linkGroup": "Code Lookup"
+      },
+      {
+        "column": "Creation Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Last Logged Event Date",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Days Since Last Event",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "project_id",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "status",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "date_deleted",
+        "display": 3,
+        "link": "not set"
+      }
+    ],
     "sql": "config/reports/allProjects.sql"
   },
   {
@@ -102,6 +403,46 @@
     "defaultVisibility": true,
     "readOnly": true,
     "type": "table",
+    "checked": true,
+    "formatting": [
+      {
+        "column": "Module Title",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "Project Titles",
+        "display": 0,
+        "link": "Project Setup",
+        "linkGroup": "Project Links (project_id)"
+      },
+      {
+        "column": "User Emails",
+        "display": 0,
+        "link": "Email",
+        "linkGroup": "Other Links"
+      },
+      {
+        "column": "Total Projects",
+        "display": 0,
+        "link": "not set"
+      },
+      {
+        "column": "project_id",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "status",
+        "display": 3,
+        "link": "not set"
+      },
+      {
+        "column": "date_deleted",
+        "display": 3,
+        "link": "not set"
+      }
+    ],
     "sql": "config/reports/modulesInProjects.sql"
   }
 ]

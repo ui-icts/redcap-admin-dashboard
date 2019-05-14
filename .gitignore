@@ -1,0 +1,5 @@
+composer.lock
+composer.phar
+db_backup
+templates_c
+vendor

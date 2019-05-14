@@ -1,14 +1,12 @@
 (function($, window, document) {
     $(document).ready(function () {
-        UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
-
         $('#pagecontainer').css('cursor', 'default');
         $('#loading').hide();
 
         // build report table
         if (UIOWA_AdminDash.data != null) {
             var data = UIOWA_AdminDash.data['data'];
-            var headers = Object.values(UIOWA_AdminDash.data['headers']);
+            var headers = UIOWA_AdminDash.data['headers'];
             var table = $('#reportTable');
             var specialFormatting = {};
 
@@ -26,6 +24,9 @@
                 specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
                 data = UIOWA_AdminDash.formatTableData(data, headers, specialFormatting);
             }
+
+            headers = UIOWA_AdminDash.data['headers'];
+            specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
 
             var strTable = "";
             strTable += "<thead>";
@@ -70,7 +71,6 @@
                 widgets: ['zebra', 'filter', 'stickyHeaders', 'pager', 'output'],
 
                 widgetOptions: {
-
                     // output default: '{page}/{totalPages}'
                     // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
                     // also {page:input} & {startRow:input} will add a modifiable input in place of the value
@@ -86,7 +86,7 @@
                     pager_size: 10,
 
                     // Save pager page & size if the storage script is loaded (requires $.tablesorter.storage in jquery.tablesorter.widgets.js)
-                    pager_savePages: true,
+                    pager_savePages: false,
 
                     // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
                     // table row set to a height to compensate; default is false
@@ -181,7 +181,7 @@
                         // data.content = processed cell content (spaces trimmed, quotes added/replaced, etc)
                         // data.columnIndex = column in which the cell is contained
                         // data.parsed = cell content parsed by the associated column parser
-                        return data.content.replace(/ \[suspended]/ig, '').replace(/Email All/ig, '');
+                        return data.content.replace(/Email All/ig, '');
                     },
                     // callback executed when processing completes
                     output_callback      : function(config, data, url) {
@@ -212,11 +212,12 @@
 
             // additonal post-tablesorter formatting
             columnId = 1;
+            specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
             $.each(specialFormatting, function(key, value) {
                 var column = $('td:nth-child(' + columnId + ')');
 
                 column.each(function (i, td) {
-                    var links = $('a', td);
+                    var links = $('span', td).not('#user-detail');
                     var csvList = '';
                     var mailto = 'mailto:?bcc=';
 
@@ -237,7 +238,7 @@
                             }
                         });
 
-                        if (value['link'] == 'Email') {
+                        if (value['link'] == 'Email' && !UIOWA_AdminDash.executiveAccess) {
                             // add 'Email All' button where appropriate
                             $(td).append('<div style="padding-top:10px;"><button style="float:right;" class="btn btn-info btn-sm" onclick="location.href=\'' + mailto + '\'">Email All</button></div>')
                         }
@@ -317,6 +318,8 @@
             // clicking the download button; all you really need is to
             // trigger an "output" event on the table
             $this.find('.download').click(function() {
+                $this.find('.dropdown-menu').hide();
+
                 var outputType = $($this.find('.output-type.active'))[0].innerText;
 
                 if (outputType == 'Project') {
@@ -358,7 +361,10 @@
                 }
             });
 
-            $this.show();
+            if (!UIOWA_AdminDash.executiveAccess) {
+                $(".output-button").show();
+            }
+
             $('#report-content').show();
         }
         else {
@@ -372,16 +378,31 @@
             }
         }
 
-        //todo ???
-        //if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser) {
-        //    $('.executiveUser').val( sessionStorage.getItem("selectedUser") );
-        //    UIOWA_AdminDash.userID = $('.executiveUser')[0].value;
-        //}
-        //$('.executiveUser').change(function() {
-        //    $('.executiveUser').not(this).val( this.value );
-        //    sessionStorage.setItem("selectedUser", this.value);
-        //    UIOWA_AdminDash.updateSettingsModal(this.value);
-        //});
+        var execUserSelect = $('.executiveUser');
+
+        if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser && UIOWA_AdminDash.executiveAccess) {
+            execUserSelect.val( sessionStorage.getItem("selectedUser") );
+
+            if (execUserSelect.val() == null) {
+                execUserSelect.val('');
+            }
+
+            execUserSelect.change();
+        }
+
+        execUserSelect.change(function() {
+            sessionStorage.setItem("selectedUser", this.value);
+
+            UIOWA_AdminDash.userID = execUserSelect.val();
+            UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
+
+            if (UIOWA_AdminDash.executiveExportLookup.indexOf(UIOWA_AdminDash.userID) != -1) {
+                $(".output-button").show();
+            }
+            else {
+                $(".output-button").hide();
+            }
+        });
 
         $('.output-filename').val(UIOWA_AdminDash.csvFileName);
 
@@ -533,7 +554,6 @@
             window.open(UIOWA_AdminDash.settingsUrl, "_self");
         });
 
-        UIOWA_AdminDash.updateReportTabs('');
 
         $('#primaryUserSelect').change(function() {
             UIOWA_AdminDash.updateReportTabs($('#primaryUserSelect').val());
@@ -542,6 +562,22 @@
         // Enable tooltips
         $('[data-toggle="tooltip"]').tooltip();
 
+        // load report navigation tabs
+        if (UIOWA_AdminDash.executiveAccess) {
+            if (UIOWA_AdminDash.superuser) {
+                UIOWA_AdminDash.updateReportTabs($('#primaryUserSelect').val());
+            }
+            else {
+                UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
+            }
+        }
+        else {
+            UIOWA_AdminDash.updateReportTabs('');
+        }
+
+        if (UIOWA_AdminDash.showChangelog) {
+            $('#changelogModal').modal('show');
+        }
     });
 
 }(window.jQuery, window, document));
@@ -551,37 +587,29 @@ var UIOWA_AdminDash = {};
 UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
 {
     var formattingReference = UIOWA_AdminDash.formattingReference['links'];
-    var formattedData = {};
+    var formattedData = [];
+    var newHeaders = [];
+    var newHeadersIndex = -1;
 
     // loop through each row
     $.each(data, function(rowIndex, row) {
-        //var pidIndex = headers.indexOf('project_id');
-        //var projectIds = (row[pidIndex] == null) ? null : row[pidIndex].split('@@@');
-        //headers = $.grep(headers, function(value) {
-        //    return value != 'project_id';
-        //});
-        //delete row[pidIndex];
-
-        //console.log(JSON.parse(JSON.stringify(projectIds)));
-
-        formattedData[rowIndex] = {};
-        var newHeaders = [];
+        formattedData[rowIndex] = [];
         var newValues = [];
 
         // loop through each cell
         $.each(row, function(cellIndex, cell) {
             formattedData[rowIndex][cellIndex] = '';
-            var columnHeader = headers[cellIndex];
             var cellValues = (cell == null) ? [] : cell.split('@@@');
-            // prepare reference columns, otherwise use self
-            var projectIds = (row[headers.indexOf('project_id')]) ? row[headers.indexOf('project_id')].split('@@@') : [];
-            var projectStatuses = (row[headers.indexOf('status')]) ? row[headers.indexOf('status')].split('@@@') : [];
-            var projectDeletedDates = (row[headers.indexOf('date_deleted')]) ? row[headers.indexOf('date_deleted')].split('@@@') : [];
-            var userSuspendedTimes = (row[headers.indexOf('user_suspended_time')]) ? row[headers.indexOf('user_suspended_time')].split('@@@') : [];
+            // prepare reference columns
+            var projectIds = (row[headers.indexOf('project_id')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('project_id')].split('@@@')) : null;
+            var projectStatuses = (row[headers.indexOf('status')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('status')].split('@@@')) : null;
+            var projectDeletedDates = (row[headers.indexOf('date_deleted')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('date_deleted')].split('@@@')) : null;
+            var userSuspendedTimes = (row[headers.indexOf('user_suspended_time')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('user_suspended_time')].split('@@@')) : null;
+            var userExistences = (row[headers.indexOf('user_exists')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('user_exists')].split('@@@')) : null;
 
             // repeat for each group item in cell
             $.each(cellValues, function (index, value) {
-                var columnFormatting = formatting[columnHeader] ? formatting[columnHeader] : {
+                var columnFormatting = formatting[cellIndex] ? formatting[cellIndex] : {
                     linkGroup: 'none',
                     link: 'not set'
                 };
@@ -590,8 +618,9 @@ UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
 
                 if (linkType != 'not set' && linkGroup != 'Code Lookup') {
                     var linkUrl = '';
-                    var linkStyle = '';
-                    var suspendedTag = '';
+                    var linkId = '';
+                    var userStatusIcon = '';
+                    var noLink = false;
 
                     if (linkType == 'Custom') {
                         linkUrl = columnFormatting['custom'].replace('{value}', value);
@@ -603,34 +632,49 @@ UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
                         linkUrl = 'mailto:' + value;
                     }
                     else if (linkGroup == 'Project Links (project_id)') {
-
                         if (projectDeletedDates != null) {
-                            var status = projectStatuses[index];
                             var dateDeleted = projectDeletedDates[index];
 
-                            if (status == '3') {
-                                linkStyle = 'id="archived"';
+                            if (dateDeleted != null) {
+                                linkId = 'id="deleted"';
                             }
-                            if (dateDeleted != 'F' && dateDeleted != null) {
-                                linkStyle = 'id="deleted"';
+                        }
+                        if (projectStatuses != null) {
+                            var status = projectStatuses[index];
+
+                            if (status == '3') {
+                                linkId = 'id="archived"';
                             }
                         }
 
                         linkUrl = UIOWA_AdminDash.redcapVersionUrl + formattingReference[linkGroup][linkType] + projectIds[index];
                     }
                     else if (linkGroup == 'User Links (username)') {
+                        if (userExistences != null) {
+                            var userExists = userExistences[index];
+
+                            if (userExists == null && UIOWA_AdminDash.showUserIcons) {
+                                userStatusIcon = '<span id="user-detail" title="User does not exist" data-toggle="tooltip" data-placement="left"><i class="fas fa-times fa-fw"></i></span>';
+                                noLink = true;
+                            }
+                        }
                         if (userSuspendedTimes != null) {
                             var suspended = userSuspendedTimes[index];
 
-                            if (suspended != 'F' && suspended != null) {
-                                suspendedTag = '<br /><span id="suspended">[suspended]</span>';
+                            if (suspended != null && UIOWA_AdminDash.showUserIcons) {
+                                userStatusIcon = '<span id="user-detail" title="User account suspended" data-toggle="tooltip" data-placement="left"><i class="fas fa-ban fa-fw"></i></span>';
                             }
                         }
 
                         linkUrl = UIOWA_AdminDash.redcapVersionUrl + formattingReference[linkGroup][linkType] + value;
                     }
 
-                    formattedData[rowIndex][cellIndex] += '<a href="' + linkUrl + '" target="_blank"' + linkStyle + '>' + value + '</a>' + suspendedTag + '<br />';
+                    if (!UIOWA_AdminDash.executiveAccess && !noLink) {
+                        formattedData[rowIndex][cellIndex] += userStatusIcon + '<span><a href="' + linkUrl + '" target="_blank"' + linkId + ' style="font-size: 14px">' + value + '</a></span><br />';
+                    }
+                    else {
+                        formattedData[rowIndex][cellIndex] += userStatusIcon + '<span>' + value + '</span><br />';
+                    }
                 }
                 else if (linkType == 'Project Purpose' || linkType == 'Project Status') {
                     formattedData[rowIndex][cellIndex] = formattingReference[linkGroup][linkType][value];
@@ -643,37 +687,77 @@ UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
 
                     formattedData[rowIndex][cellIndex] = value.join(', ');
                 }
-                else if (linkType == 'Research Purpose (Split)') { //todo
+                else if (linkType == 'Research Purpose (Split)') {
                     value = value.split(',');
 
                     $.each(formattingReference[linkGroup][linkType], function (index, item) {
-                        newHeaders.push(item);
+                        if (newHeadersIndex == -1) {
+                            newHeaders.push(item);
+                        }
 
-                        if (value.indexOf(index) != -1) {
+                        if (value.indexOf(String(index)) != -1) {
                             newValues.push('TRUE');
                         }
                         else {
                             newValues.push('FALSE');
                         }
                     });
-                    //formattedData[rowIndex][cellIndex] = formattingReference[linkGroup][linkType][value];
+
+                    if (newHeadersIndex == -1) {
+                        newHeadersIndex = cellIndex;
+                    }
                 }
                 else {
                     formattedData[rowIndex][cellIndex] += value + '<br />';
                 }
             });
+
+            formattedData[rowIndex][cellIndex] = '<div style="overflow: auto; max-height: 300px">' + formattedData[rowIndex][cellIndex] + '</div>';
         });
 
-        //console.log(newHeaders);
-        //console.log(newValues);
+        if (newValues.length > 0) {
+            formattedData[rowIndex].splice(newHeadersIndex, 1);
 
-        //formattedData.splice(0, 0, newValues)
+            $.each(newValues, function (index, value) {
+                formattedData[rowIndex].splice(newHeadersIndex + index, 0, value);
+            });
+        }
     });
+
+    if (newHeaders.length > 0) {
+        var originalFormatting = UIOWA_AdminDash.reportInfo['formatting'][newHeadersIndex];
+        UIOWA_AdminDash.reportInfo['formatting'].splice(newHeadersIndex, 1);
+        UIOWA_AdminDash.data['headers'].splice(newHeadersIndex, 1);
+
+        $.each(newHeaders, function (index, header) {
+            var updatedFormatting = $.extend(true, {}, originalFormatting);
+            updatedFormatting['column'] = header;
+
+            UIOWA_AdminDash.data['headers'].splice(newHeadersIndex + index, 0, header);
+            UIOWA_AdminDash.reportInfo['formatting'].splice(newHeadersIndex + index, 0, updatedFormatting);
+        });
+    }
 
     return formattedData;
 };
 
-UIOWA_AdminDash.updateReportTabs = function(user) {
+UIOWA_AdminDash.normalizeGroupedValues = function (array) {
+    if (typeof array == 'object') {
+        $.each(array, function (index, value) {
+            if (value == 'N/A') {
+                array[index] = null;
+            }
+        });
+    }
+
+    return array;
+};
+
+UIOWA_AdminDash.updateReportTabs = function(user, animate) {
+    if (animate) {
+        var speed = 'slow';
+    }
+
     var keys = Object.keys(UIOWA_AdminDash.adminVisibility);
 
     for (var i in keys) {
@@ -685,13 +769,13 @@ UIOWA_AdminDash.updateReportTabs = function(user) {
         });
 
         if (!adminVisible && !UIOWA_AdminDash.executiveAccess) {
-            reportTab.hide("slow");
+            reportTab.hide(speed);
         }
         else if (!executiveVisible && UIOWA_AdminDash.executiveAccess) {
             reportTab.hide();
         }
         else {
-            reportTab.show("slow");
+            reportTab.show(speed);
         }
     }
 };
@@ -732,8 +816,6 @@ UIOWA_AdminDash.importProjectMetadata = function (token) {
             data: JSON.stringify(metadata)
         },
         success: function(data) {
-            console.log(data);
-
             $('#invalidProjectWarning').modal('hide');
             $('#projectImportConfirm').modal({backdrop: 'static', keyboard: false});
         },

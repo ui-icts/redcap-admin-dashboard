@@ -20,7 +20,7 @@
                             <b>Admin View</b>
                         </th>
                         <th style="text-align: center; font-size: 18px">
-                            <select id="modalUserSelect" class="executiveUser">
+                            <select id="executiveUser" class="executiveUser" style="width: 150px">
                                 <option value="">[Select User]</option>
                                     {foreach $executiveUsers as $user}
                                         <option value="{$user}">{$user}</option>
@@ -56,7 +56,7 @@
         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
             <div class="card-body about-text">
                 <p>
-                    The Executive Dashboard is an alternate view of the Admin Dashboard that can be accessed by non-admin REDCap users explicitly added to the list below. Report visibility can be set on a per-user basis via the Configure Reports section above (newly added users have access to no reports by default).
+                    The <a href="#" class="executive-link">Executive Dashboard</a> is a limited view of the Admin Dashboard without links (to project pages, user info, etc). Non-admin REDCap users can be granted access to this view by adding them to the list below.
                 </p>
                 <table class="table table-striped executive-table" align="center">
                     <tbody>
@@ -78,7 +78,9 @@
                                     <span class="sr-only">Remove Executive User</span>
                                 </button>
                             </td>
-                            <td class="executive-user" style="text-align:center; vertical-align:middle; padding-right:10px">{$user}</td>
+                            <td class="executive-user" style="text-align:center; vertical-align:middle; padding-right:10px word-wrap:break-word; max-width:200px">
+                                {$user}
+                            </td>
                             <td align="center">
                                 <input
                                         type="checkbox"
@@ -88,13 +90,27 @@
                                         data-off="Export Disabled"
                                         name="{$user}"
                                         class="module-config"
-                                        value="false"
+                                        value="{if $user|in_array:$executiveExportLookup}1{else}0{/if}"
                                 >
+                            </td>
+                            <td>
+                                <button
+                                        type="button"
+                                        class="btn btm-sm btn-primary email-executive-user"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        data-target="#"
+                                        onclick=""
+                                >
+                                    <i class="fas fa-envelope"></i>
+                                    Send Link
+                                    <span class="sr-only">Send Link</span>
+                                </button>
                             </td>
                         </tr>
                         {/foreach}
                         <tr>
-                            <td colspan="3">
+                            <td colspan="4">
                                 <form id="newExecutiveUserForm">
                                     <div class="input-group mb-3" style="width: 60%; margin:auto; padding:10px;">
                                         <input id="new-executive-username" type="text" class="form-control valid custom-error" placeholder="Username" aria-label="Username" aria-describedby="basic-addon2">
@@ -171,7 +187,14 @@
             <div class="card-body about-text">
                 <p>The REDCap Admin Dashboard provides a number of reports on various project and user metadata in a sortable table view. This data can also be downloaded as a CSV formatted file (as well as other delimited formats). Additionally, user-defined reports can be included via custom SQL queries. Reports can optionally be shared with non-admin users in a limited format (Executive Dashboard).</p>
 
-                <p>Please refer to the <a href="{$readmeUrl}">README</a> for extensive documentation on this module's usage and configuration options.</p>
+                <p>Please refer to the README for extensive documentation on this module's usage and configuration options. The update changelog can also be a valuable source of information on new features or bugfixes.</p>
+
+                <div style="text-align: center;">
+                    <button id="viewReadme" class="btn btn-info">View README</button>
+                    <button id="showChangelog" class="btn btn-info">Show Changelog</button>
+                </div>
+
+                <br />
 
                 <p>Feedback is welcome, as are any questions/concerns/issues you may have. Please send an email to <a href="mailto:eric-neuhaus@uiowa.edu?subject=Admin Dashboard">eric-neuhaus@uiowa.edu</a> or create a post mentioning me (@eric.neuhaus) on the REDCap community. If you are having an issue, it is recommended that you include a diagnostic file, as it can be immensely helpful for troubleshooting purposes.</p>
 
@@ -274,11 +297,7 @@
                                 <small id="queryHelpBlock" class="form-text text-muted">
                                     SELECT queries only.
                                 </small>
-                                            <textarea id="reportQuery" aria-describedby="queryHelpBlock">
-SELECT
-    project_id AS "PID",
-    app_title AS "Project Title"
-FROM redcap_projects</textarea>
+                                            <textarea id="reportQuery" aria-describedby="queryHelpBlock"></textarea>
                                 <div id="testQueryResult" style="float:left; padding-left: 10px; padding-top: 10px; max-width:80%;"></div>
                                 <div style="text-align:right; float:right; padding-top: 10px;">
                                     <button type="button" class="btn btn-info test-query">Test Query</button>
@@ -287,7 +306,7 @@ FROM redcap_projects</textarea>
                         </div>
                         <div class="tab-pane fade" id="formatting" role="tabpanel" aria-labelledby="formattingTab">
                             <div class="report-special-formatting" id="formattingConfig">
-                                <table class="table table-striped">
+                                <table class="table table-striped" style="table-layout: fixed;">
                                     <thead>
                                     <tr>
                                         <th><strong>Column</strong></th>
@@ -316,7 +335,7 @@ FROM redcap_projects</textarea>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this report?</p>
+                <p class="confirmMsgReport">Are you sure you want to delete this report?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger confirmDelete" data-dismiss="modal">Delete</button>
@@ -335,7 +354,7 @@ FROM redcap_projects</textarea>
                 </button>
             </div>
             <div class="modal-body">
-                <p class="confirmMsg">Click "Continue" to edit report visibility for <span class="display-executive-username" style="color: green"></span>.</p>
+                <p class="confirmMsgExec">Click "Continue" to edit report visibility for <span class="display-executive-username" style="color: green; word-wrap: break-word"></span>.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -354,7 +373,7 @@ FROM redcap_projects</textarea>
                 </button>
             </div>
             <div class="modal-body">
-                <p class="confirmMsg">Are you sure you want to revoke <span class="display-executive-username" style="color: red"></span>'s Executive Dashboard access?</p>
+                <p class="confirmMsgExec">Are you sure you want to revoke <span class="display-executive-username" style="color: red; word-wrap: break-word"></span>'s Executive Dashboard access?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger confirm-remove-user" data-dismiss="modal">Confirm</button>

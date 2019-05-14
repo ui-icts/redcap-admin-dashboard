@@ -36,3 +36,27 @@
 </ul>
 
 <p />
+
+<div class="modal fade" id="changelogModal" tabindex="-1" role="dialog" aria-labelledby="updateModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModal" style="text-align: center">Changelog</h5>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                {foreach $changelogContent as $versionInfo}
+                    <h3>v{$versionInfo['version']}</h3>
+                    <p style="font-size:14px">{$versionInfo['notes']}</p>
+                    <ul>
+                        {foreach $versionInfo['changes'] as $change}
+                            <li>{$change}</li>
+                        {/foreach}
+                    </ul>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+</div>

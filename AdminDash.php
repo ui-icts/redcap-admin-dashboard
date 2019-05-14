@@ -30,29 +30,8 @@ class AdminDash extends AbstractExternalModule {
             "default" => true
         ),
         array(
-            "key" => "show-suspended-tags",
-            "name" => "Include [suspended] tag next to suspended usernames",
-            "type" => "checkbox",
-            "default" => true
-        ),
-        array(
-            "name" => "<b>NOTE: The following visibility settings will only affect built-in reports.</b>",
-        ),
-        array(
-            "key" =>"show-practice-projects",
-            "name" => "\"Practice / Just for Fun\" projects",
-            "type" => "checkbox",
-            "default" => true
-        ),
-        array(
-            "key" => "show-archived-projects",
-            "name" => "Archived projects",
-            "type" => "checkbox",
-            "default" => true
-        ),
-        array(
-            "key" => "show-deleted-projects",
-            "name" => "Deleted projects",
+            "key" => "show-user-icons",
+            "name" => "Show icons next to suspended or non-existent usernames",
             "type" => "checkbox",
             "default" => true
         )
@@ -124,8 +103,8 @@ class AdminDash extends AbstractExternalModule {
             $this->removeSystemSetting("custom-report-sql");
         }
 
-        // downgrade Credentials Check reports to "custom" status so they can be deleted (v4.0)
-        if(version_compare('4.0', $old_version)) {
+        // downgrade Credentials Check reports to "custom" status so they can be deleted and add defaults for new settings (v3.4)
+        if(version_compare('3.4', $old_version)) {
             $pwordSearchTerms =
                 array(
                     'p%word',
@@ -243,7 +222,32 @@ ORDER BY
             $existingCustomReports = $this->getSystemSetting('custom-reports');
             $mergedCustomReports = array_merge($credentialCheckReports, $existingCustomReports);
             $this->setSystemSetting('custom-reports', $mergedCustomReports);
+
+            $this->setSystemSetting('show-user-icons', true);
+
+            $result = $this->sqlQuery('select value from redcap_config where field_name = \'auth_meth_global\'');
+            $authMethod = db_fetch_assoc($result)['value'];
+
+            if ($authMethod == 'shibboleth') {
+                $this->setSystemSetting('use-api-urls', false);
+            }
+            else {
+                $this->setSystemSetting('use-api-urls', true);
+            }
+
+            $oldExportSetting = $this->getSystemSetting('executive-export-enabled');
+            $exportEnabledLookup = [];
+
+            if ($oldExportSetting) {
+                foreach ($this->getSystemSetting('executive-users') as $user) {
+                    array_push($exportEnabledLookup, $user);
+                }
+            }
+
+            $this->setSystemSetting('executive-user-export', $exportEnabledLookup);
         }
+
+        $this->setSystemSetting('show-changelog', true);
     }
 
     public function __construct()
@@ -296,7 +300,7 @@ ORDER BY
             <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
         <?php
             if ($_REQUEST['page'] == 'settings') {
-                echo '<script src="' . $this->getUrl("/resources/settings.js") . '"></script>';
+                echo '<script src="' . $this->getUrl("/settings.js") . '"></script>';
             }
     }
 
@@ -305,7 +309,8 @@ ORDER BY
         $configSettings = $this::$configSettings;
         $executiveUsers = $this->getSystemSetting("executive-users");
         $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $executiveUsers) || SUPER_USER) ? 1 : 0);
-        $exportEnabled = ($this->getSystemSetting("executive-export-enabled") && $executiveAccess) || (SUPER_USER && !$executiveAccess); //todo make configurable on a per user basis
+        $executiveExportLookup = $this->getSystemSetting("executive-user-export");
+        $exportEnabled = (in_array(USERID, $executiveExportLookup) && $executiveAccess) || (SUPER_USER && !$executiveAccess);
         $reportIDlookup = [];
 
         // if reports have custom IDs, match them to report IDs for future reference
@@ -314,7 +319,7 @@ ORDER BY
             $reportReference[$index]['url'] = $this->formatReportUrl($index, $reportInfo['customID']);
         }
 
-        // if report ID is given, convert it to a report ID
+        // if custom ID is given, convert it to a report index
         if (isset($_REQUEST['report'])) {
             $reportIndex = array_search($_REQUEST['report'], $reportIDlookup);
 
@@ -329,6 +334,7 @@ ORDER BY
 
         // if report ID isn't valid, send to the landing page
         if (intval($_REQUEST['id']) > sizeof($reportReference)) {
+            unset($_REQUEST['report']);
             unset($_REQUEST['id']);
         }
 
@@ -352,22 +358,9 @@ ORDER BY
             }
         }
 
-        // todo sort out error display
         if ($pageInfo['type'] == 'table') {
-            // error out if query doesn't begin with "select"
-            if (!(strtolower(substr($pageInfo['sql'], 0, 6)) == "select")) {
-                $pageInfo['sql'] = '';
-                $pageInfo['sqlErrorMsg'] = 'ERROR: SQL query is not a SELECT query.';
-            }
-            // error out if no query
-            elseif ($pageInfo['sql'] == '') {
-                $pageInfo['sqlErrorMsg'] = 'ERROR: No SQL query defined.';
-            }
-            elseif ($pageInfo['sql'] != '') {
-                // execute the SQL statement
-                $result = $this->sqlQuery($pageInfo['sql']);
-                $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($result);
-            }
+            $result = $this->sqlQuery($pageInfo['sql']);
+            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($result);
         }
 
         // construct URL redirect to alternate view
@@ -382,7 +375,7 @@ ORDER BY
             if (isset($_REQUEST['report'])) {
                 $viewUrl .= '?report=' . $_REQUEST['report'];
             }
-            else if (isset($_REQUEST['report'])) {
+            else if (isset($_REQUEST['id'])) {
                 $viewUrl .= '?id=' . $_REQUEST['id'];
             }
 
@@ -390,8 +383,8 @@ ORDER BY
             self::$smarty->assign('viewUrl', $viewUrl);
         }
 
-        // todo update notes
-        $updateNotes = "todo";
+        $changelogContent = json_decode(file_get_contents($this->getUrl("config/changelog.json")), true);
+
         $iconUrls = array(
             'first' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png"),
             'prev' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png"),
@@ -430,39 +423,46 @@ ORDER BY
         self::$smarty->assign('exportProjects', $exportProjects);
         self::$smarty->assign('executiveAccess', $executiveAccess);
         self::$smarty->assign('executiveUsers', $executiveUsers);
+        self::$smarty->assign('executiveExportLookup', $executiveExportLookup);
         self::$smarty->assign('superUser', SUPER_USER);
         self::$smarty->assign('reportId', $_REQUEST['id']);
         self::$smarty->assign('reportReference', $reportReference);
-        self::$smarty->assign('updateNotes', $updateNotes);
+        self::$smarty->assign('changelogContent', $changelogContent);
         self::$smarty->assign('iconUrls', $iconUrls);
         self::$smarty->assign('exportEnabled', $exportEnabled);
         self::$smarty->assign('sqlErrorMsg', $pageInfo['sqlErrorMsg']);
-        self::$smarty->assign('readmeUrl', $this->getUrl('README.md'));
         self::$smarty->assign('loadingGif', $this->getUrl('resources/loading.gif'));
+
+        $showChangelog = json_encode($this->getSystemSetting('show-changelog'));
 
         ?>
             <script>
 
-                UIOWA_AdminDash.csvFileName = '<?= sprintf("%s.csv", $pageInfo['customID']); ?>';
+                UIOWA_AdminDash.csvFileName = '<?= sprintf("%s.csv", $pageInfo['customID'] != '' ? $pageInfo['customID'] : 'customReport' ); ?>';
                 UIOWA_AdminDash.renderDatetime = '<?= date("Y-m-d_His") ?>';
 
                 UIOWA_AdminDash.executiveAccess = <?= $executiveAccess ?>;
                 UIOWA_AdminDash.executiveUsers = <?= json_encode($executiveUsers) ?>;
+                UIOWA_AdminDash.executiveExportLookup = <?= json_encode($executiveExportLookup) ?>;
                 UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
                 UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
                 UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDlookup) ?>;
                 UIOWA_AdminDash.requestHandlerUrl = "<?= $this->getUrl("requestHandler.php") ?>";
                 UIOWA_AdminDash.reportUrlTemplate = "<?= $this->getUrl(
-                    $executiveAccess ? "executiveView" : "index" . ".php", false, true) ?>";
+                    $executiveAccess ? "executiveView.php" : "index.php") ?>";
+                UIOWA_AdminDash.executiveUrl = "<?= $this->getUrl("executiveView.php", false, true) ?>";
                 UIOWA_AdminDash.settingsUrl = "<?= $this->getUrl("settings.php") ?>";
                 UIOWA_AdminDash.redcapBaseUrl = "<?= APP_PATH_WEBROOT_FULL ?>";
-                UIOWA_AdminDash.redcapVersionUrl = "<?= rtrim(APP_PATH_WEBROOT_FULL, '/') . APP_PATH_WEBROOT ?>";
+                UIOWA_AdminDash.redcapVersionUrl = "<?= (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT ?>";
+                UIOWA_AdminDash.showChangelog = <?= json_encode($this->getSystemSetting('show-changelog')) ?>;
+                UIOWA_AdminDash.readmeUrl = "<?= $this->getUrl('README.md') ?>";
 
                 UIOWA_AdminDash.hideColumns = [];
                 UIOWA_AdminDash.reportReference = <?= json_encode($reportReference) ?>;
                 UIOWA_AdminDash.showArchivedReports = false;
                 UIOWA_AdminDash.superuser = <?= SUPER_USER ?>;
                 UIOWA_AdminDash.theme = UIOWA_AdminDash.executiveAccess ? 'ice' : 'blue';
+                UIOWA_AdminDash.showUserIcons = <?= json_encode($this->getSystemSetting('show-user-icons')); ?>;
 
                 UIOWA_AdminDash.userID = '<?= USERID ?>';
                 UIOWA_AdminDash.lastTestQuery = {
@@ -476,6 +476,10 @@ ORDER BY
                 UIOWA_AdminDash.formattingReference = <?= file_get_contents($this->getUrl("config/formattingReference.json")) ?>;
             </script>
         <?php
+
+        if ($showChangelog) {
+            $this->setSystemSetting('show-changelog', false);
+        }
    }
 
     private function generateReportReference() {
@@ -495,8 +499,8 @@ ORDER BY
             $hideFiltersSql[] = "projects.purpose != 0";
         }
 
-        $formattedFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
-        $formattedWhereFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
+//        $formattedFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
+//        $formattedWhereFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
 
         $reportReference = json_decode(file_get_contents($this->getUrl("config/reportReference.json")), true);
 
@@ -506,8 +510,8 @@ ORDER BY
 
             // load report sql from file and add filters
             $reportSql = file_get_contents($this->getUrl($reportReference[$index]['sql']));
-            $reportSql = str_replace('$formattedFilterSql', $formattedFilterSql, $reportSql);
-            $reportSql = str_replace('$formattedWhereFilterSql', $formattedWhereFilterSql, $reportSql);
+//            $reportSql = str_replace('$formattedFilterSql', $formattedFilterSql, $reportSql);
+//            $reportSql = str_replace('$formattedWhereFilterSql', $formattedWhereFilterSql, $reportSql);
             $reportReference[$index]['sql'] = $reportSql;
         }
 
@@ -531,7 +535,6 @@ ORDER BY
 
     private function formatQueryResults($result)
     {
-//        $redcapProjectsLookup = $this->getRedcapProjectNames();
         $isFirstRow = true;
         $record_id = 1;
 
@@ -589,7 +592,7 @@ ORDER BY
             </script>
             <?php
 
-            return "Failed to run report!<br /><br />" . $this->sqlError;
+            return "Failed to run report!<br /><br />";
         }
         if (!$tableData['data']) {
             ?>
@@ -609,53 +612,6 @@ ORDER BY
 
             return null;
         }
-    }
-
-    private function sqlQuery($query)
-    {
-        // execute the SQL statement
-        $result = db_query($query);
-
-        if (! $result || $result == 0)  // sql failed
-        {
-            $this->sqlError = json_encode(db_error());
-        }
-
-        return $result;
-    }
-
-    public function getRedcapProjectNames()
-    {
-        $sql = "SELECT project_id AS pid,
-                 TRIM(app_title) AS title
-          FROM redcap_projects
-          ORDER BY pid";
-
-        $query = db_query($sql);
-
-        $projectNameHash = array();
-
-        while ($row = db_fetch_assoc($query))
-        {
-            // $value = strip_tags($row['app_title']);
-            $key = $row['pid'];
-            $value = $row['title'];
-
-            if (strlen($value) > 80)
-            {
-                $value = trim(substr($value, 0, 70)) . " ... " .
-                    trim(substr($value, -15));
-            }
-
-            if ($value == "")
-            {
-                $value = "[Project title missing]";
-            }
-
-            $projectNameHash[$key] = $value;
-        }
-
-        return $projectNameHash;
     }
 
     private function formatReportUrl($reportIndex, $customID)
@@ -712,8 +668,6 @@ ORDER BY
     public function saveConfigSetting() {
         $setting = json_decode(file_get_contents('php://input'));
 
-        error_log(json_encode($setting));
-
         $this->setSystemSetting($setting->key, $setting->value);
     }
 
@@ -769,21 +723,61 @@ ORDER BY
         echo $token;
     }
 
-    public function testQuery() {
-        $result = $this->sqlQuery(file_get_contents('php://input'));
+    public function sqlQuery($query = null) {
+        $returnType = null;
         $data = array();
 
-        if ($this->sqlError) {
-            $data['error'] = $this->sqlError;
-        }
-        else {
-            while ( $row = db_fetch_assoc( $result ) )
-            {
-                $data[] = $row;
-            }
+        if ($query == null) {
+            $query = file_get_contents('php://input');
+            $returnType = 'json';
         }
 
-        echo json_encode($data);
+        // error out if no query
+        if ($query == '') {
+            $this->sqlError = 'No SQL query defined.';
+            $data['error'] = $this->sqlError;
+            echo json_encode($data);
+        }
+        // error out if query doesn't begin with "select"
+        elseif (!(strtolower(substr($query, 0, 6)) == "select")) {
+            $this->sqlError = 'SQL query is not a SELECT query.';
+            $data['error'] = $this->sqlError;
+            echo json_encode($data);
+        }
+        // execute the SQL statement
+        else {
+            // fix for group_concat limit
+            global $conn;
+            if (!isset($conn))
+            {
+                db_connect(false);
+            }
+            $conn->query('SET SESSION group_concat_max_len = 1000000;');
+
+            $result = db_query($query);
+
+            if (! $result || $result == 0)  // sql failed
+            {
+                $this->sqlError = json_encode(db_error());
+            }
+
+            if ($returnType == 'json') {
+                if ($this->sqlError) {
+                    $data['error'] = $this->sqlError;
+                }
+                else {
+                    while ( $row = db_fetch_assoc( $result ) )
+                    {
+                        $data[] = $row;
+                    }
+                }
+
+                echo json_encode($data);
+            }
+            else {
+                return $result;
+            }
+        }
     }
 }
 ?>

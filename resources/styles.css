@@ -1,4 +1,4 @@
-td
+td, td > a:link, a:visited
 {
    font-size: 14px;
 }
@@ -46,7 +46,7 @@ div#outer
    cursor: progress;
 }
 
-#deleted
+#deleted, .error
 {
    color: #d80000;
    text-align: center;
@@ -57,10 +57,11 @@ div#outer
    color: #969696;
 }
 
-#suspended
+#user-detail
 {
    color: red;
    font-size: 10px;
+   padding-right: 2px;
 }
 
 .export-menu
@@ -144,6 +145,7 @@ div#outer
 
 a.table-report-title, .executive-user {
    font-size: 16px;
+   word-wrap: break-word;
 }
 
 .nav-link {
@@ -178,7 +180,7 @@ div.about-text {
    text-decoration: underline;
 }
 
-.confirmMsg, #confirmProjectUpdate {
+.confirmMsgReport, .confirmMsgExec, #confirmProjectUpdate {
    font-size: large;
    text-align: center;
 }

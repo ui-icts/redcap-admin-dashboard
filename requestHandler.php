@@ -13,6 +13,6 @@ elseif ($_REQUEST['type'] == 'exportDiagnosticFile') {
 elseif ($_REQUEST['type'] == 'getApiToken') {
     $module->getApiToken($_POST['pid']);
 }
-elseif ($_REQUEST['type'] == 'testQuery') {
-    $module->testQuery();
+elseif ($_REQUEST['type'] == 'sqlQuery') {
+    $module->sqlQuery();
 }

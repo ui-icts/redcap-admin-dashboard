@@ -12,7 +12,6 @@
 
             if (value != '') {
                 index = $.inArray(value, param[0]);
-                console.log(index);
             }
 
             if (param[1] == 'report') {
@@ -114,7 +113,7 @@
                 lettersonly: 'opt',
                 messages: {
                     notInArray: 'Custom ID must be unique.',
-                    lettersonly: 'User names can only contain letters, numbers, underscores, hyphens, and periods.'
+                    lettersonly: 'Alphabetical characters only.'
                 }
 
             });
@@ -135,7 +134,7 @@
                 $(reportRow).find('.table-report-title').attr('href', UIOWA_AdminDash.lastSavedReportUrl);
                 $('input', reportRow).bootstrapToggle();
 
-                if (!$('#modalUserSelect')[0].value) {
+                if (!$('#executiveUser').val()) {
                     $('.table-executive-visible input', reportRow).prop('disabled', true);
                     $('.table-executive-visible .toggle-off', reportRow).addClass('disabled');
                 }
@@ -174,6 +173,28 @@
             }
         });
 
+        $('.executive-table').on('click', '.email-executive-user', function () {
+            var username = $.trim($(this).closest('tr').find('.executive-user').text());
+
+            $.ajax({
+                method: 'POST',
+                url: UIOWA_AdminDash.requestHandlerUrl + '&type=sqlQuery',
+                data: 'select user_email from redcap_user_information where username = "' + username + '" limit 1'
+            })
+            .done(function (data) {
+                data = JSON.parse(data);
+                var userEmail = '';
+
+                if (data.length > 0) {
+                    userEmail = data[0]['user_email'];
+                }
+
+                window.location = 'mailto:' + userEmail +
+                    '?subject=Executive Dashboard Access' +
+                    '&body=Hello,%0D%0A%0D%0AYou have been granted access to the REDCap Executive Dashboard: ' + encodeURIComponent(UIOWA_AdminDash.executiveUrl);
+            });
+        });
+
         $('.executive-table').on('click', '.remove-executive-user', function () {
             UIOWA_AdminDash.executiveRowToRemove = $(this).closest('tr');
             $('.display-executive-username').text(UIOWA_AdminDash.executiveRowToRemove.find('.executive-user').text());
@@ -182,30 +203,39 @@
 
         $('.confirm-remove-user').click(function () {
             var removeUserRow = UIOWA_AdminDash.executiveRowToRemove;
-            var removeUser = removeUserRow.find('.executive-user').text();
-            var executiveUserSelect = $('#modalUserSelect');
+            var removeUser = $.trim(removeUserRow.find('.executive-user').text());
+            var executiveUserSelect = $('#executiveUser');
             var noExecutiveUsers = $('#noExecutiveUsers');
 
             if (executiveUserSelect.val() == removeUser) {
-                $('#modalUserSelect').val('');
+                $('#executiveUser').val('');
             }
 
-            $("#modalUserSelect option[value='" + removeUser + "']").remove();
+            $("#executiveUser option[value='" + removeUser + "']").remove();
             removeUserRow.remove();
             UIOWA_AdminDash.executiveUsers = $.grep(UIOWA_AdminDash.executiveUsers, function (username) {
                 return username != removeUser;
             });
+            UIOWA_AdminDash.executiveExportLookup = $.grep(UIOWA_AdminDash.executiveExportLookup, function (username) {
+                return username != removeUser;
+            });
+
             UIOWA_AdminDash.saveConfigSettingToDb('executive-users', UIOWA_AdminDash.executiveUsers);
+            UIOWA_AdminDash.saveConfigSettingToDb('executive-user-export', UIOWA_AdminDash.executiveExportLookup);
 
             if ($('.executive-table').find('tr').length <= 2) {
                 noExecutiveUsers.show();
             }
+
+            $('.executiveUser').change();
         });
 
         $('.edit-executive-visibility').click(function () {
-            $('#modalUserSelect').val();
+            $('#executiveUser').change();
             $('#collapseOne').collapse('show');
         });
+
+        $('.executive-link').attr('href', UIOWA_AdminDash.executiveUrl);
 
         $('#reportSetupModal').on('shown.bs.modal', function() {
             var reportReference = UIOWA_AdminDash.reportReference[UIOWA_AdminDash.currentReportConfigIndex];
@@ -230,25 +260,6 @@
             $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-info');
         });
 
-        // todo what is this
-//                    $('#reportName').on('input', function() {
-//                        var input = $('#reportName');
-//                        var reportTitles = $.map(UIOWA_AdminDash.reportReference, function (i) {
-//                            return i['reportName'];
-//                        });
-//                        var titleHelpText = $('#titleHelpBlock');
-//                        var saveButton = $('.save-report-setup');
-//
-//                        if ($.inArray(input.val(), reportTitles) != -1) {
-//                            titleHelpText.show();
-//                            saveButton.prop('disabled', 'disabled')
-//                        }
-//                        else {
-//                            titleHelpText.hide();
-//                            saveButton.prop('disabled', '')
-//                        }
-//                    });
-
         $('#reportIcon').on('input', function() {
             var input = $('#reportIcon');
             var icon = $('#reportIconPreview');
@@ -269,6 +280,14 @@
             $(this).bootstrapToggle($(this).val() == '1' ? 'on' : 'off');
         });
 
+        $('#viewReadme').click(function() {
+            window.open(UIOWA_AdminDash.readmeUrl, '_blank');
+        });
+
+        $('#showChangelog').click(function() {
+            $('#changelogModal').modal('show');
+        });
+
         // download module settings dump
         $('#diagnostic').click(function() {
             window.location.href = UIOWA_AdminDash.requestHandlerUrl + '&type=exportDiagnosticFile';
@@ -280,11 +299,11 @@
             username = $('#primaryUserSelect')[0].value;
 
             if ($('#primaryUserSelect')[0].value) {
-                $('#modalUserSelect')[0].value = $('#primaryUserSelect')[0].value;
+                $('#executiveUser')[0].value = $('#primaryUserSelect')[0].value;
             }
         }
         else {
-            username = $('#modalUserSelect')[0].value;
+            username = $('#executiveUser')[0].value;
         }
 
         UIOWA_AdminDash.updateSettingsModal(username);
@@ -311,7 +330,7 @@
             if ($(this).hasClass('save-enabled')) {
                 UIOWA_AdminDash.adminVisibility = {};
 
-                var selectedUser = $('#modalUserSelect')[0].value;
+                var selectedUser = $('#executiveUser')[0].value;
 
                 $('.report-visibility-table tr').each(function () {
                     var reportTitle = $(this).find('.table-report-title').html();
@@ -340,7 +359,7 @@
                 });
 
                 UIOWA_AdminDash.saveReportSettingsToDb('visibility');
-                UIOWA_AdminDash.updateReportTabs(selectedUser);
+                UIOWA_AdminDash.updateReportTabs(selectedUser, true);
             }
         });
 
@@ -349,6 +368,21 @@
             var configEnabled = !$(this).hasClass('off');
 
             UIOWA_AdminDash.saveConfigSettingToDb(configKey, configEnabled)
+        });
+
+        $('.executive-table').on('change', '.toggle', function() {
+            var exportEnabled = !$(this).hasClass('off');
+            var username = $.trim($(this).closest('tr').find('.executive-user').text());
+            var exportIndex = UIOWA_AdminDash.executiveExportLookup.indexOf(username);
+
+            if (exportEnabled) {
+                UIOWA_AdminDash.executiveExportLookup.push(username);
+            }
+            else {
+                UIOWA_AdminDash.executiveExportLookup.splice(exportIndex, 1);
+            }
+
+            UIOWA_AdminDash.saveConfigSettingToDb('executive-user-export', UIOWA_AdminDash.executiveExportLookup)
         });
 
         $('.test-query').click(function() {
@@ -361,12 +395,13 @@
 
             $.ajax({
                     method: 'POST',
-                    url: UIOWA_AdminDash.requestHandlerUrl + '&type=testQuery',
+                    url: UIOWA_AdminDash.requestHandlerUrl + '&type=sqlQuery',
                     data: editor.getValue()
                 })
                 .done(function(data) {
                     var endTime = performance.now();
                     data = JSON.parse(data);
+
 
                     if (data['error']) {
                         testQueryButton.html('<i class="fas fa-times"></i> Error').removeClass('btn-info').addClass('btn-danger');
@@ -377,6 +412,7 @@
 
                         var isFirstRow = true;
                         UIOWA_AdminDash.lastTestQuery['report'] = UIOWA_AdminDash.currentReportConfigIndex;
+                        UIOWA_AdminDash.lastTestQuery['rowCount'] = 0;
 
                         $.each(data, function (index, row) {
                             if (isFirstRow) {
@@ -419,6 +455,7 @@ UIOWA_AdminDash.updateSettingsModal = function(selectedUser) {
         var executiveVisible = $.inArray(selectedUser, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
         var adminToggle = $(this).find('.table-admin-visible input');
         var executiveToggle = $(this).find('.table-executive-visible input');
+        executiveToggle.bootstrapToggle();
         var executiveToggleGroup = $(this).find('.table-executive-visible .toggle-off');
 
         if (selectedUser == '' || selectedUser == null) {
@@ -481,10 +518,14 @@ UIOWA_AdminDash.updateReportSetupModal = function() {
             $('#reportConfiguration select').attr('disabled', true);
             editor.setReadOnly(true);
             $('.save-report').hide();
+
+            //$('#formattingTab').removeClass('disabled').tooltip('disable').attr('data-toggle', 'tab');
+
         }
     }
 
     editor.clearSelection();
+    editor.getSession().getUndoManager().reset();
 };
 
 UIOWA_AdminDash.saveReportConfiguration = function() {
@@ -525,16 +566,17 @@ UIOWA_AdminDash.saveReportConfiguration = function() {
             var linkGroup = $(row).find('.link-type-select option:selected').parent('optgroup').attr('label');
             var customInput = $(row).find('.custom-link').val();
 
-            specialFormatting[colName] = {
+            specialFormatting[index] = {
+                column: colName,
                 display: displaySelect,
                 link: linkSelect
             };
 
             if (linkGroup) {
-                specialFormatting[colName]['linkGroup'] = linkGroup;
+                specialFormatting[index]['linkGroup'] = linkGroup;
             }
             if (customInput) {
-                specialFormatting[colName]['custom'] = customInput;
+                specialFormatting[index]['custom'] = customInput;
             }
         });
 
@@ -576,9 +618,8 @@ UIOWA_AdminDash.updateVisibilityReportTitle = function(array, oldTitle, newTitle
 UIOWA_AdminDash.createReportRow = function(reportInfo) {
     return $(
         '<tr>' +
-        '<td style="text-align:right; vertical-align:middle; padding-right:10px">'+
+        '<td style="text-align:right; vertical-align:middle; padding-right:10px; word-wrap:break-word; max-width:350px">'+
         '<a href="' + reportInfo['url'] + '" class="table-report-title">' + reportInfo['reportName'] + '</a>' +
-        //reportInfo['reportName'] +
         '</td>' +
         '<td style="text-align:left; vertical-align:middle;">' +
         '<button type="button" class="btn btm-sm btn-primary open-report-setup report-settings-button" aria-haspopup="true" aria-expanded="false" data-toggle="modal" data-target="#reportSetupModal">' +
@@ -608,13 +649,9 @@ UIOWA_AdminDash.addExecutiveUser = function () {
     var form = $('#newExecutiveUserForm');
     var usernameInput = $('#new-executive-username');
 
-
-
-    //todo handling duplicates
-
     form.validate({
         errorPlacement: function(error, element) {
-            element.after(error);
+            element.parent().after(error);
         }
     });
 
@@ -637,7 +674,7 @@ UIOWA_AdminDash.addExecutiveUser = function () {
     $('#noExecutiveUsers').hide();
 
     var addButtonRow = $('#add-executive-user-button').closest('tr');
-    var executiveUserSelect = $('#modalUserSelect');
+    var executiveUserSelect = $('#executiveUser');
 
     var userRow = $(
         '<tr>'+
@@ -654,9 +691,9 @@ UIOWA_AdminDash.addExecutiveUser = function () {
         '            <span class="sr-only">Remove Executive User</span>'+
         '        </button>'+
         '    </td>'+
-        '    <td class="executive-user" style="text-align:center; vertical-align:middle; padding-right:10px">' +
+        '    <td class="executive-user" style="text-align:center; vertical-align:middle; padding-right:10px; word-wrap:break-word; max-width:200px">' +
         usernameInput.val() +
-        '</td>'+
+        '    </td>'+
         '    <td align="center">'+
         '        <input'+
         '                type="checkbox"'+
@@ -666,8 +703,22 @@ UIOWA_AdminDash.addExecutiveUser = function () {
         '                data-off="Export Disabled"'+
         '                name="' + usernameInput.val() + '"'+
         '                class="module-config"'+
-        '                value="false"'+
+        '                value="0"'+
         '        >'+
+        '    </td>'+
+        '    <td>'+
+        '        <button'+
+        '                type="button"'+
+        '                class="btn btm-sm btn-primary email-executive-user"'+
+        '                aria-haspopup="true"'+
+        '                aria-expanded="false"'+
+        '                data-target="#"'+
+        '                onclick=""'+
+        '        >'+
+        '            <i class="fas fa-envelope"></i>' +
+        '               Send Link'+
+        '            <span class="sr-only">Send Link</span>'+
+        '        </button>'+
         '    </td>'+
         '</tr>'
     ).insertBefore(addButtonRow);
@@ -681,6 +732,7 @@ UIOWA_AdminDash.addExecutiveUser = function () {
     $('.display-executive-username').text(usernameInput.val());
     executiveUserSelect.val(usernameInput.val());
     UIOWA_AdminDash.executiveUsers.push(usernameInput.val());
+    UIOWA_AdminDash.executiveExportLookup.push(usernameInput.val());
     UIOWA_AdminDash.saveConfigSettingToDb('executive-users', UIOWA_AdminDash.executiveUsers);
 
     usernameInput.val('');
@@ -689,51 +741,12 @@ UIOWA_AdminDash.addExecutiveUser = function () {
     $('#executiveUserAdded').modal('show');
 };
 
-//todo add to reportReference
-//UIOWA_AdminDash.copyReport = function(copyLink) {
-//    var copyReportRow = $(copyLink).closest('tr');
-//    var addButtonRow = $('.add-report-button').closest('tr');
-//    var reportName = $('.table-report-title', copyReportRow).text();
-//    var existingReportCopy = $.inArray(reportName, UIOWA_AdminDash.reportReference) != -1;
-//
-//    if (!existingReportCopy) {
-//        var reportRow = $(UIOWA_AdminDash.createReportRow(reportName + ' (Copy)')).insertBefore(addButtonRow);
-//
-//        $('input', reportRow).bootstrapToggle();
-//
-//        var reportInfoCopy = $.grep(UIOWA_AdminDash.reportReference, function (report) {
-//            return report['reportName'] == reportName;
-//        })[0];
-//
-//        reportInfoCopy['reportName'] = reportName + ' (Copy)';
-//        delete reportInfoCopy['defaultVisibility'];
-//        delete reportInfoCopy['readOnly'];
-//
-//        UIOWA_AdminDash.reportReference.push(reportInfoCopy);
-//
-//        UIOWA_AdminDash.saveReportSettingsToDb('reports');
-//
-//
-//    }
-//    else {
-//        alert('A copy of this report already exists. Please rename the original copy before creating another.')
-//    }
-    //
-    //var reportNav = $('.report-title').filter(function () {
-    //    return $(this).html() == reportName;
-    //}).closest('li').first();
-    //
-    //reportRow.remove();
-    //reportNav.remove();
-    //UIOWA_AdminDash.saveReportSettingsToDb('reports');
-//};
-
 UIOWA_AdminDash.deleteReport = function(deleteLink) {
     UIOWA_AdminDash.reportRowToDelete = $(deleteLink).closest('tr');
     UIOWA_AdminDash.reportNameToDelete = $('.table-report-title', UIOWA_AdminDash.reportRowToDelete).text();
 
     $('#confirmDelete').modal('show');
-    $('.confirmMsg').html('Are you sure you want to delete this report?<br/><br/><span style="color:red">' + UIOWA_AdminDash.reportNameToDelete + '<strong>');
+    $('.confirmMsgReport').html('Are you sure you want to delete this report?<br/><br/><span style="color:red">' + UIOWA_AdminDash.reportNameToDelete + '<strong>');
 };
 
 //UIOWA_AdminDash.archiveReport = function(archiveLink) {
@@ -775,7 +788,9 @@ UIOWA_AdminDash.loadReportFormatting = function (type, data) {
     var columns = [];
     var linkPreview = $('<textarea class="form-control custom-link" style="display: none">');
     if (type == 'existing') {
-        columns = Object.keys(data);
+        columns = $.map(data, function(item) {
+            return item['column'];
+        });
     }
     else {
         columns = data;
@@ -783,20 +798,16 @@ UIOWA_AdminDash.loadReportFormatting = function (type, data) {
     $.each(columns, function(index, value) {
         var row = $(
             "<tr>" +
-            "<td class='column-name' style='vertical-align: middle'>" +
+            "<td class='column-name' style='vertical-align: middle; word-wrap:break-word'>" +
             value +
             "</td>" +
-            "<td style='vertical-align: middle' class='link-type-td'>" +
+            "<td style='vertical-align: middle; text-align:center;' class='link-type-td'>" +
             "</td>" +
             "<td style='vertical-align: middle' class='display-td'>" +
             "</td>" +
             "</tr>");
 
         $('.column-list').append(row);
-
-        if (type == 'existing') {
-            console.log();
-        }
     });
 
     // create display options
@@ -847,8 +858,7 @@ UIOWA_AdminDash.loadReportFormatting = function (type, data) {
         // load existing values
         if (columnRows.length > 0 && columnFormatting) {
             columnRows.each(function(index) {
-                var columnName = $(this).find('.column-name').text();
-                var formattingValues = columnFormatting[columnName];
+                var formattingValues = columnFormatting[index];
 
                 if (formattingValues) {
                     $(this).find('.display-select').val(formattingValues['display']);
@@ -863,6 +873,10 @@ UIOWA_AdminDash.loadReportFormatting = function (type, data) {
         }
 
         UIOWA_AdminDash.reportReference[UIOWA_AdminDash.currentReportConfigIndex]['checked'] = true;
+
+        if (UIOWA_AdminDash.reportReference[UIOWA_AdminDash.currentReportConfigIndex]['readOnly']) {
+            $('#formattingConfig').find('.form-control').prop('disabled', true);
+        }
     }
 
     UIOWA_AdminDash.lastTestQuery['checked'] = true;
