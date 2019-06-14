@@ -383,7 +383,7 @@ ORDER BY
             self::$smarty->assign('viewUrl', $viewUrl);
         }
 
-        $changelogContent = json_decode(file_get_contents($this->getUrl("config/changelog.json")), true);
+        $changelogContent = json_decode($this->curl_get_contents($this->getUrl("config/changelog.json")));
 
         $iconUrls = array(
             'first' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png"),
@@ -473,7 +473,7 @@ ORDER BY
                 };
 
                 UIOWA_AdminDash.reportInfo = <?= json_encode($pageInfo) ?>;
-                UIOWA_AdminDash.formattingReference = <?= file_get_contents($this->getUrl("config/formattingReference.json")) ?>;
+                UIOWA_AdminDash.formattingReference = <?= $this->curl_get_contents($this->getUrl("config/formattingReference.json")) ?>;
             </script>
         <?php
 
@@ -502,14 +502,14 @@ ORDER BY
 //        $formattedFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
 //        $formattedWhereFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
 
-        $reportReference = json_decode(file_get_contents($this->getUrl("config/reportReference.json")), true);
+        $reportReference = json_decode($this->curl_get_contents($this->getUrl("config/reportReference.json")));
 
         foreach ($reportReference as $index => $report) {
             $reportReference[$index]['readOnly'] = true;
             $reportReference[$index]['type'] = 'table';
 
             // load report sql from file and add filters
-            $reportSql = file_get_contents($this->getUrl($reportReference[$index]['sql']));
+            $reportSql = $this->curl_get_contents($this->getUrl($reportReference[$index]['sql']));
 //            $reportSql = str_replace('$formattedFilterSql', $formattedFilterSql, $reportSql);
 //            $reportSql = str_replace('$formattedWhereFilterSql', $formattedWhereFilterSql, $reportSql);
             $reportReference[$index]['sql'] = $reportSql;
@@ -666,13 +666,13 @@ ORDER BY
     }
 
     public function saveConfigSetting() {
-        $setting = json_decode(file_get_contents('php://input'));
+        $setting = json_decode($this->curl_get_contents('php://input'));
 
         $this->setSystemSetting($setting->key, $setting->value);
     }
 
     public function saveReportSettings() {
-        $allSettings = json_decode(file_get_contents('php://input'));
+        $allSettings = json_decode($this->curl_get_contents('php://input'));
 
         if ($allSettings->reportReference) {
             if ($allSettings->reportReference == 'none') {
@@ -728,7 +728,7 @@ ORDER BY
         $data = array();
 
         if ($query == null) {
-            $query = file_get_contents('php://input');
+            $query = $this->curl_get_contents('php://input');
             $returnType = 'json';
         }
 
@@ -778,6 +778,20 @@ ORDER BY
                 return $result;
             }
         }
+    }
+
+    function curl_get_contents($url)
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        $data = curl_exec($ch);
+        curl_close($ch);
+
+        return $data;
     }
 }
 ?>
