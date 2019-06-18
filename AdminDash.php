@@ -312,6 +312,7 @@ ORDER BY
         $executiveExportLookup = $this->getSystemSetting("executive-user-export");
         $exportEnabled = (in_array(USERID, $executiveExportLookup) && $executiveAccess) || (SUPER_USER && !$executiveAccess);
         $reportIDlookup = [];
+        $moduleDirectory = $this->getModulePath();
 
         // if reports have custom IDs, match them to report IDs for future reference
         foreach($reportReference as $index => $reportInfo) {
@@ -383,7 +384,7 @@ ORDER BY
             self::$smarty->assign('viewUrl', $viewUrl);
         }
 
-        $changelogContent = json_decode(file_get_contents($this->getUrl("config/changelog.json")), true);
+        $changelogContent = json_decode(file_get_contents($moduleDirectory . "config/changelog.json"), true);
 
         $iconUrls = array(
             'first' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png"),
@@ -473,7 +474,7 @@ ORDER BY
                 };
 
                 UIOWA_AdminDash.reportInfo = <?= json_encode($pageInfo) ?>;
-                UIOWA_AdminDash.formattingReference = <?= file_get_contents($this->getUrl("config/formattingReference.json")) ?>;
+                UIOWA_AdminDash.formattingReference = <?= file_get_contents($moduleDirectory . "config/formattingReference.json") ?>;
             </script>
         <?php
 
@@ -486,6 +487,7 @@ ORDER BY
         $hideDeleted = !self::getSystemSetting('show-deleted-projects');
         $hideArchived = !self::getSystemSetting('show-archived-projects');
         $hidePractice = !self::getSystemSetting('show-practice-projects');
+        $moduleDirectory = $this->getModulePath();
 
         $hideFiltersSql = array();
 
@@ -502,14 +504,14 @@ ORDER BY
 //        $formattedFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("AND " . implode(" AND ", $hideFiltersSql)) : '';
 //        $formattedWhereFilterSql = ($hideDeleted || $hideArchived || $hidePractice) ? ("WHERE " . implode(" AND ", $hideFiltersSql)) : '';
 
-        $reportReference = json_decode(file_get_contents($this->getUrl("config/reportReference.json")), true);
+        $reportReference = json_decode(file_get_contents($moduleDirectory . "config/reportReference.json"), true);
 
         foreach ($reportReference as $index => $report) {
             $reportReference[$index]['readOnly'] = true;
             $reportReference[$index]['type'] = 'table';
 
             // load report sql from file and add filters
-            $reportSql = file_get_contents($this->getUrl($reportReference[$index]['sql']));
+            $reportSql = file_get_contents($moduleDirectory . $reportReference[$index]['sql']);
 //            $reportSql = str_replace('$formattedFilterSql', $formattedFilterSql, $reportSql);
 //            $reportSql = str_replace('$formattedWhereFilterSql', $formattedWhereFilterSql, $reportSql);
             $reportReference[$index]['sql'] = $reportSql;
