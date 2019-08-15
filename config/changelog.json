@@ -1,7 +1,7 @@
 [
   {
     "version": "3.4",
-    "notes": "This update includes a number of improvements and optimizations to existing Admin Dashboard functionality ahead of a planned 4.0 update that will likely add new features (such as custom visualizations and the ability to export report results directly into a REDCap project). <a href=\"mailto:eric-neuhaus@uiowa.edu?subject=Admin Dashboard\" style=\"font-size:14px; text-decoration: underline;\">Feedback is welcome</a> to help improve existing functionality before all focus shifts to implementing new features for v4.0.",
+    "notes": "This update includes a number of improvements and optimizations to existing Admin Dashboard functionality ahead of a planned 4.0 update that will likely add new features (such as custom visualizations and the ability to export report results directly into a REDCap project). <a href=\"mailto:isabelle-neuhaus@uiowa.edu?subject=Admin Dashboard\" style=\"font-size:14px; text-decoration: underline;\">Feedback is welcome</a> to help improve existing functionality before all focus shifts to implementing new features for v4.0.",
     "changes": [
       "Added 'Special Formatting' feature (easily set up linking to common REDCap pages in custom reports)",
       "Added 'Test Query' button (quickly find out if custom SQL is valid without rendering report)",

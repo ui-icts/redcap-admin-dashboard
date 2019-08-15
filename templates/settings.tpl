@@ -196,7 +196,7 @@
 
                 <br />
 
-                <p>Feedback is welcome, as are any questions/concerns/issues you may have. Please send an email to <a href="mailto:eric-neuhaus@uiowa.edu?subject=Admin Dashboard">eric-neuhaus@uiowa.edu</a> or create a post mentioning me (@eric.neuhaus) on the REDCap community. If you are having an issue, it is recommended that you include a diagnostic file, as it can be immensely helpful for troubleshooting purposes.</p>
+                <p>Feedback is welcome, as are any questions/concerns/issues you may have. Please send an email to <a href="mailto:isabelle-neuhaus@uiowa.edu?subject=Admin Dashboard">eric-neuhaus@uiowa.edu</a> or create a post mentioning me (@eric.neuhaus) on the REDCap community. If you are having an issue, it is recommended that you include a diagnostic file, as it can be immensely helpful for troubleshooting purposes.</p>
 
                 <p>Please note that the diagnostic file includes <strong>all Admin Dashboard settings stored in your database</strong> (including custom report SQL queries and executive usernames), formatted in JSON. This file can be easily edited with any text editor program if you would like to remove sensitive information before sharing.</p>
 
