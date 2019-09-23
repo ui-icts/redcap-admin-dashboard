@@ -443,8 +443,8 @@ ORDER BY
                 UIOWA_AdminDash.renderDatetime = '<?= date("Y-m-d_His") ?>';
 
                 UIOWA_AdminDash.executiveAccess = <?= $executiveAccess ?>;
-                UIOWA_AdminDash.executiveUsers = <?= json_encode($executiveUsers) ?>;
-                UIOWA_AdminDash.executiveExportLookup = <?= json_encode($executiveExportLookup) ?>;
+                UIOWA_AdminDash.executiveUsers = <?= json_encode($executiveUsers ? $executiveUsers : []) ?>;
+                UIOWA_AdminDash.executiveExportLookup = <?= json_encode($executiveExportLookup ? $executiveExportLookup : []) ?>;
                 UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
                 UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
                 UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDlookup) ?>;

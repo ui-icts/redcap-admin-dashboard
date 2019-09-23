@@ -371,11 +371,12 @@
         });
 
         $('.executive-table').on('change', '.toggle', function() {
-            var exportEnabled = !$(this).hasClass('off');
-            var username = $.trim($(this).closest('tr').find('.executive-user').text());
+            var username = $.trim($(this).find('input').data('username'));
             var exportIndex = UIOWA_AdminDash.executiveExportLookup.indexOf(username);
 
-            if (exportEnabled) {
+            console.log(exportIndex);
+
+            if (exportIndex === -1) {
                 UIOWA_AdminDash.executiveExportLookup.push(username);
             }
             else {
@@ -699,9 +700,10 @@ UIOWA_AdminDash.addExecutiveUser = function () {
         '                type="checkbox"'+
         '                data-toggle="toggle"'+
         '                data-width="160"'+
+        '                data-height="40"'+
         '                data-on="Export Enabled"'+
         '                data-off="Export Disabled"'+
-        '                name="' + usernameInput.val() + '"'+
+        '                data-username="' + usernameInput.val() + '"'+
         '                class="module-config"'+
         '                value="0"'+
         '        >'+
@@ -732,7 +734,6 @@ UIOWA_AdminDash.addExecutiveUser = function () {
     $('.display-executive-username').text(usernameInput.val());
     executiveUserSelect.val(usernameInput.val());
     UIOWA_AdminDash.executiveUsers.push(usernameInput.val());
-    UIOWA_AdminDash.executiveExportLookup.push(usernameInput.val());
     UIOWA_AdminDash.saveConfigSettingToDb('executive-users', UIOWA_AdminDash.executiveUsers);
 
     usernameInput.val('');

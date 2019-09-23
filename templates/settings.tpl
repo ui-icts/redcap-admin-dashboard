@@ -86,9 +86,10 @@
                                         type="checkbox"
                                         data-toggle="toggle"
                                         data-width="160"
+                                        data-height="40"
                                         data-on="Export Enabled"
                                         data-off="Export Disabled"
-                                        name="{$user}"
+                                        data-username="{$user}"
                                         class="module-config"
                                         value="{if $user|in_array:$executiveExportLookup}1{else}0{/if}"
                                 >
@@ -147,9 +148,10 @@
                                                 type="checkbox"
                                                 data-toggle="toggle"
                                                 data-width="75"
+                                                data-height="40"
                                                 data-on="{if $setting['data-on']}{$setting['data-on']}{else}Show{/if}"
                                                 data-off="{if $setting['data-off']}{$setting['data-off']}{else}Hide{/if}"
-                                                name="{$setting['key']}"
+                                                data-username="{$setting['key']}"
                                                 class="module-config"
                                                 value={$setting['default']}
                                         >
