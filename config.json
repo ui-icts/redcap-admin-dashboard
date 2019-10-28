@@ -34,6 +34,12 @@
       "name": "Use versionless URLs for easier bookmarking (disable to fix issues with Shibboleth authentication)",
       "type": "checkbox",
       "required": false
+    },
+    {
+      "key": "test-query-timeout",
+      "name": "Timeout (in milliseconds) for running test queries (set to 0 for no timeout)",
+      "type": "text",
+      "default": "3000"
     }
   ]
 }

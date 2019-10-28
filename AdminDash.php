@@ -472,6 +472,7 @@ ORDER BY
                     rowCount: 0,
                     checked: false
                 };
+                UIOWA_AdminDash.testQueryTimeout = <?= $this->getSystemSetting('test-query-timeout'); ?>;
 
                 UIOWA_AdminDash.reportInfo = <?= json_encode($pageInfo) ?>;
                 UIOWA_AdminDash.formattingReference = <?= file_get_contents($moduleDirectory . "config/formattingReference.json") ?>;

@@ -257,6 +257,7 @@
             $('#sqlTab').tab('show');
             $('#testQueryResult').html('');
             $('#formattingTab').addClass('disabled').tooltip('enable');
+            $('#chartConfigTab').addClass('disabled').tooltip('enable');
             $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-info');
         });
 
@@ -386,6 +387,17 @@
             UIOWA_AdminDash.saveConfigSettingToDb('executive-user-export', UIOWA_AdminDash.executiveExportLookup)
         });
 
+        $('#reportDisplayType').change(function () {
+            if ($(this).val() === 'chart') {
+                $('#formattingTab').hide();
+                $('#chartConfigTab').show();
+            }
+            else {
+                $('#chartConfigTab').hide();
+                $('#formattingTab').show();
+            }
+        });
+
         $('.test-query').click(function() {
             var testQueryButton = $(this);
 
@@ -397,7 +409,8 @@
             $.ajax({
                     method: 'POST',
                     url: UIOWA_AdminDash.requestHandlerUrl + '&type=sqlQuery',
-                    data: editor.getValue()
+                    data: editor.getValue(),
+                    timeout: UIOWA_AdminDash.testQueryTimeout
                 })
                 .done(function(data) {
                     var endTime = performance.now();
@@ -432,11 +445,16 @@
                         $('#testQueryResult').html('<span style="color:green;">Query returned ' + UIOWA_AdminDash.lastTestQuery['rowCount'] + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
                     }
                 })
+                .fail(function() {
+                    testQueryButton.html('<i class="fas fa-times"></i> Error').removeClass('btn-info').addClass('btn-danger');
+                    $('#testQueryResult').html('<span style="color:red;">Query timed out! You may want to optimize your query before running again or increase/disable the timeout via this module\'s settings.</span>');
+                })
         });
 
         editor.on('change', function() {
             UIOWA_AdminDash.lastTestQuery['checked'] = false;
             $('#formattingTab').addClass('disabled').tooltip('enable');
+            $('#chartConfigTab').addClass('disabled').tooltip('enable');
             $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-info');
         });
     });
@@ -883,6 +901,7 @@ UIOWA_AdminDash.loadReportFormatting = function (type, data) {
     UIOWA_AdminDash.lastTestQuery['checked'] = true;
 
     $('#formattingTab').removeClass('disabled').tooltip('disable').attr('data-toggle', 'tab');
+    $('#chartConfigTab').removeClass('disabled').tooltip('disable').attr('data-toggle', 'tab');
 };
 
 UIOWA_AdminDash.saveReportSettingsToDb = function(type) {

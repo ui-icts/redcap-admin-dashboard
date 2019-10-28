@@ -198,7 +198,7 @@
 
                 <br />
 
-                <p>Feedback is welcome, as are any questions/concerns/issues you may have. Please send an email to <a href="mailto:isabelle-neuhaus@uiowa.edu?subject=Admin Dashboard">eric-neuhaus@uiowa.edu</a> or create a post mentioning me (@eric.neuhaus) on the REDCap community. If you are having an issue, it is recommended that you include a diagnostic file, as it can be immensely helpful for troubleshooting purposes.</p>
+                <p>Feedback is welcome, as are any questions/concerns/issues you may have. Please send an email to <a href="mailto:isabelle-neuhaus@uiowa.edu?subject=Admin Dashboard">isabelle-neuhaus@uiowa.edu</a> or create a post mentioning me (@izzy.neuhaus) on the REDCap community. If you are having an issue, it is recommended that you include a diagnostic file, as it can be immensely helpful for troubleshooting purposes.</p>
 
                 <p>Please note that the diagnostic file includes <strong>all Admin Dashboard settings stored in your database</strong> (including custom report SQL queries and executive usernames), formatted in JSON. This file can be easily edited with any text editor program if you would like to remove sensitive information before sharing.</p>
 
@@ -260,18 +260,18 @@
                         <input id="reportDescription" class="form-control">
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6" hidden>
-                            <label for="reportDisplayType">Display Type:</label>
-                            <div class="input-group">
-                                <select class="form-control" id="reportDisplayType" aria-describedby="displayHelpBlock">
-                                    <option>Table</option>
-                                    <option>Chart</option>
-                                </select>
-                                <small id="displayHelpBlock" class="form-text text-muted">
-                                    Display query results in a sortable table view or in a custom visualization.
-                                </small>
-                            </div>
-                        </div>
+{*                        <div class="form-group col-md-6">*}
+{*                            <label for="reportDisplayType">Display Type:</label>*}
+{*                            <div class="input-group">*}
+{*                                <select class="form-control" id="reportDisplayType" aria-describedby="displayHelpBlock">*}
+{*                                    <option value="table">Table</option>*}
+{*                                    <option value="chart">Chart</option>*}
+{*                                </select>*}
+{*                            </div>*}
+{*                            <small id="displayHelpBlock" class="form-text text-muted">*}
+{*                                Display query results in a sortable table view or in a custom visualization.*}
+{*                            </small>*}
+{*                        </div>*}
                         <div class="form-group col-md-6">
                             <label for="reportCustomId">Report ID:</label>
                             <div class="input-group custom-report-id-group">
@@ -292,6 +292,9 @@
                         <li class="nav-item">
                             <a class="nav-link disabled" id="formattingTab" data-toggle="tooltip" href="#formatting" role="tab" aria-controls="formatting" aria-selected="false" title="Run 'Test Query' first to populate Special Formatting tab">Special Formatting</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" id="chartConfigTab" data-toggle="tooltip" href="#chartConfig" role="tab" aria-controls="chartConfig" aria-selected="false" style="display: none;" title="Run 'Test Query' first to populate Chart Configuration tab">Chart Configuration</a>
+                        </li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="sql" role="tabpanel" aria-labelledby="sql-tab">
@@ -307,7 +310,7 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="formatting" role="tabpanel" aria-labelledby="formattingTab">
-                            <div class="report-special-formatting" id="formattingConfig">
+                            <div class="config-modal" id="formattingConfig">
                                 <table class="table table-striped" style="table-layout: fixed;">
                                     <thead>
                                     <tr>
@@ -319,6 +322,15 @@
                                     <tbody class="column-list">
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="chartConfig" role="tabpanel" aria-labelledby="chartConfigTab">
+                            <div class="config-modal" id="chartConfigView">
+                                <select>
+                                    <option value="line">Line</option>
+                                    <option value="bar">Bar</option>
+                                    <option value="pie">Pie</option>
+                                </select>
                             </div>
                         </div>
                     </div>

@@ -107,7 +107,7 @@ div#outer
    height: 500px;
 }
 
-.sql, .report-special-formatting {
+.sql, .config-modal {
    max-height: 600px;
    overflow: scroll;
 }
