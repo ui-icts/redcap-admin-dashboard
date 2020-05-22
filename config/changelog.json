@@ -1,17 +1,10 @@
 [
   {
-    "version": "3.4",
-    "notes": "This update includes a number of improvements and optimizations to existing Admin Dashboard functionality ahead of a planned 4.0 update that will likely add new features (such as custom visualizations and the ability to export report results directly into a REDCap project). <a href=\"mailto:isabelle-neuhaus@uiowa.edu?subject=Admin Dashboard\" style=\"font-size:14px; text-decoration: underline;\">Feedback is welcome</a> to help improve existing functionality before all focus shifts to implementing new features for v4.0.",
+    "version": "3.5",
+    "notes": "This update adds a new report type, 'Project Join', as an alternative to the standard 'SQL Query'. This feature allows one REDCap project to be \"joined\" with another, so that the resulting report contains data from both projects in one table. This feature was designed with a simple use case in mind and will likely not play nice with repeating instruments or longitudinal projects.",
     "changes": [
-      "Added 'Special Formatting' feature (easily set up linking to common REDCap pages in custom reports)",
-      "Added 'Test Query' button (quickly find out if custom SQL is valid without rendering report)",
-      "Added dedicated settings page for report configuration, executive user management, and misc other options",
-      "Added per-user toggles for data export access on the Executive Dashboard",
-      "Added 'Help' section to settings page where a 'diagnostic' JSON file can be downloaded (includes all Admin Dashboard settings and custom reports stored in your database)",
-      "Added changelog (you're looking at it right now!)",
-      "Fixed issue with dashboard failing to load on servers with Shibboleth authentication enabled due to known REDCap bug ('Use versionless URLs for easier bookmarking' should be disabled if you are affected by this)",
-      "'Credentials Check' reports are no longer included as built-in reports (if you are upgrading from a previous version that included them, they have been automatically converted to custom reports so you can delete or modify them as you please).",
-      "General quality of life improvements for dashboard view (faster render times, icons for user statuses, scrollbars for long grouped lists, etc)"
+      "Added new 'Project Join' report type",
+      "Fixed issue with Export option not appearing for Executive users despite being enabled."
     ]
   }
 ]

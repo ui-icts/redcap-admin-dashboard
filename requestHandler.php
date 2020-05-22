@@ -16,3 +16,9 @@ elseif ($_REQUEST['type'] == 'getApiToken') {
 elseif ($_REQUEST['type'] == 'sqlQuery') {
     $module->sqlQuery();
 }
+elseif ($_REQUEST['type'] == 'getProjectList') {
+    $module->getProjectList();
+}
+elseif ($_REQUEST['type'] == 'getProjectFields') {
+    $module->getProjectFields($_POST['pid']);
+}

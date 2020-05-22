@@ -380,29 +380,41 @@
 
         var execUserSelect = $('.executiveUser');
 
-        if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser && UIOWA_AdminDash.executiveAccess) {
-            execUserSelect.val( sessionStorage.getItem("selectedUser") );
-
-            if (execUserSelect.val() == null) {
-                execUserSelect.val('');
-            }
-
-            execUserSelect.change();
-        }
-
         execUserSelect.change(function() {
             sessionStorage.setItem("selectedUser", this.value);
 
             UIOWA_AdminDash.userID = execUserSelect.val();
             UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
 
-            if (UIOWA_AdminDash.executiveExportLookup.indexOf(UIOWA_AdminDash.userID) != -1) {
+            if (UIOWA_AdminDash.executiveExportLookup.indexOf(UIOWA_AdminDash.userID) !== -1) {
                 $(".output-button").show();
             }
             else {
                 $(".output-button").hide();
             }
         });
+
+        if (UIOWA_AdminDash.executiveAccess) {
+            if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser) {
+                execUserSelect.val( sessionStorage.getItem("selectedUser") );
+
+                if (execUserSelect.val() == null) {
+                    execUserSelect.val('');
+                }
+
+                execUserSelect.trigger('change');
+
+            }
+            else {
+                if (UIOWA_AdminDash.executiveExportLookup.indexOf(UIOWA_AdminDash.userID) !== -1) {
+                    $(".output-button").show();
+                }
+                else {
+                    $(".output-button").hide();
+                }
+            }
+
+        }
 
         $('.output-filename').val(UIOWA_AdminDash.csvFileName);
 

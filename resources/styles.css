@@ -190,6 +190,28 @@ div.about-text {
    margin: 0 5px;
 }
 
+.project-checkboxes-1, .project-checkboxes-2 {
+   height: 500px;
+   overflow-y: auto;
+}
+
+.project-checkboxes-1 > ul, .project-checkboxes-2 > ul {
+   padding-left: 0;
+}
+
+.project-checkboxes-1 li {
+   list-style: none;
+}
+
+.project-checkboxes-2 li {
+   list-style: none;
+}
+
+.join-field-list {
+   margin-top: 10px;
+   padding: 0 25px;
+}
+
 /* Bootstrap Toggle v2.2.2 corrections for Bootsrtap 4*/
 .toggle-off {
    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);

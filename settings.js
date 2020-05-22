@@ -38,6 +38,189 @@
             }
         });
 
+        $.ajax({
+            method: 'POST',
+            url: UIOWA_AdminDash.requestHandlerUrl + '&type=getProjectList'
+        })
+        .done(function (data) {
+            var projects = JSON.parse(data);
+            var $projectSelects = $('.pid-select');
+
+            $.each(projects, function (index, item) {
+                $projectSelects.append($('<option>', {
+                    value: item.value,
+                    text : item.label
+                }));
+            });
+
+            $projectSelects.append($('<option>', {
+                value: 'other',
+                text : 'Other'
+            }));
+
+            $('.report-list-loading-icon').hide();
+            $('#reportTable').show();
+        });
+
+        function delay(fn, ms) {
+            let timer = 0;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(fn.bind(this, ...args), ms || 0)
+            }
+        }
+
+        $('.pid-other').keyup(delay(function(e) {
+            $(".pid-select[data-project=" + $(this).data('project') + "]").trigger('change');
+        }, 500));
+
+        $('.pid-select').change(function () {
+            var $this = $(this);
+            var pid = $this.val();
+            var configId = $(this).data('project');
+            var $otherPidDiv = $(".otherPidDiv[data-project=" + configId + "]");
+            var $projectCheckboxes = $('.project-checkboxes-' + configId + ' > ul > li');
+
+            if (pid === 'other') {
+                var otherPid = $otherPidDiv.find('input').val();
+
+                $otherPidDiv.show();
+
+                if (otherPid !== '') {
+                    pid = otherPid;
+                }
+                else {
+                    return;
+                }
+            }
+            else {
+                $otherPidDiv.hide();
+            }
+
+            if (pid === '') {
+                $projectCheckboxes.empty('.project-checkboxes-' + configId);
+                $('#p' + configId + 'Title').text('');
+                $('#joinOptionsTab').addClass('disabled');
+
+                return;
+            }
+
+            $this.prop('disabled', true);
+            $projectCheckboxes.empty('.project-checkboxes-' + configId);
+            $('.join-field-list[data-project=' + configId + ']').hide();
+            $('.loading-icon[data-project=' + configId + ']').show();
+
+            $.ajax({
+                method: 'POST',
+                data: {'pid': pid},
+                url: UIOWA_AdminDash.requestHandlerUrl + '&type=getProjectFields',
+                success: function(data) {
+                    data = JSON.parse(data);
+
+                    if (data['fieldLookup'].length === 0) {
+                        $('.loading-icon[data-project=' + configId + ']').hide();
+                        alert('Failed to load fields. PID may be invalid.');
+                    }
+
+                    loadJoinFields(data);
+                }
+            });
+
+            function loadJoinFields(data) {
+                $.each(data['fieldLookup'], function (form, fields) {
+                    $projectCheckboxes.append($('<input>', {
+                        type: 'checkbox',
+                        class: 'option',
+                        name: form + '_p' + configId,
+                        id: form + '_p' + configId
+                    }));
+
+                    $projectCheckboxes.append($('<label>', {
+                        html: '&nbsp;' + form,
+                        for: form + '_p' + configId
+                    }));
+
+                    $projectCheckboxes.append();
+                    var $subCheckboxes = $('<ul>');
+
+                    $.each(fields, function(index, field_name) {
+                        var $li = $('<li>');
+
+                        $li.append($('<input>', {
+                            type: 'radio',
+                            name: 'join_project_' + configId,
+                            value: field_name
+                        }));
+
+                        $li.append('<span> </span>');
+
+                        $li.append($('<input>', {
+                            type: 'checkbox',
+                            id: field_name + '_p' + configId,
+                            name: field_name,
+                            class: 'subOption',
+                            'data-form': form + '_p' + configId,
+                            'data-project': configId
+                        }));
+
+                        $li.append($('<label>', {
+                            html: '&nbsp;' + field_name,
+                            for: field_name + '_p' + configId
+                        }));
+
+                        $subCheckboxes.append($li);
+                    });
+
+                    $projectCheckboxes.append($subCheckboxes);
+
+                    var checkboxes = document.querySelectorAll("input.subOption[data-form='" + form + '_p' + configId + "']"),
+                        checkall = document.querySelectorAll("input[name='" + form + '_p' + configId + "']")[0];
+
+                    for(var i=0; i<checkboxes.length; i++) {
+                        checkboxes[i].onclick = function() {
+                            var checkedCount = document.querySelectorAll("input.subOption:checked[data-form='" + form + '_p' + configId + "']").length;
+
+                            checkall.checked = checkedCount > 0;
+                            checkall.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+                        }
+                    }
+
+                    checkall.onclick = function() {
+                        for(var i=0; i<checkboxes.length; i++) {
+                            checkboxes[i].checked = this.checked;
+                        }
+                    };
+
+                    var reportInfo = UIOWA_AdminDash.reportReference[UIOWA_AdminDash.currentReportConfigIndex];
+
+                    if (reportInfo) {
+                        $.each(reportInfo['p' + configId + 'Fields'], function(index, field_name) {
+                            $("#" + field_name + '_' + 'p' + configId).prop('checked', true).trigger('onclick');
+                        });
+
+                        $("input[name='join_project_" + configId + "'][value='" + reportInfo['p' + configId + 'JoinField'] + "']").prop('checked', true);
+                        $("input[name='allowProjectUsersP" + configId + "'][value='" + reportInfo["allowProjectUsersP" + configId] + "']").prop('checked', true);
+
+                        $('#showChoiceLabels').prop('checked', reportInfo['showChoiceLabels']);
+                        $('#matchesOnly').prop('checked', reportInfo['matchesOnly']);
+
+                    }
+                    else {
+                        $('.project-checkboxes-' + configId + ' input[type=radio]').first().prop('checked', true);
+                    }
+
+                    $('.p' + configId + 'Title').text(pid + ' - ' + data['projectTitle']);
+
+                    if ($(".pid-select[data-project=1]").val() !== '' && $(".pid-select[data-project=2]").val() !== '') {
+                        $('#joinOptionsTab').removeClass('disabled');
+                    }
+                    $this.prop('disabled', false);
+                    $('.loading-icon[data-project=' + configId + ']').hide();
+                    $('.join-field-list[data-project=' + configId + ']').show();
+                });
+            }
+        });
+
         $[ "ui" ][ "autocomplete" ].prototype["_renderItem"] = function( ul, item) {
             return $( "<li></li>" )
                 .data( "item.autocomplete", item )
@@ -254,11 +437,19 @@
             $alertas.validate().resetForm();
             $alertas.find('.error').removeClass('error');
 
-            $('#sqlTab').tab('show');
+            $('#reportDisplayType').val('sql').trigger('change');
             $('#testQueryResult').html('');
             $('#formattingTab').addClass('disabled').tooltip('enable');
             $('#chartConfigTab').addClass('disabled').tooltip('enable');
             $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-info');
+
+            $('.pid-select').val('').trigger('change');
+            $('.pid-other').val('');
+            $('.join-field-list').hide();
+            $('#showChoiceLabels').prop('checked', false);
+            $("input[name='allowProjectUsersP1'][value='0']").prop('checked', true);
+            $("input[name='allowProjectUsersP2'][value='0']").prop('checked', true);
+            $('#matchesOnly').prop('checked', false);
         });
 
         $('#reportIcon').on('input', function() {
@@ -375,8 +566,6 @@
             var username = $.trim($(this).find('input').data('username'));
             var exportIndex = UIOWA_AdminDash.executiveExportLookup.indexOf(username);
 
-            console.log(exportIndex);
-
             if (exportIndex === -1) {
                 UIOWA_AdminDash.executiveExportLookup.push(username);
             }
@@ -388,13 +577,21 @@
         });
 
         $('#reportDisplayType').change(function () {
-            if ($(this).val() === 'chart') {
+            if ($(this).val() === 'projects') {
+                $('#sqlTab').hide();
                 $('#formattingTab').hide();
-                $('#chartConfigTab').show();
+                $('#projectJoinTab').show();
+                $('#joinOptionsTab').show();
+
+                $('a[href="#projectJoin"]').tab('show');
             }
             else {
-                $('#chartConfigTab').hide();
+                $('#projectJoinTab').hide();
+                $('#joinOptionsTab').hide();
+                $('#sqlTab').show();
                 $('#formattingTab').show();
+
+                $('a[href="#sql"]').tab('show');
             }
         });
 
@@ -506,6 +703,7 @@ UIOWA_AdminDash.updateReportSetupModal = function() {
     var iconInput = $('#reportIcon');
     var idInput = $('#reportId');
     var customIdInput = $('#reportCustomId');
+    var reportTypeSelect = $('#reportDisplayType');
 
     //$('#reportConfiguration input').not('#reportCustomId').attr('readonly', false);
     $('#reportConfiguration input').attr('readonly', false);
@@ -541,6 +739,28 @@ UIOWA_AdminDash.updateReportSetupModal = function() {
             //$('#formattingTab').removeClass('disabled').tooltip('disable').attr('data-toggle', 'tab');
 
         }
+
+        if (reportInfo['type'] === 'projects') {
+            reportTypeSelect.val('projects').trigger('change');
+
+            $.each([1, 2], function (index, num) {
+                var pidNum = 'pid' + num;
+
+                if ($(".pid-select[data-project=" + num + "] option[value='" + reportInfo[pidNum] + "']").length > 0) {
+                    $(".pid-select[data-project=" + num + "]")
+                        .val(reportInfo[pidNum])
+                        .trigger('change');
+                }
+                else {
+                    $("input[name='otherPid" + num + "']")
+                        .val(reportInfo[pidNum]);
+
+                    $(".pid-select[data-project=" + num + "]")
+                        .val('other')
+                        .trigger('change');
+                }
+            });
+        }
     }
 
     editor.clearSelection();
@@ -567,11 +787,45 @@ UIOWA_AdminDash.saveReportConfiguration = function() {
         'reportName': newReportTitle,
         'description': $('#reportDescription').val(),
         'tabIcon': $('#reportIcon').val(),
-        'customID': $('#reportCustomId').val(),
-        'sql': editor.getValue(),
-        'type': 'table',
-        'checked': UIOWA_AdminDash.lastTestQuery['report'] == index ? UIOWA_AdminDash.lastTestQuery['checked'] : false
+        'customID': $('#reportCustomId').val()
     };
+
+    var additionalConfig = {};
+
+    if ($('#reportDisplayType').val() === 'sql') {
+        additionalConfig = {
+            'sql': editor.getValue(),
+            'type': 'table',
+            'checked': UIOWA_AdminDash.lastTestQuery['report'] === index ? UIOWA_AdminDash.lastTestQuery['checked'] : false
+        };
+    }
+    else {
+        var p1Fields = [];
+        var p2Fields = [];
+
+        $(".subOption[data-project=1]:checked").each(function (index, checkbox) {
+            p1Fields.push($(checkbox).attr('name'));
+        });
+        $(".subOption[data-project=2]:checked").each(function (index, checkbox) {
+            p2Fields.push($(checkbox).attr('name'));
+        });
+
+        additionalConfig = {
+            'pid1': $("[name='pid1']").val() === 'other' ? $("[name='otherPid1']").val() : $("[name='pid1']").val(),
+            'pid2': $("[name='pid2']").val() === 'other' ? $("[name='otherPid2']").val() : $("[name='pid2']").val(),
+            'type': 'projects',
+            'p1Fields': p1Fields,
+            'p2Fields': p2Fields,
+            'p1JoinField': $("input[name='join_project_1']:checked").val(),
+            'p2JoinField': $("input[name='join_project_2']:checked").val(),
+            'showChoiceLabels': $('#showChoiceLabels').prop('checked'),
+            'allowProjectUsersP1': $("input[name='allowProjectUsersP1']:checked").val(),
+            'allowProjectUsersP2': $("input[name='allowProjectUsersP2']:checked").val(),
+            'matchesOnly': $("#matchesOnly").prop('checked')
+        };
+    }
+
+    $.extend(UIOWA_AdminDash.reportReference[index], additionalConfig);
 
     // get special formatting
     var formattingColumns = $('.column-list > tr');

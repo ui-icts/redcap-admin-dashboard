@@ -11,7 +11,10 @@
 
         <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body">
-                <table class="table table-striped">
+                <div class="report-list-loading-icon" style="text-align: center; padding: 5%;">
+                    <i class="fas fa-spinner fa-spin fa-7x"></i>
+                </div>
+                <table id="reportTable" class="table table-striped" style="display: none">
                     <thead>
                     <tr>
                         <th></th>
@@ -260,18 +263,18 @@
                         <input id="reportDescription" class="form-control">
                     </div>
                     <div class="form-row">
-{*                        <div class="form-group col-md-6">*}
-{*                            <label for="reportDisplayType">Display Type:</label>*}
-{*                            <div class="input-group">*}
-{*                                <select class="form-control" id="reportDisplayType" aria-describedby="displayHelpBlock">*}
-{*                                    <option value="table">Table</option>*}
-{*                                    <option value="chart">Chart</option>*}
-{*                                </select>*}
-{*                            </div>*}
-{*                            <small id="displayHelpBlock" class="form-text text-muted">*}
-{*                                Display query results in a sortable table view or in a custom visualization.*}
-{*                            </small>*}
-{*                        </div>*}
+                        <div class="form-group col-md-6">
+                            <label for="reportDisplayType">Report Type:</label>
+                            <div class="input-group">
+                                <select class="form-control" id="reportDisplayType" aria-describedby="displayHelpBlock">
+                                    <option value="sql">SQL Query</option>
+                                    <option value="projects">Project Join</option>
+                                </select>
+                            </div>
+                            <small id="displayHelpBlock" class="form-text text-muted">
+                                Query REDCap metadata or combined project data
+                            </small>
+                        </div>
                         <div class="form-group col-md-6">
                             <label for="reportCustomId">Report ID:</label>
                             <div class="input-group custom-report-id-group">
@@ -290,14 +293,20 @@
                             <a class="nav-link active" id="sqlTab" data-toggle="tab" href="#sql" role="tab" aria-controls="sql" aria-selected="true">SQL Query</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" id="projectJoinTab" data-toggle="tab" href="#projectJoin" role="tab" aria-controls="projectJoin" aria-selected="true" style="display: none">Select Fields</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link disabled" id="formattingTab" data-toggle="tooltip" href="#formatting" role="tab" aria-controls="formatting" aria-selected="false" title="Run 'Test Query' first to populate Special Formatting tab">Special Formatting</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" id="joinOptionsTab" data-toggle="tab" href="#joinOptions" role="tab" aria-controls="joinOptions" aria-selected="false" style="display: none">Options</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link disabled" id="chartConfigTab" data-toggle="tooltip" href="#chartConfig" role="tab" aria-controls="chartConfig" aria-selected="false" style="display: none;" title="Run 'Test Query' first to populate Chart Configuration tab">Chart Configuration</a>
                         </li>
                     </ul>
                     <div class="tab-content">
-                        <div class="tab-pane fade show active" id="sql" role="tabpanel" aria-labelledby="sql-tab">
+                        <div class="tab-pane fade show active" id="sql" role="tabpanel" aria-labelledby="sqlTab">
                             <div class="form-group" style="padding-bottom: 5%">
                                 <small id="queryHelpBlock" class="form-text text-muted">
                                     SELECT queries only.
@@ -306,6 +315,72 @@
                                 <div id="testQueryResult" style="float:left; padding-left: 10px; padding-top: 10px; max-width:80%;"></div>
                                 <div style="text-align:right; float:right; padding-top: 10px;">
                                     <button type="button" class="btn btn-info test-query">Test Query</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="projectJoin" role="tabpanel" aria-labelledby="projectJoinTab">
+                            <div class="form-group" style="padding-bottom: 5%">
+                                <small style="text-align: center; margin-bottom:30px" class="form-text text-muted">
+                                    <i class="fas fa-dot-circle"></i> to designate matching field (typically Record ID for 2nd project)
+                                    <br />
+                                    <i class="fas fa-check-square"></i> to include field data in report
+                                </small>
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="pid1">Primary Project: </label>
+                                            <br />
+                                            <select class="pid-select form-control" name="pid1" data-project="1">
+                                                <option value="">---Select---</option>
+                                            </select>
+                                            <div class="otherPidDiv" style="display: none; padding:10px" data-project="1">
+                                                <label for="otherPid1" style="float: left; padding:10px">Enter PID: </label>
+                                                <input class="pid-other form-control w-50" name="otherPid1" data-project="1">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <label for="pid2">Joined Project: </label>
+                                            <br />
+                                            <select class="pid-select form-control" name="pid2" data-project="2">
+                                                <option value="">---Select---</option>
+                                            </select>
+                                            <div class="otherPidDiv" style="display: none; padding:10px" data-project="2">
+                                                <label for="otherPid2" style="float: left; padding:10px">Enter PID: </label>
+                                                <input class="pid-other form-control w-50" name="otherPid2" data-project="2">
+                                            </div>
+                                        </div>
+                                        <div class="w-100"></div>
+                                        <div class="col">
+                                            <div class="loading-icon" style="text-align: center; padding: 5%; display: none" data-project="1">
+                                                <i class="fas fa-spinner fa-spin fa-7x"></i>
+                                            </div>
+                                            <div class="join-field-list border rounded" data-project="1" style="display: none">
+                                                <br />
+                                                <label style="font-weight: bold">Project Fields [<span class="p1Title"></span>]:</label>
+                                                <div class="project-checkboxes-1">
+                                                    <ul>
+                                                        <li>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="loading-icon" style="text-align: center; padding: 5%; display: none" data-project="2">
+                                                <i class="fas fa-spinner fa-spin fa-7x"></i>
+                                            </div>
+                                            <div class="join-field-list border rounded" data-project="2" style="display: none">
+                                                <br />
+                                                <label style="font-weight: bold">Project Fields [<span class="p2Title"></span>]:</label>
+                                                <div class="project-checkboxes-2">
+                                                    <ul>
+                                                        <li>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -322,6 +397,51 @@
                                     <tbody class="column-list">
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="joinOptions" role="tabpanel" aria-labelledby="joinOptionsTab">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="showChoiceLabels">
+                                <label class="form-check-label" for="showChoiceLabels">
+                                    Show choice labels (instead of coded values)
+                                </label>
+                            </div>
+                            <br />
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="matchesOnly">
+                                <label class="form-check-label" for="matchesOnly">
+                                    Only return records with valid matches in secondary project
+                                </label>
+                            </div>
+                            <br />
+                            <div style="display: none">
+                                <div style="font-weight: bold">Project-Level Access [<span class="p1Title"></span>]</div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="allowProjectUsersP1" value="0" id="allowProjectUsersP1None" checked>
+                                    <label class="form-check-label" for="allowProjectUsersP1None">
+                                        None (Admin/Executive only)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="allowProjectUsersP1" value="1" id="allowProjectUsersP1Full">
+                                    <label class="form-check-label" for="allowProjectUsersP1Full">
+                                        Allow users with "Full Data Set" rights
+                                    </label>
+                                </div>
+                                <br />
+                                <div style="font-weight: bold">Project-Level Access [<span class="p2Title"></span>]</div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="allowProjectUsersP2" value="0" id="allowProjectUsersP2None" checked>
+                                    <label class="form-check-label" for="allowProjectUsersP2None">
+                                        None (Admin/Executive only)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="allowProjectUsersP2" value="1" id="allowProjectUsersP2Full">
+                                    <label class="form-check-label" for="allowProjectUsersP2Full">
+                                        Allow users with "Full Data Set" rights
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="chartConfig" role="tabpanel" aria-labelledby="chartConfigTab">

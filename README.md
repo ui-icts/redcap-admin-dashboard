@@ -38,15 +38,13 @@ Report results can be exported via the button located in the top right (just abo
 * **Include:** 'All' will export all rows regardless of visibility due to pagination or filtering. 'Filtered' will only return the rows currently visible based on the current column filters set (this also does not care about pagination and will return rows not currently visible as well, so long as they meet the filter criteria).
 
 ### User-Defined Reports
-Additional reports can be defined through custom SQL queries. They can be added via the "Configure Reports" section of the settings page. The following information can be defined:
+Additional reports can be defined via the "Configure Reports" section of the settings page. The following information can be defined:
 
 * **Title** - The name of your report. This value must be unique (no two reports can have the same title) and cannot be blank.
 * **Icon** - An icon that will appear next to your report title in the report navigation bar. This accepts most "solid" icons from Font Awesome and will display a preview if the icon name entered is valid.
 * **Description** - A short description that will appear under the report title when the report is rendered.
+* **Report Type** - "SQL Query" is the most common type of report, but a "Project Join" option is also available. This secondary option will return a joined result set from two REDCap projects.
 * **Report ID** - A unique alphanumeric string that can be used as an alternative to the report index when loading a report directly via URL. This can be useful for permanently bookmarking reports (report indexes can change as reports are added and deleted so they are not reliable in this respect). The report index can still be used even if a custom ID is defined.
-* **SQL Query** - A valid SQL SELECT query that is used to populate your report.
-
-The "Test Query" button will execute your query against REDCap's database and either return the number of rows returned on success or display the error on failure.
 
 ## Special Formatting
 A number of special formatting options are available to further customize the functionality and appearance of your reports. The "Special Formatting" tab will be enabled after the query has had a successful test run.
