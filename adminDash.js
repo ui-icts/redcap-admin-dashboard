@@ -33,6 +33,10 @@
 
             $.each(headers, function(headerIndex, headerValue) {
                 strTable += "<th>";
+                strTable += "<span class='edit-column' style='display:none'><i class='fas fa-arrows-alt drag-handle move-column'></i>&nbsp;" +
+                    "<a data-toggle='tooltip' data-placement='bottom' title='Hide Column'>" +
+                    "<i class='fa fa-eye-slash hide-column'></i>" +
+                    "</a>&nbsp;</span>";
                 strTable += headerValue;
                 strTable += "</th>";
             });
@@ -566,6 +570,36 @@
             window.open(UIOWA_AdminDash.settingsUrl, "_self");
         });
 
+        $('.toggle-edit-columns').click(function() {
+            var $button = $(this);
+            var $editControls = $('.edit-column');
+
+            $editControls.toggle();
+
+            if($editControls.is(":visible")) {
+                $button.html('<span class="fas fa-check"></span> Hide Edit Controls');
+                $button.removeClass('btn-outline-primary');
+                $button.addClass('btn-outline-success');
+            }
+            else {
+                // todo saving column edits
+                // var urlParams = new URLSearchParams(window.location.search);
+                // var reportId = urlParams.get('report');
+                // var ls = window.localStorage;
+                // var columns = [];
+                //
+                // $('#reportTable > thead > tr.tablesorter-headerRow > th:visible').each(function(index, elm) {
+                //     columns.push($(elm).data('column'));
+                // })
+                //
+                // ls.setItem('customColumns_' + reportId, JSON.stringify(columns));
+
+                $button.html('<span class="fas fa-columns"></span> Edit Columns');
+                $button.removeClass('btn-outline-success');
+                $button.addClass('btn-outline-primary');
+            }
+        });
+
 
         $('#primaryUserSelect').change(function() {
             UIOWA_AdminDash.updateReportTabs($('#primaryUserSelect').val());
@@ -590,11 +624,57 @@
         if (UIOWA_AdminDash.showChangelog) {
             $('#changelogModal').modal('show');
         }
+
+        // on click
+        $('.hide-column').click(UIOWA_AdminDash.hideColumnIndex);
+
+        // restore columns footer
+        $(".restore-columns").click(function(e) {
+            var $table = $('#reportTable');
+            $(".footer-restore-columns").hide()
+            $table.find("th, td")
+                .removeClass('hide-col');
+        })
+
+        $('[data-toggle="tooltip"]').tooltip({
+            trigger: 'hover'
+        })
+
+            $('#reportTable').dragtable({
+            dragHandle:'.drag-handle'
+            // todo persist column edits
+            //     , persistState: function(table) {
+            //     if (!window.sessionStorage) return;
+            //     var ss = window.sessionStorage;
+            //     $('#reportTable > thead > tr.tablesorter-headerRow > th').each(function(i, col) {
+            //         if($(col).data('column') != '') {table.sortOrder[$(col).data('column')]=i;}
+            //     });
+            //     ss.setItem('tableorder',JSON.stringify(table.sortOrder));
+            // },
+            // restoreState: eval('(' + window.sessionStorage.getItem('tableorder') + ')')
+        });
     });
 
 }(window.jQuery, window, document));
 
 var UIOWA_AdminDash = {};
+
+UIOWA_AdminDash.hideColumnIndex = function() {
+    var $el = $(this);
+    var $cell = $el.closest('th,td')
+    var $table = $cell.closest('table')
+
+    // get cell location - https://stackoverflow.com/a/4999018/1366033
+    var colIndex = $cell[0].cellIndex + 1;
+
+    // find and hide col index
+    $table.find("tbody tr, thead tr")
+        .children(":nth-child(" + colIndex + ")")
+        .addClass('hide-col');
+
+    // show restore footer
+    $(".footer-restore-columns").show()
+}
 
 UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
 {

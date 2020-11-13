@@ -298,6 +298,9 @@ ORDER BY
         <script src="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.js") ?>"></script>
         <link href="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.css") ?>" rel="stylesheet">
 
+        <script src="<?= $this->getUrl("/resources/jquery.dragtable.js") ?>"></script>
+        <link href="<?= $this->getUrl("/resources/dragtable.css") ?>" rel="stylesheet">
+
         <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
 
         <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>

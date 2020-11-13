@@ -70,6 +70,9 @@ Admins can switch between the "Admin" and "Executive" views by clicking the butt
 
 For executive users, there is no way to directly access this view through the REDCap UI. An admin will need to provide them with a direct link to the page so they can bookmark it for future use. The "Send Link" button next to each user in the "Executive User Management" section will open an email template addressed to the user's primary REDCap email (if found).
 
+### Custom Columns
+Columns can be hidden and rearranged dynamically by clicking the "Edit Columns" button at the bottom of a report table. These changes do not currently persist on page refresh.
+
 ### Additional Options
 * **Use versionless URLs for easier bookmarking:** This option uses REDCap's API endpoint to make URLs shorter and not require a specified version number (which would normally break bookmarks post-upgrade). This should be ideal for most users, but due to known issues with Shibboleth authentication, this feature can be disabled if dashboard pages fail to load. It will be enabled by default for most users, but will be automatically disabled (upon enabling the module itself) if the REDCap server has Shibboleth authentication enabled.
 * **Show icons next to suspended or non-existent usernames:** Disabling this option will hide the status icons next to usernames that appear if a user is either suspended or if the given username does not appear to have a valid REDCap account (no user profile). NOTE: These icons rely on secondary reference columns "user_suspended_time" and "user_exists" respectively. If these columns are not present in a user-defined report, the icons will not display.

@@ -192,8 +192,14 @@
 
             {$pageInfo['sqlErrorMsg']}
 
-            <table id='reportTable'>
+            <table id='reportTable' class="table-hideable">
             </table>
+            <div style="display: inline-block">
+                <button type="button" class="btn btn-outline-primary toggle-edit-columns" style="display: inline-block">
+                    <span class="fas fa-columns"></span> Edit Columns
+                </button>
+            </div>
+            <div class="footer-restore-columns" style="float: right; display: none"><a class="restore-columns" href="#">Some columns hidden - click to show all</a></div>
         </div>
     {/if}
 {else}
