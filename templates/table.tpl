@@ -189,17 +189,21 @@
                     </select>
                 </form>
             </div>
-
-            {$pageInfo['sqlErrorMsg']}
-
-            <table id='reportTable' class="table-hideable">
-            </table>
             <div style="display: inline-block">
                 <button type="button" class="btn btn-outline-primary toggle-edit-columns" style="display: inline-block">
                     <span class="fas fa-columns"></span> Edit Columns
                 </button>
             </div>
-            <div class="footer-restore-columns" style="float: right; display: none"><a class="restore-columns" href="#">Some columns hidden - click to show all</a></div>
+            <div class="footer-restore-columns" style="float:right; display: none">
+                <button type="button" class="btn btn-outline-info restore-columns" style="display: inline-block">
+                    <span class="fas fa-columns"></span> Restore hidden columns
+                </button>
+            </div>
+
+            {$pageInfo['sqlErrorMsg']}
+
+            <table id='reportTable' class="table-hideable">
+            </table>
         </div>
     {/if}
 {else}

@@ -580,6 +580,8 @@
                 $button.html('<span class="fas fa-check"></span> Hide Edit Controls');
                 $button.removeClass('btn-outline-primary');
                 $button.addClass('btn-outline-success');
+
+                $('#reportTable').trigger('removeWidget', 'stickyHeaders');
             }
             else {
                 // todo saving column edits
@@ -597,6 +599,8 @@
                 $button.html('<span class="fas fa-columns"></span> Edit Columns');
                 $button.removeClass('btn-outline-success');
                 $button.addClass('btn-outline-primary');
+
+                $('#reportTable').trigger('applyWidgetId', 'stickyHeaders');
             }
         });
 
@@ -626,7 +630,10 @@
         }
 
         // on click
-        $('.hide-column').click(UIOWA_AdminDash.hideColumnIndex);
+        $('.hide-column').click( function() {
+            var $cell = $(this).closest('th,td')
+            UIOWA_AdminDash.hideColumnIndex($cell.data('column'));
+        })
 
         // restore columns footer
         $(".restore-columns").click(function(e) {
@@ -641,7 +648,8 @@
         })
 
             $('#reportTable').dragtable({
-            dragHandle:'.drag-handle'
+            dragHandle:'.drag-handle',
+            maxMovingRows:2
             // todo persist column edits
             //     , persistState: function(table) {
             //     if (!window.sessionStorage) return;
@@ -659,20 +667,13 @@
 
 var UIOWA_AdminDash = {};
 
-UIOWA_AdminDash.hideColumnIndex = function() {
-    var $el = $(this);
-    var $cell = $el.closest('th,td')
-    var $table = $cell.closest('table')
-
-    // get cell location - https://stackoverflow.com/a/4999018/1366033
-    var colIndex = $cell[0].cellIndex + 1;
-
-    // find and hide col index
-    $table.find("tbody tr, thead tr")
-        .children(":nth-child(" + colIndex + ")")
+UIOWA_AdminDash.hideColumnIndex = function(colIndex) {
+    // // find and hide col index
+    $("tbody tr, thead tr")
+        .children(":nth-child(" + (colIndex + 1) + ")")
         .addClass('hide-col');
 
-    // show restore footer
+    // // show restore footer
     $(".footer-restore-columns").show()
 }
 
