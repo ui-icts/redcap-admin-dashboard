@@ -4,23 +4,8 @@ namespace UIOWA\AdminDash;
 use ExternalModules\AbstractExternalModule;
 use ExternalModules\ExternalModules;
 
-require_once 'vendor/autoload.php';
-
 class AdminDash extends AbstractExternalModule
 {
-    private static $smarty;
-
-    private static $purposeMaster = array(
-        "Basic or Bench Research",
-        "Clinical Research Study or Trial",
-        "Translational Research 1",
-        "Translational Research 2",
-        "Behavioral or Psychosocial Research Study",
-        "Epidemiology",
-        "Repository",
-        "Other"
-    );
-
     private static $configSettings = array(
         array(
             "key" => "use-api-urls",
@@ -38,7 +23,7 @@ class AdminDash extends AbstractExternalModule
         )
     );
 
-    private $sqlError;
+    private $configPID;
 
     public function redcap_module_system_change_version($version, $old_version)
     {
@@ -254,242 +239,307 @@ ORDER BY
     {
         parent::__construct();
         define("MODULE_DOCROOT", $this->getModulePath());
+
+        $this->configPID = $this->getSystemSetting('config-pid');
     }
 
-    public function initializeSmarty()
+    function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance)
     {
-        self::$smarty = new \Smarty();
-        self::$smarty->setTemplateDir(MODULE_DOCROOT . 'templates');
-        self::$smarty->setCompileDir(MODULE_DOCROOT . 'templates_c');
-        self::$smarty->setConfigDir(MODULE_DOCROOT . 'configs');
-        self::$smarty->setCacheDir(MODULE_DOCROOT . 'cache');
-//        self::$smarty->compile_check = false;
-//        self::$smarty->caching = true;
-    }
 
-    public function displayTemplate($template)
-    {
-        self::$smarty->display($template);
-    }
-
-    public function includeJsAndCss()
-    {
-        ?>
-        <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/tablesorter/jquery.tablesorter.widgets.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-pager.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/c3/d3.min.js") ?>" charset="utf-8"></script>
-        <script src="<?= $this->getUrl("/resources/c3/c3.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/tablesorter/parsers/parser-input-select.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/tablesorter/widgets/widget-output.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/Chart.min.js") ?>"></script>
-        <script src="<?= $this->getUrl("/resources/jquery.validate.min.js") ?>"></script>
-
-        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.blue.min.css") ?>" rel="stylesheet">
-        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.ice.min.css") ?>" rel="stylesheet">
-
-        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/jquery.tablesorter.pager.min.css") ?>"
-              rel="stylesheet">
-        <link href="<?= $this->getUrl("/resources/c3/c3.css") ?>" rel="stylesheet" type="text/css">
-        <link href="<?= $this->getUrl("/resources/styles.css") ?>" rel="stylesheet" type="text/css"/>
-        <link href="<?= $this->getUrl("/resources/tablesorter/tablesorter/theme.bootstrap_4.min.css") ?>"
-              rel="stylesheet">
-
-        <script src="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.js") ?>"></script>
-        <link href="<?= $this->getUrl("/resources/bootstrap-toggle/bootstrap-toggle.min.css") ?>" rel="stylesheet">
-
-        <script src="<?= $this->getUrl("/resources/jquery.dragtable.js") ?>"></script>
-        <link href="<?= $this->getUrl("/resources/dragtable.css") ?>" rel="stylesheet">
-
+        if ($project_id != $this->configPID) {
+            return;
+        }
+?>
         <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
 
-        <script src="<?= $this->getUrl("/adminDash.js") ?>"></script>
-        <?php
-        if ($_REQUEST['page'] == 'settings') {
-            echo '<script src="' . $this->getUrl("/settings.js") . '"></script>';
+        <script>
+            let $iconTr = $('#report_icon-tr');
+            let $sqlTr = $('#report_sql-tr');
+
+            $iconTr.find('.data input').css('width', 'auto')
+
+            let $iconInput = $('input[name="report_icon"]');
+
+            $iconTr.find('.data')
+                .prepend(`
+                    <span class="fas fa-2x icon-preview" style="margin: 10px">
+                        <span class='fa-${$iconInput.val()}'></span>
+                    </span>
+                `);
+
+            $iconInput.on('input',function () {
+                $('.icon-preview span')
+                    .removeClass()
+                    .addClass('fa-' + $iconInput.val());
+            });
+
+            $(`
+                <tr style="height:400px">
+                    <td colspan="2">
+                        <textarea id="report_sql-editor"></textarea>
+                        <div id="testQueryResult" style="float:left; padding-left: 10px; padding-top: 10px; max-width:80%;"></div>
+                            <div style="text-align:right; float:right; padding-bottom: 10px; padding-right: 10px">
+                                <button type="button" class="btn btn-info test-query">Test Query</button>
+                            </div>
+                    </td>
+                </tr>
+            `).insertAfter($sqlTr);
+
+            $sqlTr.find('#report_sql-expand').hide();
+            $sqlTr.find('.data').hide();
+
+            $sqlTr.find('.labelrc').attr('colspan', 2);
+            $('#report_sql-editor').attr('colspan', 2).find('pre');
+
+            // initialize ace editor
+            editor = ace.edit("report_sql-editor", {
+                theme: "ace/theme/monokai",
+                mode: "ace/mode/sql",
+                minLines: 10
+            });
+
+            editor.setValue($sqlTr.find('.data > textarea').val());
+
+            editor.session.on('change', function() {
+                $("#report_sql").val(editor.getValue()).change();
+                $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-info');
+            });
+
+            $('.ace_editor').css('height', '400px');
+
+            $('.test-query').click(function() {
+                var testQueryButton = $(this);
+
+                testQueryButton.prop('disabled', true);
+                testQueryButton.html('<i class="fas fa-spinner fa-spin test-progress"></i>');
+
+                var startTime = performance.now();
+
+                $.ajax({
+                    method: 'POST',
+                    url: '<?= $this->getUrl("post.php?method=testQuery") ?>',
+                    data: { params: editor.getValue() },
+                    timeout: 3000 //todo should come from settings
+                })
+                    .done(function(data) {
+                        console.log(data);
+                        var endTime = performance.now();
+                        data = JSON.parse(data);
+
+                        if (data['error']) {
+                            testQueryButton.html('<i class="fas fa-times"></i> Error').removeClass('btn-info').addClass('btn-danger');
+                            $('#testQueryResult').html('<span style="color:red;">Query failed: ' + data['error'] + '</span>');
+
+                            $('[name="test_query_error"]').val(data['error']);
+                            $('[name="test_query_columns"]').val('');
+                            $('[name="test_query_rows"]').val('');
+                            $('[name="test_query_success___radio"][value=0]')
+                                .prop('disabled', '')
+                                .prop("checked", true)
+                                .click()
+                                .prop('disabled', 'disabled');
+                        }
+                        else {
+                            testQueryButton.html('<i class="fas fa-check"></i> Success').removeClass('btn-info').addClass('btn-success');
+
+                            var isFirstRow = true;
+                            var rowCount = 0;
+                            var columns = [];
+
+                            $.each(data, function (index, row) {
+                                if (isFirstRow) {
+                                    columns = Object.keys(row);
+                                    isFirstRow = false;
+                                }
+
+                                rowCount++
+                            });
+
+                            $('[name="test_query_error"]').val('');
+                            $('[name="test_query_columns"]').val(columns.length);
+                            $('[name="test_query_column_list"]').val(JSON.stringify(columns, null, 2));
+                            $('[name="test_query_rows"]').val(rowCount);
+                            $('[name="test_query_success___radio"][value=1]')
+                                .prop('disabled', '')
+                                .prop("checked", true)
+                                .click()
+                                .prop('disabled', 'disabled');
+                        }
+
+                        $('#testQueryResult').html('<span style="color:green;">Query returned ' + rowCount + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
+                    })
+                    .fail(function() {
+                        testQueryButton.html('<i class="fas fa-times"></i> Error').removeClass('btn-info').addClass('btn-danger');
+                        $('#testQueryResult').html('<span style="color:red;">Query timed out! You may want to optimize your query before running again or increase/disable the timeout via this module\'s settings.</span>');
+                    })
+            });
+        </script>
+            <?php
+    }
+
+    function redcap_save_record($project_id, $record, $instrument, $event_id, $group_id, $survey_hash, $response_id, $repeat_instance) {
+        if ($instrument == 'report_config' or $instrument == 'advanced_config') {
+            $this->saveReportColumns($project_id, $record);
         }
     }
 
-    public function initializeVariables()
+    public function getJavascriptObject($report_id)
     {
-        $reportReference = $this->generateReportReference();
-        $configSettings = $this::$configSettings;
-        $executiveUsers = $this->getSystemSetting("executive-users");
-        $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $executiveUsers) || SUPER_USER) ? 1 : 0);
-        $executiveExportLookup = $this->getSystemSetting("executive-user-export");
-        $exportEnabled = (in_array(USERID, $executiveExportLookup) && $executiveAccess) || (SUPER_USER && !$executiveAccess);
-        $reportIDlookup = [];
-        $moduleDirectory = $this->getModulePath();
 
-        // if reports have custom IDs, match them to report IDs for future reference
-        foreach ($reportReference as $index => $reportInfo) {
-            array_push($reportIDlookup, $reportInfo['customID']);
-            $reportReference[$index]['url'] = $this->formatReportUrl($index, $reportInfo['customID']);
+//        if ($reportMetadata['report_type'] == 1) {
+//            $result = $this->sqlQuery($pageInfo['sql']);
+//            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($result);
+//        } else if ($reportMetadata['report_type'] == 2) { //todo
+//            $joinData = $this->joinProjectData($pageInfo);
+//
+//            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($joinData, false);
+//        }
+
+//        // Get list of valid "target" REDCap projects for export feature
+//        $sql = "
+//            select u.project_id, app_title from redcap_user_rights as u
+//            left join redcap_projects as p on p.project_id = u.project_id
+//            where api_token is not null
+//                  and api_import = 1
+//                  and username = '" . USERID . "'
+//        ";
+//
+//        $sql = db_query($sql);
+//        $exportProjects = [];
+//
+//        while ($row = db_fetch_assoc($sql)) {
+//            array_push($exportProjects, $row);
+//        }
+//
+//        $showChangelog = json_encode($this->getSystemSetting('show-changelog'));
+
+        $reportList = json_decode(\REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'filterLogic' => '[report_title] <> ""',
+            'fields' => array('report_id', 'report_title', 'report_icon')
+        )), true);
+
+        $loadedReportMetadata = json_decode(\REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'records' => $report_id
+        )), true);
+
+        $configDataDictionary = json_decode(\REDCap::getDataDictionary(
+            $this->configPID, 'json', null, null, 'advanced_config'), true);
+
+        $formattingReference = array();
+
+        foreach($configDataDictionary as $row) {
+            $codes = preg_replace('(\d, )', '', $row['select_choices_or_calculations']);
+            $formattingReference[$row['field_label']] = explode(' | ', $codes);
         }
 
-        // if custom ID is given, convert it to a report index
-        if (isset($_REQUEST['report'])) {
-            $reportIndex = array_search($_REQUEST['report'], $reportIDlookup);
+        $formattedMeta = array();
 
-            if ($reportIndex !== false) {
-                $_REQUEST['id'] = $reportIndex;
-            } else {
-                unset($_REQUEST['report']);
-                unset($_REQUEST['id']);
+        foreach($loadedReportMetadata as $row) {
+            if ($row['redcap_repeat_instrument'] == 'column_formatting') {
+                $column_name = $row['column_name'];
+
+                $formattedMeta['columnDetails'][$column_name] = $row;
+
+                $formattedMeta['columnVis']['dashboard'][$column_name] = $row['show_column___1'] === '1';
+                $formattedMeta['columnVis']['childRow'][$column_name] = $row['show_column___2'] === '1';
+                $formattedMeta['columnVis']['export'][$column_name] = $row['show_column___3'] === '1';
+            }
+            else {
+                $formattedMeta['config'] = $row;
             }
         }
 
-        // if report ID isn't valid, send to the landing page
-        if (intval($_REQUEST['id']) > sizeof($reportReference)) {
-            unset($_REQUEST['report']);
-            unset($_REQUEST['id']);
+        return json_encode(array(
+            'baseRedcapUrl' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
+            'baseReportUrl' => $this->getUrl("index.php"),
+            'postUrl' => $this->getUrl("post.php"),
+            'reportLookup' => $reportList,
+            'loadedReport' => array(
+                'meta' => $formattedMeta,
+                'ready' => false
+            ),
+            'noReportId' => sizeof($formattedMeta) === 0,
+            'showAdminControls' => SUPER_USER,
+            'configPID' => $this->configPID,
+            'formattingReference' => $formattingReference
+        ));
+
+//        if ($showChangelog) {
+//            $this->setSystemSetting('show-changelog', false);
+//        }
+    }
+
+//    public function getMetadataProjectId() {
+//        $result = $this->query("
+//            select project_id from redcap_external_module_settings ems
+//            left join redcap_external_modules em on ems.external_module_id = em.external_module_id
+//            where em.directory_prefix = 'admin_dash'
+//                and ems.project_id
+//                and ems.`key` = 'enabled' is not null
+//            limit 1");
+//
+//        return db_fetch_assoc($result)['project_id'];
+//    }
+
+    public function runReport($report_id) {
+        // get sql query from REDCap record
+        $data = \REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'records' => $report_id,
+            'fields' => 'report_sql'
+        ));
+        $returnData = array();
+
+        $sql = json_decode($data, true)[0]['report_sql'];
+        $sql = $this->includeDynamicValues($sql);
+
+        // error out if no query
+        if ($sql == '') {
+            $returnData['error'] = 'No SQL query defined.';
         }
-
-        if ($_REQUEST['page'] != 'settings') {
-            $_REQUEST['lastPage'] = $_REQUEST['page'];
+        elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+            $returnData['error'] = 'SQL query is not a SELECT query.';
         }
+        else {
+            // fix for group_concat limit
+            $this->query('SET SESSION group_concat_max_len = 1000000;');
 
-        $pageInfo = $reportReference[$_REQUEST['id']];
+            //todo handle error
 
-        $adminVisibility = $this->loadVisibilitySettings('admin', $reportReference);
-        $executiveVisibility = $this->loadVisibilitySettings('executive', $reportReference);
-        $executiveVisible = false;
-
-        if ($pageInfo['reportName']) {
-            $executiveVisible = in_array(USERID, $executiveVisibility->{$pageInfo['reportName']});
-        }
-
-        if (!SUPER_USER) {
-            if (!$executiveAccess || (!$executiveVisible && isset($_REQUEST['id']))) {
-                die("Access denied! You do not have permission to view this page.");
+            // prepare data for table
+            $result = $this->query($sql);
+            while ($row = db_fetch_assoc($result)) {
+                $returnData[] = $row;
             }
         }
 
-        if ($pageInfo['type'] == 'table') {
-            $result = $this->sqlQuery($pageInfo['sql']);
-            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($result);
-        } else if ($pageInfo['type'] == 'projects') {
-            $joinData = $this->joinProjectData($pageInfo);
+        echo json_encode($returnData);
+    }
 
-            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($joinData, false);
+    public function testQuery($sql) {
+        $sql = $this->includeDynamicValues($sql);
+        $returnData = array();
+        // fix for group_concat limit
+        $this->query('SET SESSION group_concat_max_len = 1000000;');
+
+        //todo handle invalid queries on js side
+
+        // prepare data for table
+        $result = $this->query($sql);
+        while ($row = db_fetch_assoc($result)) {
+            $returnData[] = $row;
         }
 
-        // construct URL redirect to alternate view
-        if (SUPER_USER) {
-            if ($_REQUEST['page'] == 'executiveView') {
-                $viewUrl = 'index.php';
-            } else {
-                $viewUrl = 'executiveView.php';
-            }
+        echo json_encode($returnData);
+    }
 
-            if (isset($_REQUEST['report'])) {
-                $viewUrl .= '?report=' . $_REQUEST['report'];
-            } else if (isset($_REQUEST['id'])) {
-                $viewUrl .= '?id=' . $_REQUEST['id'];
-            }
-
-            $viewUrl = urldecode($this->getUrl($viewUrl));
-            self::$smarty->assign('viewUrl', $viewUrl);
-        }
-
-        $changelogContent = json_decode(file_get_contents($moduleDirectory . "config/changelog.json"), true);
-
-        $iconUrls = array(
-            'first' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/first.png"),
-            'prev' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/prev.png"),
-            'next' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/next.png"),
-            'last' => $this->getUrl("resources/tablesorter/tablesorter/images/icons/last.png"),
-        );
-
-        foreach ($configSettings as $index => $setting) {
-            if (isset($setting['key'])) {
-                $getSetting = $this->getSystemSetting($setting['key']);
-
-                if (isset($getSetting)) {
-                    $configSettings[$index]['default'] = $getSetting;
-                }
-            }
-        }
-
-        self::$smarty->assign('configSettings', $configSettings);
-
-        // Get list of valid "target" REDCap projects for export feature
-        $sql = "
-            select u.project_id, app_title from redcap_user_rights as u
-            left join redcap_projects as p on p.project_id = u.project_id
-            where api_token is not null
-                  and api_import = 1
-                  and username = '" . USERID . "'
-        ";
-
-        $sql = db_query($sql);
-        $exportProjects = [];
-
-        while ($row = db_fetch_assoc($sql)) {
-            array_push($exportProjects, $row);
-        }
-
-        self::$smarty->assign('exportProjects', $exportProjects);
-        self::$smarty->assign('executiveAccess', $executiveAccess);
-        self::$smarty->assign('executiveUsers', $executiveUsers);
-        self::$smarty->assign('executiveExportLookup', $executiveExportLookup);
-        self::$smarty->assign('superUser', SUPER_USER);
-        self::$smarty->assign('reportId', $_REQUEST['id']);
-        self::$smarty->assign('reportReference', $reportReference);
-        self::$smarty->assign('changelogContent', $changelogContent);
-        self::$smarty->assign('iconUrls', $iconUrls);
-        self::$smarty->assign('exportEnabled', $exportEnabled);
-        self::$smarty->assign('sqlErrorMsg', $pageInfo['sqlErrorMsg']);
-        self::$smarty->assign('loadingGif', $this->getUrl('resources/loading.gif'));
-
-        $showChangelog = json_encode($this->getSystemSetting('show-changelog'));
-
-        ?>
-        <script>
-
-            UIOWA_AdminDash.csvFileName = '<?= sprintf("%s.csv", $pageInfo['customID'] != '' ? $pageInfo['customID'] : 'customReport'); ?>';
-            UIOWA_AdminDash.renderDatetime = '<?= date("Y-m-d_His") ?>';
-
-            UIOWA_AdminDash.executiveAccess = <?= $executiveAccess ?>;
-            UIOWA_AdminDash.executiveUsers = <?= json_encode($executiveUsers ? $executiveUsers : []) ?>;
-            UIOWA_AdminDash.executiveExportLookup = <?= json_encode($executiveExportLookup ? $executiveExportLookup : []) ?>;
-            UIOWA_AdminDash.adminVisibility = <?= json_encode($adminVisibility) ?>;
-            UIOWA_AdminDash.executiveVisibility = <?= json_encode($executiveVisibility) ?>;
-            UIOWA_AdminDash.reportIDs = <?= json_encode($reportIDlookup) ?>;
-            UIOWA_AdminDash.requestHandlerUrl = "<?= $this->getUrl("requestHandler.php") ?>";
-            UIOWA_AdminDash.reportUrlTemplate = "<?= $this->getUrl(
-                $executiveAccess ? "executiveView.php" : "index.php") ?>";
-            UIOWA_AdminDash.executiveUrl = "<?= $this->getUrl("executiveView.php", false, true) ?>";
-            UIOWA_AdminDash.settingsUrl = "<?= $this->getUrl("settings.php") ?>";
-            UIOWA_AdminDash.redcapBaseUrl = "<?= APP_PATH_WEBROOT_FULL ?>";
-            UIOWA_AdminDash.redcapVersionUrl = "<?= (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT ?>";
-            UIOWA_AdminDash.showChangelog = <?= json_encode($this->getSystemSetting('show-changelog')) ?>;
-            UIOWA_AdminDash.readmeUrl = "<?= $this->getUrl('README.md') ?>";
-
-            UIOWA_AdminDash.hideColumns = [];
-            UIOWA_AdminDash.reportReference = <?= json_encode($reportReference) ?>;
-            UIOWA_AdminDash.showArchivedReports = false;
-            UIOWA_AdminDash.superuser = <?= SUPER_USER ?>;
-            UIOWA_AdminDash.theme = UIOWA_AdminDash.executiveAccess ? 'ice' : 'blue';
-            UIOWA_AdminDash.showUserIcons = <?= json_encode($this->getSystemSetting('show-user-icons')); ?>;
-
-            UIOWA_AdminDash.userID = '<?= USERID ?>';
-            UIOWA_AdminDash.lastTestQuery = {
-                report: -1,
-                columns: [],
-                rowCount: 0,
-                checked: false
-            };
-            UIOWA_AdminDash.testQueryTimeout = <?= $this->getSystemSetting('test-query-timeout'); ?>;
-
-            UIOWA_AdminDash.reportInfo = <?= json_encode($pageInfo) ?>;
-            UIOWA_AdminDash.formattingReference = <?= file_get_contents($moduleDirectory . "config/formattingReference.json") ?>;
-        </script>
-        <?php
-
-        if ($showChangelog) {
-            $this->setSystemSetting('show-changelog', false);
-        }
+    public function includeDynamicValues($sql) {
+        return str_replace('[USERID]', USERID, $sql);
     }
 
     private function generateReportReference()
@@ -543,6 +593,21 @@ ORDER BY
         }
 
         return $reportReference;
+
+//        $params = array(
+//            'project_id' => 19, // todo get this pid
+//            'return_format' => 'json',
+//            'fields' => array(
+//                'report_id',
+//                'report_title',
+//                'report_icon'
+//            ),
+//            'filterLogic' => '[report_visibility] <> 3' // todo filter for admin/user
+//        );
+//
+//        $data = \REDCap::getData($params);
+//
+//        return $data;
     }
 
     private function formatQueryResults($result, $fromDb = true)
@@ -632,166 +697,188 @@ ORDER BY
         }
     }
 
-    private function formatReportUrl($reportIndex, $customID)
+    public function saveReportColumns($project_id, $record)
     {
-        unset($_GET['report']);
-        unset($_GET['id']);
+//        $columns = json_decode($params['columns']);
+        $config = json_decode(\REDCap::getData(
+            $project_id,
+            'json',
+            $record,
+            [
+                'test_query_column_list',
+                'auto_header_format',
+                'auto_link_format',
+                'initial_formatting_created'
+            ]
+        ), true)[0];
 
-        if ($_GET['page'] == 'settings') {
-            $_GET['page'] = 'index';
+        // don't do this a second time (unless prompted by user)
+        if ($config['initial_formatting_created___1'] == '1') {
+            return;
         }
 
-        $query = $_GET;
-        $moduleParam = array('type' => 'module');
-        $query = $moduleParam + $query;
+        $columns = json_decode($config['test_query_column_list']);
+        $json = array();
+        $index = 1;
 
-        if ($customID !== '') {
-            $query['report'] = $customID;
-        } else {
-            $query['id'] = $reportIndex;
-        }
+        foreach ($columns as $column) {
+            $instance = array(
+                'report_id' => $record,
+                'redcap_repeat_instrument' => 'column_formatting',
+                'redcap_repeat_instance' => $index,
+                'column_name' => $column,
+                'show_column___1' => 1,
+                'show_column___2' => 0,
+                'show_column___3' => 1,
+                'group_concat' => 0,
+                'link' => 0,
+                'link_alternate_source' => '0',
+                'code_lookup' => 0
+            );
 
-        $url = http_build_query($query);
+            $groupStrIndex = strpos($column, '_GROUP');
+            $grouped = false;
 
-        $url = $this->getSystemSetting('use-api-urls') ?
-            APP_PATH_WEBROOT_FULL . 'api/?' . $url :
-            $_SERVER['PHP_SELF'] . '?' . $url;
-
-        return ($url);
-    }
-
-    private function loadVisibilitySettings($type, $reportReference)
-    {
-        $storedVisibility = $this->getSystemSetting("report-visibility-" . $type);
-
-        if ($storedVisibility) {
-            $visibilityArray = $storedVisibility;
-        } else {
-            $visibilityArray = array();
-
-            foreach ($reportReference as $index => $reportInfo) {
-                if ($type == 'admin') {
-                    $visibilityArray[$reportInfo['reportName']] = $reportInfo['defaultVisibility'];
-                }
-                if ($type == 'executive') {
-                    $visibilityArray[$reportInfo['reportName']] = array();
-                }
-            }
-        }
-
-        return $visibilityArray;
-    }
-
-    public function saveConfigSetting()
-    {
-        $setting = json_decode(file_get_contents('php://input'));
-
-        $this->setSystemSetting($setting->key, $setting->value);
-    }
-
-    public function saveReportSettings()
-    {
-        $allSettings = json_decode(file_get_contents('php://input'));
-
-        if ($allSettings->reportReference) {
-            if ($allSettings->reportReference == 'none') {
-                $this->removeSystemSetting('custom-reports');
-            } else {
-                $this->setSystemSetting('custom-reports', $allSettings->reportReference);
-            }
-        }
-        if ($allSettings->adminVisibility) {
-            $this->setSystemSetting('report-visibility-admin', $allSettings->adminVisibility);
-        }
-        if ($allSettings->executiveVisibility) {
-            $this->setSystemSetting('report-visibility-executive', $allSettings->executiveVisibility);
-        }
-    }
-
-    public function exportDiagnosticFile()
-    {
-        $sql = "select external_module_id from redcap_external_modules where directory_prefix = 'admin_dash'";
-        $moduleID = db_fetch_assoc(db_query($sql))['external_module_id'];
-
-        $sql = "select * from redcap_external_module_settings where external_module_id = $moduleID";
-        $result = db_query($sql);
-
-        $data = array();
-
-        while ($row = db_fetch_assoc($result)) {
-            $data[] = $row;
-        }
-
-        header('Content-disposition: attachment; filename=admin-dash-settings.json');
-        header('Content-type: application/json');
-        echo json_encode($data);
-    }
-
-    public function getApiToken($pid)
-    {
-        $sql = "
-            select api_token from redcap_user_rights as u
-            left join redcap_projects as p on p.project_id = u.project_id
-            where u.project_id = $pid
-                  and username = '" . USERID . "'
-        ";
-
-        $sql = db_query($sql);
-        $token = db_fetch_assoc($sql)['api_token'];
-
-        echo $token;
-    }
-
-    public function sqlQuery($query = null)
-    {
-        $returnType = null;
-        $data = array();
-
-        if ($query == null) {
-            $query = file_get_contents('php://input');
-            $returnType = 'json';
-        }
-
-        // error out if no query
-        if ($query == '') {
-            $this->sqlError = 'No SQL query defined.';
-            $data['error'] = $this->sqlError;
-            echo json_encode($data);
-        } // error out if query doesn't begin with "select"
-        elseif (!(strtolower(substr($query, 0, 6)) == "select")) {
-            $this->sqlError = 'SQL query is not a SELECT query.';
-            $data['error'] = $this->sqlError;
-            echo json_encode($data);
-        } // execute the SQL statement
-        else {
-            // fix for group_concat limit
-            global $conn;
-            if (!isset($conn)) {
-                db_connect(false);
-            }
-            $conn->query('SET SESSION group_concat_max_len = 1000000;');
-
-            $result = db_query($query);
-
-            if (!$result || $result == 0)  // sql failed
-            {
-                $this->sqlError = json_encode(db_error());
+            if ($groupStrIndex > -1) {
+                $column = substr($column, 0, $groupStrIndex);
+                $grouped = true;
             }
 
-            if ($returnType == 'json') {
-                if ($this->sqlError) {
-                    $data['error'] = $this->sqlError;
-                } else {
-                    while ($row = db_fetch_assoc($result)) {
-                        $data[] = $row;
-                    }
+            $newHeader = $column;
+
+            if ($grouped) {
+                $instance['group_concat'] = 1;
+                $instance['group_concat_separator'] = '@@@';
+                $instance['column_formatting_complete'] = 1;
+            }
+
+            if ($config['auto_header_format___1'] == '1') {
+                $newHeader = preg_replace('/_/', ' ', $newHeader);
+            }
+            if ($config['auto_header_format___2'] == '1') {
+                $newHeader = ucwords($newHeader);
+            }
+            if ($newHeader != $column) {
+                $instance['display_header'] = $newHeader;
+            }
+
+            if ($config['auto_link_format'] == '1') {
+                $linked = false;
+
+                // enable links by default if column name matches
+                if ($column == 'project_id') {
+                    $instance['link_type'] = 1;
+                    $instance['specify_project_link'] = 1;
+                    $linked = true;
+                } else if ($column == 'username') {
+                    $instance['link_type'] = 2;
+                    $instance['specify_user_link'] = 1;
+                    $linked = true;
+                } else if ($column == 'hash') {
+                    $instance['link_type'] = 3;
+                    $linked = true;
+                } else if (in_array($column, array(
+                    'project_pi_email',
+                    'user_email',
+                    'user_email2',
+                    'user_email3'
+                ))) {
+                    $instance['link_type'] = 4;
+                    $linked = true;
                 }
 
-                echo json_encode($data);
-            } else {
-                return $result;
+                if ($linked) {
+                    $instance['link'] = 1;
+                    $instance['column_formatting_complete'] = 1;
+                }
+                else {
+                    $instance['column_formatting_complete'] = 2;
+                }
+            }
+
+            // todo is it safe to assume "status" == project status?
+
+            if ($column == 'purpose') {
+                $instance['code_lookup'] = 1;
+                $instance['specify_code_lookup'] = 2;
+                $instance['column_formatting_complete'] = 1;
+            } else if ($column == 'purpose_other') {
+                $instance['code_lookup'] = 1;
+                $instance['specify_code_lookup'] = 3;
+                $instance['column_formatting_complete'] = 1;
+            }
+
+            // todo formatting for project statuses/user suspension
+
+            array_push($json, $instance);
+
+            $index++;
+
+            // set advanced formatting instrument to complete
+            array_push($json, array('report_id' => $record, 'initial_formatting_created___1' => '1', 'advanced_config_complete' => 2));
+
+            echo json_encode(\REDCap::saveData($project_id, 'json', json_encode($json), 'normal', 'YMD'));
+
+        }
+    }
+
+    public function verifyUserRights($report_id, $username)
+    {
+        $userAllowed = false;
+        $exportAllowed = false; // todo
+
+        $reportRights = \REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'records' => $report_id,
+            'fields' => [
+                'project_sync_enabled',
+                'sync_pid',
+                'project_sync_access',
+                'project_sync_role',
+                'project_sync_export'
+        ]));
+
+        $reportRights = json_decode($reportRights, true)[0];
+
+        if ($reportRights['project_sync_enabled']) {
+            $allowedPIDs = explode(',', $reportRights['sync_pid']);
+            $projectAllowed = '';
+
+            // check for role
+            $projectRights = \REDCap::getUserRights($username);
+//            $rights = $this->query("select
+//                rur.project_id,
+//                rur.data_export_tool,
+//                rur.reports,
+//                r.role_name
+//            from redcap_user_rights rur
+//            left join redcap_user_information rui on rur.username = rui.username
+//            left join redcap_user_roles r on rur.role_id = r.role_id
+//            where rui.username = '$username'");
+
+            $projectRights = $projectRights[$username];
+
+            if (in_array($projectRights['project_id'], $allowedPIDs)) {
+                $projectAllowed = $projectRights['project_id'];
+            }
+
+            if ($projectAllowed != '') {
+                if (
+                    $reportRights['project_sync_access'] == '3' &&
+                    isset($reportRights['project_sync_role']) &&
+                    isset($projectRights['role_name'])
+                ) { // match role
+                    $userAllowed = $reportRights['project_sync_role'] == $projectRights['role_name'];
+                } elseif ($reportRights['project_sync_access'] == '2') { // match report rights
+                    $userAllowed = $projectRights['reports'] == 1;
+                } elseif ($reportRights['project_sync_access'] == '1') { // any project-level rights
+                    $userAllowed = $projectAllowed != '';
+                }
             }
         }
+
+        return $userAllowed;
     }
 
     public function getProjectList()
