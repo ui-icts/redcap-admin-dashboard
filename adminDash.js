@@ -30,10 +30,27 @@ $.extend(UIOWA_AdminDash, {
                     return;
                 }
 
-
                 // first pass - convert group_concat result to array
                 if (userConfig.group_concat === '1') {
                     value = value.split(userConfig.group_concat_separator);
+                }
+                else if (userConfig.code_lookup === '1') { // todo make this work with group_concat/links
+                    let codeReference = {};
+
+                    if (userConfig.specify_code_lookup === '1') { // Project Status
+                        codeReference = formattingReference.status;
+                    }
+                    else if (userConfig.specify_code_lookup === '2') { // Project Purpose
+                        codeReference = formattingReference.purpose;
+                    }
+                    else if (userConfig.specify_code_lookup === '3') { // Research Purpose
+                        codeReference = formattingReference.purpose_other;
+                    }
+                    // else if (userConfig.specify_code_lookup === '4') { // todo Research Purpose split
+                    //     codeReference = formattingReference.research_code_lookup;
+                    // }
+
+                    value = codeReference[value];
                 }
 
                 if (userConfig.link === '1') {
@@ -77,8 +94,6 @@ $.extend(UIOWA_AdminDash, {
                         urlPart = formattingReference[lookupColumn][lookupCode - 1];
                     } catch (error) {
                         console.error(error);
-                        // expected output: ReferenceError: nonExistentFunction is not defined
-                        // Note - error messages will vary depending on browser
                     }
 
                     urlPart = (userConfig.link_type === '4' ? '' : self.baseRedcapUrl) + urlPart;
@@ -110,13 +125,26 @@ $.extend(UIOWA_AdminDash, {
     },
     initializeDatatable: function () {
         let self = this;
+
+        $('.edit-report').click(function () {
+            let self = UIOWA_AdminDash;
+
+            let loadedId = self.loadedReport.meta.config.report_id;
+            let url = self.baseRedcapUrl + '/DataEntry/record_home.php?pid=' + self.configPID + '&id=' + loadedId;
+
+            window.open(url, '_blank');
+        })
+
         let columns = $.map(self.loadedReport.columns, function (value) {
             return {data: value};
         });
 
-        console.log(columns);
+        let data = self.loadedReport.data;
 
-        let data = self.applyColumnFormatting(self.loadedReport.data);
+        // only apply column formatting for sql
+        if (self.loadedReport.meta.config.report_type === '1') {
+            data = self.applyColumnFormatting(self.loadedReport.data);
+        }
 
         // add column for child row collapse buttons (if at least one column needs it)
         if (self.columnRequires('show_column___2')) {
@@ -177,15 +205,6 @@ $.extend(UIOWA_AdminDash, {
                 }
             ]
         }).container().appendTo($('#visButtons'));
-
-        $('.edit-report').click(function () {
-            let self = UIOWA_AdminDash;
-
-            let loadedId = self.loadedReport.meta.config.report_id;
-            let url = self.baseRedcapUrl + '/DataEntry/record_home.php?pid=' + self.configPID + '&id=' + loadedId;
-
-            window.open(url, '_blank');
-        })
 
         $('.report-table tbody').on('click', 'td.details-control', function () {
             var tr = $(this).closest('tr');
@@ -260,9 +279,12 @@ $(document).ready(function() {
                 return icon !== '' ? 'fas fa-' + icon : 'fas fa-question';
             },
             getDisplayHeader: function (column) {
-                let columnDetails = self.loadedReport.meta.columnDetails[column];
+                if (typeof self.loadedReport.meta.columnDetails !== 'undefined') {
+                    let columnDetails = self.loadedReport.meta.columnDetails[column];
+                    column = columnDetails.display_header !== '' ? columnDetails.display_header : column;
+                }
 
-                return columnDetails.display_header !== '' ? columnDetails.display_header : column;
+                return column;
             }
         }
     })
@@ -270,22 +292,34 @@ $(document).ready(function() {
     // run report SQL query on server
     if (!self.noReportId) {
         let reportId = self.loadedReport.meta.config.report_id;
+        let requestType = self.loadedReport.meta.config.report_type === '2' ? 'joinProjectData' : 'runReport';
 
         $.ajax({
-            url: self.postUrl + '&method=runReport',
+            url: self.postUrl + '&method=' + requestType,
             type: 'POST',
             data: {
                 params: reportId
             },
             success: function(result) {
+
+                console.log(result);
+
                 result = JSON.parse(result);
 
-                if (result.length > 0) {
-                    let userColumnVis = self.loadedReport.meta.columnVis.dashboard;
 
-                    let columns = $.map(userColumnVis, function (value, key) {
-                        return !value ? null : key;
-                    });
+                if (result.length > 0) {
+                    let columns = [];
+
+                    if (requestType === 'joinProjectData') {
+                        columns = Object.keys(result[0]);
+                    }
+                    else {
+                        let userColumnVis = self.loadedReport.meta.columnVis.dashboard;
+
+                        columns = $.map(userColumnVis, function (value, key) {
+                            return !value ? null : key;
+                        });
+                    }
 
                     $.extend(self.loadedReport, {
                         columns: columns,

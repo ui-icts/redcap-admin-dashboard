@@ -24,6 +24,8 @@ class AdminDash extends AbstractExternalModule
     );
 
     private $configPID;
+    private $currentPID;
+    private $overridePID;
 
     public function redcap_module_system_change_version($version, $old_version)
     {
@@ -241,11 +243,12 @@ ORDER BY
         define("MODULE_DOCROOT", $this->getModulePath());
 
         $this->configPID = $this->getSystemSetting('config-pid');
+        $this->currentPID = $_GET['pid'];
+        $this->overridePID = $_GET['override']; // todo
     }
 
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance)
     {
-
         if ($project_id != $this->configPID) {
             return;
         }
@@ -274,7 +277,7 @@ ORDER BY
             });
 
             $(`
-                <tr style="height:400px">
+                <tr class="ace-editor-td" style="height:400px">
                     <td colspan="2">
                         <textarea id="report_sql-editor"></textarea>
                         <div id="testQueryResult" style="float:left; padding-left: 10px; padding-top: 10px; max-width:80%;"></div>
@@ -306,6 +309,15 @@ ORDER BY
             });
 
             $('.ace_editor').css('height', '400px');
+
+            $('input[name="report_type___radio"]').on('change', function() {
+                if ($(this).val() === '1') {
+                    $('.ace-editor-td').show();
+                }
+                else {
+                    $('.ace-editor-td').hide();
+                }
+            })
 
             $('.test-query').click(function() {
                 var testQueryButton = $(this);
@@ -378,6 +390,10 @@ ORDER BY
     }
 
     function redcap_save_record($project_id, $record, $instrument, $event_id, $group_id, $survey_hash, $response_id, $repeat_instance) {
+        if ($project_id != $this->configPID) {
+            return;
+        }
+
         if ($instrument == 'report_config' or $instrument == 'advanced_config') {
             $this->saveReportColumns($project_id, $record);
         }
@@ -385,15 +401,7 @@ ORDER BY
 
     public function getJavascriptObject($report_id)
     {
-
-//        if ($reportMetadata['report_type'] == 1) {
-//            $result = $this->sqlQuery($pageInfo['sql']);
-//            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($result);
-//        } else if ($reportMetadata['report_type'] == 2) { //todo
-//            $joinData = $this->joinProjectData($pageInfo);
-//
-//            $pageInfo['sqlErrorMsg'] = $this->formatQueryResults($joinData, false);
-//        }
+        $this->overridePID = $_GET['override']; // todo
 
 //        // Get list of valid "target" REDCap projects for export feature
 //        $sql = "
@@ -416,8 +424,8 @@ ORDER BY
         $reportList = json_decode(\REDCap::getData(array(
             'project_id' => $this->configPID,
             'return_format' => 'json',
-            'filterLogic' => '[report_title] <> ""',
-            'fields' => array('report_id', 'report_title', 'report_icon')
+            'filterLogic' => '[report_title] <> "" and [report_visibility] = "1"',
+            'fields' => array('report_id', 'report_title', 'report_icon', 'report_type')
         )), true);
 
         $loadedReportMetadata = json_decode(\REDCap::getData(array(
@@ -438,7 +446,7 @@ ORDER BY
 
         $formattedMeta = array();
 
-        foreach($loadedReportMetadata as $row) {
+        foreach($loadedReportMetadata as $index => $row) {
             if ($row['redcap_repeat_instrument'] == 'column_formatting') {
                 $column_name = $row['column_name'];
 
@@ -447,6 +455,11 @@ ORDER BY
                 $formattedMeta['columnVis']['dashboard'][$column_name] = $row['show_column___1'] === '1';
                 $formattedMeta['columnVis']['childRow'][$column_name] = $row['show_column___2'] === '1';
                 $formattedMeta['columnVis']['export'][$column_name] = $row['show_column___3'] === '1';
+            }
+            elseif ($row['redcap_repeat_instrument'] == 'project_join') {
+                $instanceId = $row['redcap_repeat_instance'];
+
+                $formattedMeta['joinDetails'][$instanceId] = $row;
             }
             else {
                 $formattedMeta['config'] = $row;
@@ -496,7 +509,10 @@ ORDER BY
         $returnData = array();
 
         $sql = json_decode($data, true)[0]['report_sql'];
-        $sql = $this->includeDynamicValues($sql);
+//        $sql = $this->includeDynamicValues($sql);
+        $sql = \Piping::pipeSpecialTags($sql,
+            isset($this->overridePID) ? $this->overridePID : $this->currentPID
+        );
 
         // error out if no query
         if ($sql == '') {
@@ -522,7 +538,8 @@ ORDER BY
     }
 
     public function testQuery($sql) {
-        $sql = $this->includeDynamicValues($sql);
+//        $sql = $this->includeDynamicValues($sql);
+        $sql = \Piping::pipeSpecialTags($sql, $this->currentPID);
         $returnData = array();
         // fix for group_concat limit
         $this->query('SET SESSION group_concat_max_len = 1000000;');
@@ -732,7 +749,6 @@ ORDER BY
                 'show_column___3' => 1,
                 'group_concat' => 0,
                 'link' => 0,
-                'link_alternate_source' => '0',
                 'code_lookup' => 0
             );
 
@@ -817,7 +833,7 @@ ORDER BY
             // set advanced formatting instrument to complete
             array_push($json, array('report_id' => $record, 'initial_formatting_created___1' => '1', 'advanced_config_complete' => 2));
 
-            echo json_encode(\REDCap::saveData($project_id, 'json', json_encode($json), 'normal', 'YMD'));
+            echo json_encode(\REDCap::saveData($project_id, 'json', json_encode($json), 'overwrite', 'YMD'));
 
         }
     }
@@ -927,43 +943,87 @@ ORDER BY
         ));
     }
 
-    public function joinProjectData($params)
+    public function joinProjectData($record_id)
     {
-        $pid1 = $params['pid1'];
-        $pid2 = $params['pid2'];
-
-        $data_p1 = json_decode(\REDCap::getData(array(
-            'project_id' => $pid1,
+        $joinConfig = json_decode(\REDCap::getData(array(
+            'project_id' => $this->configPID,
             'return_format' => 'json',
-            'exportAsLabels' => $params['showChoiceLabels'],
-            'fields' => array_merge($params['p1Fields'], array($params['p1JoinField']))
+            'records' => $record_id,
+            'fields' => array(
+                'join_project_id',
+                'join_report_id',
+                'join_primary_field'
+            )
         )), true);
 
-        $data_p2 = \REDCap::getData(array(
-            'project_id' => $pid2,
-            'exportAsLabels' => $params['showChoiceLabels'],
-            'fields' => array_merge($params['p2Fields'], array($params['p2JoinField']))
-        ));
-        $eventId_p2 = $this->getFirstEventId($pid2);
+        $joinedData = array();
+        $firstProject = true;
+        $primaryFieldP1 = '';
 
-        foreach ($data_p1 as $index => $record) {
-            $recordId_p1 = $record[$params['p1JoinField']];
+        foreach($joinConfig as $join) {
+            $pid = $join['join_project_id'];
+            $rid = $join['join_report_id'];
 
-            // match to joined project
-            if (isset($data_p2[$recordId_p1])) {
-                $recordData_p1 = $record;
-                $recordData_p2 = $data_p2[$recordId_p1][$eventId_p2];
+            $sql = "
+                select rf.field_name, r.advanced_logic from redcap_reports r
+                left join redcap_reports_fields rf on r.report_id = rf.report_id
+                where r.project_id = $pid and r.report_id = $rid
+            ";
 
-                unset($recordData_p2[$params['p2JoinField']]);
+            $fields = array();
+            $logic = '';
+            $firstRow = true;
 
-                $data_p1[$index] = array_merge($recordData_p1, $recordData_p2);
+            $result = $this->query($sql);
+
+            while ($row = db_fetch_assoc($result)) {
+                if ($firstRow) {
+                    $logic = $row['advanced_logic'];
+                    $firstRow = false;
+                }
+
+                array_push($fields, $row['field_name']);
             }
-            else if ($params['matchesOnly']) {
-                unset($data_p1[$index]);
+
+            $newData = json_decode(\REDCap::getData(array(
+                'project_id' => $pid,
+                'return_format' => 'json',
+//                'exportAsLabels' => $params['showChoiceLabels'],
+                'filterLogic' => $logic,
+                'fields' => $fields
+            )), true);
+
+            if ($firstProject) {
+                $joinedData = $newData;
+                $firstProject = false;
+                $primaryFieldP1 = $join['join_primary_field'];
+            }
+            else {
+                foreach ($newData as $index => $record) {
+                    $primaryKeyP1 = $joinedData[$index][$primaryFieldP1];
+
+                    $primaryFieldP2 = $join['join_primary_field'];
+                    $primaryKeyP2 = $record[$primaryFieldP2];
+
+                    // match to joined project
+                    if (isset($primaryKeyP2) && $primaryKeyP1 === $primaryKeyP2) {
+                        $recordDataP1 = $joinedData[$index];
+                        $recordDataP2 = $newData[$index];
+
+                        unset($recordDataP2[$primaryFieldP2]);
+
+                        $joinedData[$index] = array_merge($recordDataP1, $recordDataP2);
+                    }
+//                    else if ($params['matchesOnly']) {
+//                        unset($data_p1[$index]);
+//                    }
+                }
             }
         }
 
-        return $data_p1;
+//        $eventId_p2 = $this->getFirstEventId($pid2);
+
+        echo json_encode($joinedData);
     }
 }
 ?>
