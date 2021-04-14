@@ -4,7 +4,7 @@
   "documentation": "README.md",
 
   "namespace": "UIOWA\\AdminDash",
-
+  "framework-version": 5,
 
   "authors": [
     {
@@ -15,27 +15,58 @@
   ],
 
   "links": {
+    "project": [
+      {
+        "name": "report_0",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_1",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_2",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_3",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_4",
+        "icon": "table",
+        "url": "index.php"
+      }
+    ],
     "control-center": [
       {
         "name": "Admin Dashboard",
         "icon": "table",
-        "url": "index.php"
+        "url": "index2.php"
       }
     ]
   },
 
   "permissions": [
-    "redcap_module_system_change_version",
     "redcap_data_entry_form",
+    "redcap_module_system_change_version",
     "redcap_save_record"
+  ],
+
+  "no-auth-pages": [
+    "post"
   ],
 
   "system-settings": [
     {
       "key": "config-pid",
-      "name": "Project ID of report configuration project (must also have module enabled at project-level",
+      "name": "Project ID of report configuration project",
       "type": "project-id",
-      "required": false
+      "required": true
     },
     {
       "key": "use-api-urls",
@@ -49,34 +80,10 @@
       "default": "3000"
     },
     {
-      "key": "config-defaults",
-      "name": "<h4>Default settings when creating new reports:</h4>",
-      "type": "descriptive"
-    },
-    {
-      "key": "auto_header_format___1",
-      "name": "Replace underscores with spaces in column names",
-      "type": "checkbox"
-    },
-    {
-      "key": "auto_header_format___2",
-      "name": "Capitalize words in column names",
-      "type": "checkbox"
-    },
-    {
-      "key": "auto_header_format___3",
-      "name": "Remove '_GROUP' suffixes in column names",
-      "type": "checkbox"
-    },
-    {
-      "key": "auto_link_format",
-      "name": "Auto-format known value types (e.g. project_id, username, email, etc) into links",
-      "type": "checkbox"
-    },
-    {
-      "key": "auto_code_format",
-      "name": "Auto-format common coded values (e.g. display project_status '0' as 'Development') into labels",
-      "type": "checkbox"
+      "key": "null-value-handling",
+      "name": "Display null values returned in reports as:",
+      "type": "text",
+      "default": "null"
     }
   ]
 }

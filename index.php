@@ -1,39 +1,60 @@
 <?php
 /** @var \UIOWA\AdminDash\AdminDash $module */
 
+// module not yet configured
+if (!isset($module->configPID) && SUPER_USER == '1') {
+    include 'setup.php';
+    die();
+}
+
 $report_id = -1;
 
 if (isset($_GET['id'])) {
     $report_id = $_GET['id'];
+
+    // clean bookmark url if out of record context
+    if ($report_id == '[record-name]') {
+        $query = $_GET;
+        unset($query['id']);
+        $query['type'] = 'module';
+        $query_result = http_build_query($query);
+
+        header('Location: ' . str_replace($_SERVER['PHP_SELF'], 'index.php', '') . '?' . $query_result);
+    }
+}
+elseif (isset($_GET['record'])) {
+    $query = array(
+        'type' => 'module',
+        'prefix' => $_GET['prefix'],
+        'page' => $_GET['page'],
+        'id' => $_GET['record']
+    );
+    $query_result = http_build_query($query);
+
+    header('Location: ' . str_replace($_SERVER['PHP_SELF'], 'index.php', '') . '?' . $query_result);
 }
 
-if (isset($_GET['record'])) {
-    $report_id = $_GET['record'];
-}
+$reportRights = $module->getReportRights(USERID, $_GET['pid']);
 
 // if not superuser, verify access
-if (SUPER_USER !== '1' && !$module->verifyUserRights($report_id, USERID)) {
+if (SUPER_USER !== '1' && !$reportRights[$report_id]['project_view'] && !$reportRights[$report_id]['executive_view']) {
     die('You do not have access to this page.');
 }
 
-$page = new HtmlPage();
-$page->PrintHeaderExt();
-include APP_PATH_VIEWS . 'HomeTabs.php';
-//require APP_PATH_VIEWS . "HeaderProject.php";
+$executiveView = $reportRights[$report_id]['executive_view'];
+$syncProjectView = $reportRights[$report_id]['project_view'];
+$exportEnabled = $reportRights[$report_id]['export_access'];
+
+if ($syncProjectView) {
+    require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
+}
+else {
+    $page = new HtmlPage();
+    $page->PrintHeaderExt();
+    include APP_PATH_VIEWS . 'HomeTabs.php';
+}
 
 ?>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.6/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.css"/>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.22/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.6/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.js"></script>
-<script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
-
-<script>
-    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id) ?>;
-</script>
-
-<script src="<?= $module->getUrl("/adminDash.js") ?>"></script>
-
 <style>
     /* make the display the full width */
     div#outer
@@ -56,45 +77,98 @@ include APP_PATH_VIEWS . 'HomeTabs.php';
         text-align:center;
         color:red;
     }
+
+    .user-detail
+    {
+        color: red;
+        font-size: 10px;
+        padding-right: 2px;
+    }
+
+    .dt-head-center {text-align: center;}
+
+    [v-cloak] { display: none; }
+
 </style>
 
-<h2 style="text-align: center; color: #106CD6; font-weight: bold; padding-top: 75px; padding-bottom: 10px">
-    Admin Dashboard
-</h2>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.7/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.css"/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.22/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.7/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.js"></script>
+<script type="text/javascript" src="//cdn.datatables.net/plug-ins/1.10.22/dataRender/datetime.js"></script>
+<script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+<script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+
+<script>
+    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id) ?>;
+</script>
+
+<script src="<?= $module->getUrl("/adminDash.js") ?>"></script>
+
 
 <div id="adminDashApp">
-    <div id="nav">
+    <?php if(!$syncProjectView): ?>
+    <h2 v-cloak style="text-align: center; color: #106CD6; font-weight: bold; padding-top: 75px; padding-bottom: 10px">
+        <?php if($executiveView): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
+    </h2>
+    <div id="nav" v-cloak v-if="Object.keys(reportLookup).length > 0">
         <ul class="nav nav-tabs border-bottom">
-            <li class="nav-item"
-                v-for="report in reportLookup"
-                :key="report.report_id"
-                :data-id="report.report_id"
-            >
-                <a class="nav-link"
-                   :href="baseReportUrl + '&id=' + report.report_id"
-                   :class="noReportId ? '' : isActiveReport(report.report_id)"
+                <li class="nav-item dropdown"
+                    v-for="(value, name) in getReports(reportLookup, true)"
                 >
-                    <span class="report-icon" :class="getReportIcon(report.report_icon)">&nbsp;</span>
-                    <span class="report-title">{{ report.report_title }}</span>
-                </a>
-            </li>
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <span class="fas fa-bars">&nbsp;</span>
+                        {{ name }}
+                    </a>
+                    <div class="dropdown-menu"
+                         v-for="report in value"
+                         :key="report.report_id"
+                         :data-id="report.report_id"
+                    >
+                        <a class="dropdown-item"
+                           :href="baseReportUrl + '&id=' + report.report_id"
+                           :style="{ backgroundColor: getTabColor(report), color: getTabColor(report, true) }"
+                        >
+                            <span class="report-icon" :class="getReportIcon(report.report_icon)">&nbsp;</span>
+                            <span class="report-title">{{ report.report_title }}</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-item"
+                    v-for="report in getReports(reportLookup, false)"
+                    :key="report.report_id"
+                    :data-id="report.report_id"
+                >
+                    <a class="nav-link"
+                       :href="baseReportUrl + '&id=' + report.report_id"
+                       :class="noReportId ? '' : isActiveReport(report.report_id)"
+                       :style="{ backgroundColor: getTabColor(report), color: getTabColor(report, true) }"
+                    >
+                        <span class="report-icon" :class="getReportIcon(report.report_icon)">&nbsp;</span>
+                        <span class="report-title">{{ report.report_title }}</span>
+                    </a>
+                </li>
         </ul>
     </div>
+    <? endif; ?>
 
-    <div id="reportContent" v-if="loadedReport.ready" style="display: none">
+    <div id="reportContent" v-cloak v-if="loadedReport.meta.config" style="width: 98%">
         <div style="padding: 25px">
             <div style="float: left">
                 <div id="visButtons"></div>
             </div>
 
+            <?php if($exportEnabled): ?>
             <div style="float:right">
-                <div id="buttons">Export: </div>
+                <div id="buttons" style="display: none">Export: </div>
             </div>
+            <?php endif; ?>
         </div>
-        <div style="text-align: center;">
+        <div style="text-align: center; clear: both;">
             <h3 id="reportTitle">
-                <span class="report-icon" :class="getReportIcon(loadedReport.meta.config.report_icon)">&nbsp;</span>{{ loadedReport.meta.config.report_title }}
-                <button v-if="showAdminControls" class="btn-sm btn-primary edit-report" style="margin: 5px; vertical-align: text-top">
+                <span class="report-icon" :class="getReportIcon(loadedReport.meta.config.report_icon)">&nbsp;</span>{{ loadedReport.meta.config.report_title ? loadedReport.meta.config.report_title : 'Untitled Report' }}
+                <button v-if="showAdminControls === '1'" class="btn-sm btn-primary edit-report" style="margin: 5px; vertical-align: text-top">
                     <span class="fas fa-edit"></span>
                 </button>
             </h3>
@@ -102,7 +176,7 @@ include APP_PATH_VIEWS . 'HomeTabs.php';
         <div style="text-align: center; font-size: 14px">
             {{ loadedReport.meta.config.report_description }}
         </div>
-        <table :id="'reportTable_' + loadedReport.meta.config.report_id" class="table-primary report-table" style="width: 100%">
+        <table v-if="loadedReport.ready" :id="'reportTable_' + loadedReport.meta.config.report_id" class="table-primary report-table row-border" style="width: 100%">
             <thead><tr>
                 <th
                     v-for="column in loadedReport.columns"
@@ -111,16 +185,24 @@ include APP_PATH_VIEWS . 'HomeTabs.php';
             </tr></thead>
         </table>
     </div>
-    <div v-else-if="loadedReport.error !== ''">
-        <div style="text-align: center;">
-            {{ loadedReport.error }}
-        </div>
+
+    <div style="text-align: center; padding: 50px" v-cloak>
+        <h4 v-if="loadedReport.meta.config">
+            <div id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px">
+                <i class="fas fa-spinner fa-pulse"></i>
+            </div>
+        </h4>
+        <span v-else>
+            <h4>Welcome to the REDCap Admin Dashboard!</h4>
+            <span>Click one of the tabs above to view a report.</span>
+        </span>
     </div>
-    <div v-else-if="noReportId">
-        <div style="text-align: center;">
-            Click one of the tabs above to view a report.
-        </div>
+    <div>
+
     </div>
-    <div v-else class="fa-10x" style="text-align: center; padding: 50px">
-        <i class="fas fa-spinner fa-pulse"></i>
-    </div>
+
+<?php
+
+if ($syncProjectView) {
+    require_once APP_PATH_DOCROOT . 'ProjectGeneral/footer.php';
+}

@@ -1,153 +1,52 @@
 $.extend(UIOWA_AdminDash, {
-    //todo clean up
-    applyColumnFormatting: function (data) {
-        let self = this;
-        let formattedData = $.extend(true,{},data);
-        let returnData = [];
-        let userColumnMeta = self.loadedReport.meta.columnDetails
-        let userColumnVis = self.loadedReport.meta.columnVis
-        let formattingReference = self.formattingReference;
-
-        // for each data row
-        $.each(formattedData, function (index, row) {
-            let formattedRow = row;
-
-            // for each column
-            $.each(row, function (column_name, value) {
-                let userConfig = userColumnMeta[column_name];
-
-                // todo skip formatting if no matching metadata is found
-                // if (userConfig === undefined) {
-                //     return true;
-                // }
-
-                if (value === null) {
-                    return true;
-                }
-
-                if (!userColumnVis.dashboard[column_name] && !userColumnVis.childRow[column_name]) {
-                    delete row[column_name];
-                    return;
-                }
-
-                // first pass - convert group_concat result to array
-                if (userConfig.group_concat === '1') {
-                    value = value.split(userConfig.group_concat_separator);
-                }
-                else if (userConfig.code_lookup === '1') { // todo make this work with group_concat/links
-                    let codeReference = {};
-
-                    if (userConfig.specify_code_lookup === '1') { // Project Status
-                        codeReference = formattingReference.status;
-                    }
-                    else if (userConfig.specify_code_lookup === '2') { // Project Purpose
-                        codeReference = formattingReference.purpose;
-                    }
-                    else if (userConfig.specify_code_lookup === '3') { // Research Purpose
-                        codeReference = formattingReference.purpose_other;
-                    }
-                    // else if (userConfig.specify_code_lookup === '4') { // todo Research Purpose split
-                    //     codeReference = formattingReference.research_code_lookup;
-                    // }
-
-                    value = codeReference[value];
-                }
-
-                if (userConfig.link === '1') {
-                    let linkedData = value
-                    let lookupColumn = column_name;
-                    let lookupCode = 0;
-                    let urlPart = '';
-
-                    // pull link values from other column if needed
-                    if (userConfig.source_column_name !== '') {
-                        lookupColumn = userConfig.source_column_name
-
-                        let source_concat_separator = userColumnMeta[userConfig.source_column_name].group_concat_separator;
-                        linkedData = data[index][userConfig.source_column_name];
-
-                        if (Array.isArray(value)) {
-                            linkedData = linkedData.split(source_concat_separator);
-                        }
-                    }
-
-                    if (lookupColumn.includes('_GROUP')) {
-                        lookupColumn = lookupColumn.replace('_GROUP', '')
-                    }
-
-                    if (userConfig.link_type === '1') { // project_id
-                        lookupCode = userConfig.specify_project_link;
-                    }
-                    else if (userConfig.link_type === '2') { // username
-                        lookupCode = userConfig.specify_user_link;
-                    }
-                    else if (userConfig.link_type === '3') { // survey hash
-                        lookupCode = 1;
-                        lookupColumn = 'hash'
-                    }
-                    else if (userConfig.link_type === '4') { // email
-                        lookupCode = 1;
-                        lookupColumn = 'email'
-                    }
-
-                    try {
-                        urlPart = formattingReference[lookupColumn][lookupCode - 1];
-                    } catch (error) {
-                        console.error(error);
-                    }
-
-                    urlPart = (userConfig.link_type === '4' ? '' : self.baseRedcapUrl) + urlPart;
-
-
-                    if (Array.isArray(value)) {
-                        $.each(value, function (index, subvalue) {
-                            value[index] = (
-                                `<a href="${ urlPart + linkedData[index] }" target="_blank">${ subvalue }</a>`);
-                        })
-
-                        console.log(value);
-
-
-                        value = value.join('<br/>');
-                    }
-                    else {
-                        value =
-                            `<a href="${ urlPart + linkedData }" target="_blank">${ value }</a>`;
-                    }
-                }
-
-                formattedRow[column_name] = value;
-            })
-            returnData.push(formattedRow);
-        })
-
-        return returnData;
-    },
-    initializeDatatable: function () {
+    initDatatable: function () {
         let self = this;
 
+        // report edit shortcut (admins only)
         $('.edit-report').click(function () {
-            let self = UIOWA_AdminDash;
-
             let loadedId = self.loadedReport.meta.config.report_id;
             let url = self.baseRedcapUrl + '/DataEntry/record_home.php?pid=' + self.configPID + '&id=' + loadedId;
 
             window.open(url, '_blank');
         })
 
-        let columns = $.map(self.loadedReport.columns, function (value) {
-            return {data: value};
-        });
+        // set column titles and renderers
+        let columns = $.map(self.loadedReport.columns, function (column_name) {
+            let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+            let column = {
+                title: columnDetails.displayHeader !== '' ? columnDetails.displayHeader : column_name,
+                data: column_name,
+                className: columnDetails.dashboard_show_column === '0' ? 'noVis' : '',
+                contentPadding: "mmm",
+                createdCell: function (td, cellData, rowData, row, col) {
+                    $(td).css('text-align', 'center')
+                }
+            };
 
+            // only apply column formatting for sql reports
+            if (self.loadedReport.meta.config.report_sql !== '') {
+                $.fn.dataTable.render.adFormat = function(column_name) {
+                    return function(data, type, row) {
+                        return self.adFormat(column_name, data, type, row);
+                    };
+                }
+
+                column.render = $.fn.dataTable.render.adFormat(column_name);
+            }
+
+            return column;
+        });
         let data = self.loadedReport.data;
 
-        // only apply column formatting for sql
-        if (self.loadedReport.meta.config.report_type === '1') {
-            data = self.applyColumnFormatting(self.loadedReport.data);
-        }
-
         // add column for child row collapse buttons (if at least one column needs it)
-        if (self.columnRequires('show_column___2')) {
+        let hasChildRow = false;
+        $.each(self.loadedReport.meta.column_formatting, function (column_name, value) {
+
+            if (value.dashboard_show_column === '2') {
+                hasChildRow = true;
+            }
+        });
+        if (hasChildRow) {
             $('.report-table > thead > tr:first').prepend('<th></th>');
 
             columns.unshift({
@@ -162,41 +61,45 @@ $.extend(UIOWA_AdminDash, {
             });
         }
 
-
+        // init DataTable
         let table = $('.report-table').DataTable({
             data: data,
-            scrollX: true,
+            scrollXInner: true,
             // scrollY: true,
-            stateSave: true,
+            // stateSave: true, todo - saved sorting can be confusing
             colReorder: true,
             fixedHeader: {
                 header: true,
                 headerOffset: $('#redcap-home-navbar-collapse').height()
             },
             columns: columns,
-            order: [[1, 'asc']]
+            order: [],
+            initComplete: function() {
+                let hasFilters = false;
+                let $filterRow = $('<tr class="filter-row"></tr>');
+
+                // add column filters
+                this.api().columns().every( function () {
+                    let $filter = self.dtFilterInit(this);
+
+                    if ($filter) {
+                        $filterRow.append($filter);
+                        hasFilters = true
+                    }
+                } );
+
+                if (hasFilters) {
+                    $('.dataTables_scrollHead thead').append($filterRow);
+                }
+            }
         });
 
-        let buttons = new $.fn.dataTable.Buttons(table, {
-            buttons: [
-                'copyHtml5',
-                'excelHtml5',
-                'csvHtml5',
-                {
-                    text: 'JSON',
-                    action: function ( e, dt, button, config ) {
-                        var data = dt.buttons.exportData();
+        // generate export buttons
+        self.dtExportInit(table);
+        $('#buttons').show();
 
-                        $.fn.dataTable.fileSave(
-                            new Blob( [ JSON.stringify( data ) ] ),
-                            'Export.json'
-                        );
-                    }
-                }
-            ]
-        }).container().appendTo($('#buttons'));
-
-        let visButtons = new $.fn.dataTable.Buttons(table, {
+        // show/hide columns
+        new $.fn.dataTable.Buttons(table, {
             buttons: [
                 {
                     text: 'Show/Hide Columns',
@@ -206,9 +109,10 @@ $.extend(UIOWA_AdminDash, {
             ]
         }).container().appendTo($('#visButtons'));
 
+        // child row show/hide logic
         $('.report-table tbody').on('click', 'td.details-control', function () {
-            var tr = $(this).closest('tr');
-            var row = table.row( tr );
+            let tr = $(this).closest('tr');
+            let row = table.row( tr );
 
             if ( row.child.isShown() ) {
                 // This row is already open - close it
@@ -222,36 +126,364 @@ $.extend(UIOWA_AdminDash, {
             }
         } );
     },
-    columnRequires: function (field) {
-        let columnDetails = this.loadedReport.meta.columnDetails;
-        let required = false;
-
-        $.each(columnDetails, function (column_name, value) {
-            if (value[field] === '1') {
-                required = true;
-            }
-        });
-
-        return required;
-    },
-    formatChildRow: function( d ) {
-        let columnDetails = this.loadedReport.meta.columnDetails;
+    formatChildRow: function(row) {
+        let self = this;
+        let columnDetails = this.loadedReport.meta.column_formatting;
         let htmlRows = '';
 
-        $.each(columnDetails, function(column_name, value) {
+        $.each(columnDetails, function(column_name, details) {
+            let data = self.adFormat(column_name, row[column_name], row)
 
-            if (value.show_column___2 === '1') {
+            if (details.dashboard_show_column === '2') {
                 htmlRows = htmlRows.concat('<tr>' +
-                    '<td>' + (value.display_header !== '' ? value.display_header : column_name) + '</td>' +
-                    '<td>' + d[column_name] + '</td>' +
+                    '<td>' + (details.dashboard_display_header !== '' ? details.dashboard_display_header : column_name) + '</td>' +
+                    '<td>' + data + '</td>' +
                     '</tr>');
             }
         })
 
-    // `d` is the original data object for the row
-    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
-        htmlRows+
+        // `d` is the original data object for the row
+        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+            htmlRows+
         '</table>';
+    },
+    splitData: function(data, column_name) {
+        let separator = this.loadedReport.meta.column_formatting[column_name].group_concat_separator;
+
+        return separator !== '' ? data.split(separator) : [data];
+    },
+    dtFilterInit: function(column) {
+        let self = this;
+        let $filterTd = $('<td></td>');
+        let column_name = self.loadedReport.columns[column.index()];
+        let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+
+        // todo
+        if (column_name === undefined) {
+            return;
+        }
+
+        // hide column
+        if (columnDetails.dashboard_show_column === '0') {
+            column.visible(false);
+            return;
+        }
+
+        // add dropdown filter
+        if (columnDetails.dashboard_show_filter === '2') {
+            $filterTd.append('<select style="width: 100%"><option value=""></option></select>');
+            let $select = $filterTd.find('select')
+                .on( 'change', function () {
+                    let val = $.fn.dataTable.util.escapeRegex(
+                        $(this).val()
+                    );
+
+                    column
+                        .search( val ? '^'+val+'$' : '', true, false )
+                        .draw();
+                } );
+
+            // get unique values and add to dropdown list
+            column.data().unique().sort().each( function ( value ) {
+                // todo filtering for null values
+                // if (value === undefined || value === null || value === '') {
+                //     $select.prepend( '<option value="null">[null]</option>' )
+                // }
+                // else {
+                let formattedValue = self.adFormat_code(value, columnDetails.code_type)
+
+                $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' )
+                // }
+                // if ($(d).has('<a>')) {
+                //     d = $(d).text();
+                // }
+                // console.log(j)
+
+            } );
+        }
+        // add free text filter
+        else if (columnDetails.dashboard_show_filter === '1') {
+            $filterTd.append('<input style="width: 100%"/>');
+
+            $( 'input', $filterTd ).on( 'keyup change clear', function () {
+                if ( column.search() !== this.value ) {
+                    column
+                        .search( this.value )
+                        .draw();
+                }
+            } );
+        }
+
+        return $filterTd;
+    },
+    dtExportInit: function(table) {
+        let buttonCommon = {
+            title: this.loadedReport.meta.config.report_title,
+            exportOptions: {
+                orthogonal: 'export',
+                // format: {
+                //     body: function ( data, row, column, node ) {
+                //         // Strip $ from salary column to make it numeric
+                //         return column === 5 ?
+                //             data.replace( /[$,]/g, '' ) :
+                //             data;
+                //     }
+                // }
+            }
+        };
+
+        // export buttons
+        new $.fn.dataTable.Buttons(table, {
+            buttons: [
+                $.extend( true, {}, buttonCommon, {
+                    extend: 'copyHtml5'
+                } ),
+                $.extend( true, {}, buttonCommon, {
+                    extend: 'csvHtml5'
+                } ),
+                // $.extend( true, {}, buttonCommon, {
+                //     extend: 'pdfHtml5'
+                // } ),
+                $.extend( true, {
+                    text: 'JSON',
+                    action: function ( e, dt, button, config ) {
+                        let data = dt.buttons.exportData();
+
+                        $.fn.dataTable.fileSave(
+                            new Blob( [ JSON.stringify( data ) ] ),
+                            buttonCommon.title + '.json'
+                        );
+                    }
+                }, buttonCommon)
+            ]
+        }).container().appendTo($('#buttons'));
+    },
+    adFormat: function (column_name, data, type, row) {
+        if (data === null) {
+            return type === 'display' ? '<span class="text-muted">null</span>' : 'null';
+        }
+
+        let self = this;
+        let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+        let sourceColumn = columnDetails.link_source_column !== '' ? columnDetails.link_source_column : column_name;
+        data = self.splitData(data, column_name);
+        let sourceData = data;
+        let formattedSeparator = type === 'export' ? ';' : '<br />'
+
+        if (sourceColumn !== column_name) {
+            sourceData = self.splitData(row[sourceColumn], sourceColumn);
+        }
+
+        // for each item (in case data is grouped)
+        data = $.map(data, function(item, index) {
+            if (item === null) {
+                return type === 'display' ? '<span class="text-muted">null</span>' : 'null';
+            }
+
+            let formattedVal = item;
+            let rawUrl = '';
+            let iconsHtml = '';
+
+            // Replace coded value with label
+            try {
+                if (columnDetails.code_type !== '') {
+                    // if export, check if labels are preferred
+                    if (type === 'export' && columnDetails.export_codes === '0') {
+                        formattedVal = item
+                    }
+                    else {
+                        formattedVal = self.adFormat_code(item, columnDetails.code_type);
+                    }
+
+                    if (type === 'filter') {
+                        return formattedVal; //todo broken
+                    }
+                }
+            }
+            catch(e) {
+                console.groupCollapsed("Failed to replace codes with labels for " + column_name);
+                console.log(e)
+                console.groupEnd()
+            }
+
+            // generate url for linking
+            try {
+                if (columnDetails.link_type !== '' && !self.executiveView) {
+                    rawUrl = self.adFormat_url(
+                        item,
+                        sourceData[index],
+                        columnDetails.link_type,
+                        columnDetails.specify_custom_link
+                    );
+
+                    if (type === 'export') {
+                        if (columnDetails.export_urls === '1') {
+                            formattedVal = rawUrl;
+                        }
+                        else {
+                            formattedVal = item;
+                        }
+                    }
+                    else if (type === 'filter') {
+                        formattedVal = item;
+                    }
+                    else {
+                        formattedVal = `<a href="${rawUrl}" target="_blank">${formattedVal}</a>`;
+                    }
+                }
+            }
+            catch(e) {
+                console.groupCollapsed("Failed to generate url(s) for " + column_name)
+                console.log(e)
+                console.groupEnd()
+            }
+            // prepend hint icons
+            try {
+                if (
+                    (columnDetails.hint_icons___1 === '1' ||
+                    columnDetails.hint_icons___2 === '1') &&
+                    type === 'display'
+                ) {
+                    let columnReference = {
+                        withTags: self.loadedReport.columns,
+                        tagless: $.map(self.loadedReport.columns, function(value) {
+                            return value.split('#')[0]
+                        })
+                    }
+
+                    iconsHtml = self.adFormat_icons(item, index, row, columnReference, columnDetails);
+                }
+            }
+            catch(e) {
+                console.groupCollapsed("Failed to process hint icon(s) for " + column_name)
+                console.log(e)
+                console.groupEnd()
+            }
+
+            return iconsHtml + formattedVal;
+        })
+        data = data.join(formattedSeparator)
+
+        return data;
+    },
+    adFormat_url: function (value, sourceValue, linkIndex, customUrl) {
+        let url = '';
+
+        // set custom url
+        if (linkIndex === '99') {
+            url = customUrl.replace('{value}', sourceValue);
+        }
+        // set mailto
+        else if (linkIndex === '9') {
+            url = 'mailto:' + sourceValue;
+        }
+        // set redcap url
+        else {
+            try {
+                url = this.baseRedcapUrl + this.formattingReference.links[linkIndex - 1] + sourceValue;
+            }
+            catch (error) { // invalid link index
+                console.error(error);
+                return value;
+            }
+        }
+
+        return url;
+    },
+    adFormat_code: function (value, codeIndex) {
+        if (codeIndex === '1') { // Project Status
+            return this.formattingReference.status[value];
+        }
+        else if (codeIndex === '2') { // Project Purpose
+            return this.formattingReference.purpose[value];
+        }
+        else if (codeIndex === '3') { // Research Purpose
+            return this.formattingReference.purpose_other[value];
+        }
+        // else if (userConfig.specify_code_lookup === '4') { // todo Research Purpose split
+        //     codeReference = this.formattingReference.research_code_lookup;
+        // }
+    },
+    adFormat_icons: function (value, index, row, columnReference, columnDetails) {
+        let returnHtml = '';
+
+        // suspended users
+        if (columnDetails.hint_icons___1 === '1' && columnReference.tagless.includes('user_suspended_time')) {
+            let suspendedColumnName = columnReference.withTags[columnReference.tagless.indexOf('user_suspended_time')];
+            let suspendedValue = row[suspendedColumnName] !== null ? this.splitData(row[suspendedColumnName], suspendedColumnName)[index] : null;
+
+            if (suspendedValue.length > 8) {
+                returnHtml +=
+                    `<span class="user-detail" title="User suspended" data-toggle="tooltip" data-placement="left">
+                    <i class="fas fa-ban fa-fw" style="color: red;"></i>
+                </span>`;
+            }
+        }
+        // project status
+        if (columnDetails.hint_icons___2 === '1') {
+            let hintIcon = {};
+
+            if (columnReference.tagless.includes('status')) {
+                let iconLookup = [
+                    {
+                        class: '',
+                        tooltip: 'Development',
+                        icon: 'wrench',
+                        color: '#444'
+                    },
+                    {
+                        class: '',
+                        tooltip: 'Production',
+                        icon: 'check-square',
+                        color: '#00A000'
+                    },
+                    {
+                        class: '',
+                        tooltip: 'Analysis/Cleanup',
+                        icon: 'minus-circle',
+                        color: '#A00000'
+                    }
+                ]
+
+                let statusColumnName = columnReference.withTags[columnReference.tagless.indexOf('status')];
+                let statusValue = this.splitData(row[statusColumnName], statusColumnName)[index];
+
+                hintIcon = iconLookup[statusValue]
+            }
+            if (columnReference.tagless.includes('completed_time')) {
+                let completedColumnName = columnReference.withTags[columnReference.tagless.indexOf('completed_time')];
+                let completedValue = this.splitData(row[completedColumnName], completedColumnName)[index];
+
+                if (completedValue) {
+                    hintIcon = {
+                        class: '',
+                        tooltip: 'Completed',
+                        icon: 'archive',
+                        color: '#C00000'
+                    }
+                }
+            }
+            if (columnReference.tagless.includes('date_deleted')) {
+                let deletedColumnName = columnReference.withTags[columnReference.tagless.indexOf('date_deleted')];
+                let deletedValue = this.splitData(row[deletedColumnName], deletedColumnName)[index];
+
+                if (deletedValue) {
+                    hintIcon = {
+                        class: '',
+                        tooltip: 'Deleted',
+                        icon: 'trash',
+                        color: '#A00000'
+                    }
+                }
+            }
+
+            returnHtml +=
+                `<span class="${hintIcon.class}" title="${hintIcon.tooltip}" data-toggle="tooltip" data-placement="left">
+                    <i class="fas fa-${hintIcon.icon} fa-fw" style="color: ${hintIcon.color};"></i>
+                </span>`;
+        }
+
+        return returnHtml;
     }
 });
 
@@ -264,8 +496,8 @@ $(document).ready(function() {
         data: self,
         updated: function() {
             this.$nextTick(function () {
-                $('#reportContent').show();
-                self.initializeDatatable();
+                $('#adminDashApp').show();
+                self.initDatatable();
             })
         },
         methods: {
@@ -275,16 +507,68 @@ $(document).ready(function() {
                 return id === loadedId ? 'active' : '';
             },
             getReportIcon: function (icon) {
-
-                return icon !== '' ? 'fas fa-' + icon : 'fas fa-question';
+                return icon !== '' ? 'fas fa-' + icon : 'fas fa-file';
             },
-            getDisplayHeader: function (column) {
-                if (typeof self.loadedReport.meta.columnDetails !== 'undefined') {
-                    let columnDetails = self.loadedReport.meta.columnDetails[column];
-                    column = columnDetails.display_header !== '' ? columnDetails.display_header : column;
+            getDisplayHeader: function (column_name) {
+                if (typeof self.loadedReport.meta.column_formatting !== 'undefined') {
+                    let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+                    column_name = columnDetails.dashboard_display_header !== '' ? columnDetails.dashboard_display_header : column_name;
                 }
 
-                return column;
+                return column_name;
+            },
+            getReports: function (reportLookup, inFolders) {
+                let formattedLookup = inFolders ? {} : [];
+
+                $.each(reportLookup, function (index, report) {
+                    if (report.report_title === '') {
+                        report.report_title = 'Untitled Report';
+                    }
+
+                    if (inFolders) {
+                        if (report.folder_name !== '') {
+                            if (!(report.folder_name in formattedLookup)) {
+                                formattedLookup[report.folder_name] = [];
+                            }
+
+                            formattedLookup[report.folder_name].push(report);
+                        }
+                    }
+                    else if (report.folder_name === '') {
+                        formattedLookup.push(report);
+                    }
+                })
+
+                return formattedLookup;
+            },
+            getTabColor: function (reportMeta, forFont = false) {
+                let tab_color = reportMeta.tab_color;
+                let tab_color_custom = reportMeta.tab_color_custom;
+
+                if (tab_color === '99') {  // use custom color
+                    tab_color = tab_color_custom.replace('#', '');
+                }
+                else if (tab_color === '') { // no color defined, skip
+                    return;
+                }
+
+                if (forFont) {
+                    // break hex code apart
+                    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tab_color);
+                    let color = {
+                        r: parseInt(result[1], 16),
+                        g: parseInt(result[2], 16),
+                        b: parseInt(result[3], 16)
+                    }
+
+                    // return black/white for light/dark color
+                    return ((color.r*0.299 + color.g*0.587 + color.b*0.114) > 186) ? '#000000' : '#ffffff';
+                }
+                else {
+                    tab_color = '#' + tab_color;
+                }
+
+                return tab_color;
             }
         }
     })
@@ -295,18 +579,15 @@ $(document).ready(function() {
         let requestType = self.loadedReport.meta.config.report_type === '2' ? 'joinProjectData' : 'runReport';
 
         $.ajax({
-            url: self.postUrl + '&method=' + requestType,
+            url: self.postUrl,
             type: 'POST',
+            dataType: 'json',
             data: {
-                params: reportId
+                method: requestType,
+                fromModule: true,
+                id: reportId
             },
             success: function(result) {
-
-                console.log(result);
-
-                result = JSON.parse(result);
-
-
                 if (result.length > 0) {
                     let columns = [];
 
@@ -314,11 +595,12 @@ $(document).ready(function() {
                         columns = Object.keys(result[0]);
                     }
                     else {
-                        let userColumnVis = self.loadedReport.meta.columnVis.dashboard;
+                        let columnFormatting = self.loadedReport.meta.column_formatting;
 
-                        columns = $.map(userColumnVis, function (value, key) {
-                            return !value ? null : key;
-                        });
+                        columns = Object.keys(columnFormatting)
+                        // columns = $.map(columnFormatting, function (columnMeta, column_name) {
+                        //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
+                        // });
                     }
 
                     $.extend(self.loadedReport, {
@@ -330,6 +612,9 @@ $(document).ready(function() {
                 else {
                     self.loadedReport.error = "Zero rows returned."
                 }
+            },
+            complete: function() {
+                $('#reportLoading').hide();
             }
         })
     }
