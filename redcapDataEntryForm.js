@@ -75,10 +75,9 @@ $(document).ready(function() {
                             sql: editor.getValue(),
                             test: true
                         },
-                        method: 'runReport',
-                        fromModule: true
+                        method: 'runReport'
                     },
-                    timeout: UIOWA_AdminDash.queryTimeout,
+                    timeout: UIOWA_AdminDash.dataEntryForm.queryTimeout,
                     success: function(data) {
                         let endTime = performance.now();
 
@@ -97,6 +96,7 @@ $(document).ready(function() {
                     },
                     error: function(err) {
                         console.log(err.responseText);
+                        console.log($(err.responseText).find('div').children[7]);
 
                         $('[name="test_query_column_list"], [name="test_query_columns"]').val('');
                         $('[name="test_query_success___radio"][value="0"]')
@@ -160,9 +160,11 @@ $(document).ready(function() {
             })
         },
         api_url: function() {
+            let apiUrl = UIOWA_AdminDash.postUrl + '&NOAUTH=&id=' + UIOWA_AdminDash.record;
+
             $('#api_url-tr')
                 .find('.url-placeholder')
-                .html(UIOWA_AdminDash.postUrl + '&NOAUTH=&id=' + UIOWA_AdminDash.record);
+                .html(apiUrl.replace('_internal', ''));
 
             $('.api-pre')
                 .css('white-space', 'pre-wrap')
@@ -216,7 +218,7 @@ $(document).ready(function() {
         },
         executive_url: function() {
             let $fieldTr = $('#executive_url-tr');
-            let execUrl = UIOWA_AdminDash.reportUrl + '&id=' + UIOWA_AdminDash.record;
+            let execUrl = UIOWA_AdminDash.urlLookup.reportBase + '&id=' + UIOWA_AdminDash.record;
 
             $fieldTr
                 .find('.url-placeholder')
@@ -281,8 +283,7 @@ $(document).ready(function() {
                     type: type,
                     whereVal: whereVal
                 },
-                method: 'getAdditionalInfo',
-                fromModule: true
+                method: 'getAdditionalInfo'
             },
             success: function(json) {
                 json = JSON.parse(json);
@@ -296,7 +297,7 @@ $(document).ready(function() {
     }
 
     $.each(UIOWA_AdminDash.fieldCustomizations, function (field_name, fn) {
-        if (UIOWA_AdminDash.fields.includes(field_name)) {
+        if (UIOWA_AdminDash.dataEntryForm.fields.includes(field_name)) {
             fn();
         }
     });

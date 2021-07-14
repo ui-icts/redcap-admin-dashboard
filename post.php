@@ -1,41 +1,50 @@
 <?php
 /** @var \UIOWA\AdminDash\AdminDash $module */
 
-// api request requires token, only method allowed is runReport
-if (isset($_POST['token'])) {
-    $_POST['method'] = 'runReport';
+if (isset($_POST['token'])) { // from API endpoint
+    $reportType = json_decode(\REDCap::getData(array(
+        'project_id' => $module->configPID,
+        'return_format' => 'json',
+        'events' => ['report_config_arm_1', 'report_config_arm_2'],
+        'records' => $_GET['id']
+    )), true)[0];
 
-    $result = $module->query('
+    $_POST['method'] = $reportType['redcap_event_name'] == 'report_config_arm_2' ? 'joinProjectData' : 'runReport';
+
+    $query = $module->query('
         select * from redcap_user_rights
         where project_id = ? and
               api_token = ?
     ', [
-        $_GET['pid'],
+        $module->configPID,
         $_POST['token']
     ]);
+
+    $userRights = $query->fetch_assoc();
 
     $apiEnabled = json_decode(\REDCap::getData(array(
         'project_id' => $module->configPID,
         'return_format' => 'json',
+        'events' => ['user_access_arm_1', 'user_access_arm_2'],
         'records' => $_GET['id'],
         'fields' => 'api_access'
     )), true)[0]['api_access'];
 
+
     // verify api token is valid and this report has api_access enabled
-    if ($result->num_rows !== 1 || $apiEnabled !== '1') {
+    if ($userRights['api_token'] !== $_POST['token'] || $apiEnabled !== '1') {
         die('You do not have permissions to use the API');
     }
+
+    $_POST['params']['username'] = $userRights['username'];
+    $_POST['params']['project_id'] = $_POST['project_id'];
 }
-// need token for anything other than data entry form or dashboard, only accept post request
-else if (
-    !$_POST['fromModule'] ||
-    $_SERVER['REQUEST_METHOD'] !== 'POST'
-) {
-    die('This method is not supported.');
+else {
+    die('No API token defined.');
 }
 
 if (!isset($_POST['params']['id'])) {
     $_POST['params']['id'] = $_GET['id'];
 }
 
-call_user_func(array($module, $_POST['method']), $_POST['params']);
+$module->runReport($_POST['params']);

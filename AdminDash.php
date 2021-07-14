@@ -1,239 +1,13 @@
 <?php
 namespace UIOWA\AdminDash;
 
+use ExternalModules\ExternalModules;
 use ExternalModules\AbstractExternalModule;
 
 class AdminDash extends AbstractExternalModule
 {
-    private static $configSettings = array(
-        array(
-            "key" => "use-api-urls",
-            "name" => "Use versionless URLs for easier bookmarking (refresh page to take effect)",
-            "data-on" => "On",
-            "data-off" => "Off",
-            "type" => "checkbox",
-            "default" => true
-        ),
-        array(
-            "key" => "show-user-icons",
-            "name" => "Show icons next to suspended or non-existent usernames",
-            "type" => "checkbox",
-            "default" => true
-        )
-    );
-
     public $configPID;
-    private $currentPID;
-
-    public function redcap_module_system_change_version($version, $old_version)
-    {
-        // update db for compatibility with v3.2
-        $oldVisibilityJson = $this->getSystemSetting("report-visibility");
-
-        if ($oldVisibilityJson) {
-            $oldVisibilityArray = json_decode($oldVisibilityJson, true);
-            $executiveUsers = $this->getSystemSetting("executive-users");
-
-            $visibilityArrayAdmin = array();
-            $visibilityArrayExecutive = array();
-
-            foreach ($oldVisibilityArray as $key => $oldVisibilityInfo) {
-                $visibilityArrayAdmin[$key] = $oldVisibilityArray[$key][0];
-                $visibilityArrayExecutive[$key] = array();
-
-                foreach ($executiveUsers as $user) {
-                    if ($oldVisibilityArray[$key][1]) {
-                        array_push($visibilityArrayExecutive[$key], $user);
-                    }
-                }
-            }
-
-            $this->setSystemSetting("report-visibility-admin", $visibilityArrayAdmin);
-            $this->setSystemSetting("report-visibility-executive", $visibilityArrayExecutive);
-            $this->removeSystemSetting("report-visibility");
-        }
-
-        // update db for compatibility with v3.3
-        $oldNameData = $this->getSystemSetting("custom-report-name");
-        $oldDescData = $this->getSystemSetting("custom-report-desc");
-        $oldIconData = $this->getSystemSetting("custom-report-icon");
-        $oldSqlData = $this->getSystemSetting("custom-report-sql");
-
-        if ($oldNameData) {
-            $newCustomReportData = array();
-            $untitledCount = 1;
-
-            foreach ($oldNameData as $index => $oldName) {
-                if (empty($oldNameData[$index])) {
-                    $newName = 'Untitled ' . $untitledCount;
-                    $untitledCount += 1;
-                } else {
-                    $newName = $oldNameData[$index];
-                }
-
-                array_push($newCustomReportData, array(
-                    'reportName' => $newName,
-                    'description' => empty($oldDescData[$index]) ? 'No description defined.' : $oldDescData[$index],
-                    'tabIcon' => empty($oldIconData[$index]) ? 'fas fa-question-circle' : str_replace('fas fa', '', $oldIconData[$index]),
-                    'sql' => $oldSqlData[$index],
-                    'type' => 'table',
-                    "customID" => "",
-                ));
-            }
-
-            $this->setSystemSetting("custom-reports", $newCustomReportData);
-            $this->removeSystemSetting("custom-report");
-            $this->removeSystemSetting("custom-report-name");
-            $this->removeSystemSetting("custom-report-desc");
-            $this->removeSystemSetting("custom-report-icon");
-            $this->removeSystemSetting("custom-report-sql");
-        }
-
-        // downgrade Credentials Check reports to "custom" status so they can be deleted and add defaults for new settings (v3.4)
-        if (version_compare('3.4', $old_version)) {
-            $pwordSearchTerms =
-                array(
-                    'p%word',
-                    'p%wd',
-                    'user%name',
-                    'usr%name',
-                    'user%id',
-                    'usr%id'
-                );
-
-            $userDefinedTerms = self::getSystemSetting('additional-search-terms');
-
-            foreach ($userDefinedTerms as $term) {
-                $pwordSearchTerms[] = db_real_escape_string($term);
-            }
-
-            $pwordProjectSql = array();
-            $pwordInstrumentSql = array();
-            $pwordFieldSql = array();
-
-            foreach ($pwordSearchTerms as $term) {
-                $pwordProjectSql[] = '(app_title LIKE \'%' . $term . '%\')';
-
-                $pwordInstrumentSql[] = '(form_name LIKE \'%' . $term . '%\')';
-
-                $pwordFieldSql[] = '(field_name LIKE \'%' . $term . '%\')';
-                $pwordFieldSql[] = '(element_label LIKE \'%' . $term . '%\')';
-                $pwordFieldSql[] = '(element_note LIKE \'%' . $term . '%\')';
-            }
-
-            $pwordProjectSql = "(" . implode(" OR ", $pwordProjectSql) . ")";
-            $pwordInstrumentSql = "(" . implode(" OR ", $pwordInstrumentSql) . ")";
-            $pwordFieldSql = "(" . implode(" OR ", $pwordFieldSql) . ")";
-
-            $credentialCheckReports = array(
-                array
-                (
-                    "reportName" => "Credentials Check (Project Titles)",
-                    "customID" => "projectCredentials",
-                    "description" => "List of projects titles that contain strings related to login credentials (usernames/passwords). Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                    "tabIcon" => "key",
-                    "defaultVisibility" => false,
-                    "sql" => "SELECT
-    projects.project_id AS 'PID',
-    app_title AS 'Project Title',
-    CAST(CASE status
-        WHEN 0 THEN 'Development'
-        WHEN 1 THEN 'Production'
-        WHEN 2 THEN 'Inactive'
-        WHEN 3 THEN 'Archived'
-        ELSE status
-    END AS CHAR(50)) AS 'Status',
-    CAST(CASE WHEN projects.date_deleted IS NULL THEN 'N/A'
-        ELSE projects.date_deleted
-    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-FROM redcap_projects AS projects,
-    redcap_user_information AS users
-WHERE (projects.created_by = users.ui_id) AND
-    " . $pwordProjectSql
-                ),
-                array
-                (
-                    "reportName" => "Credentials Check (Instruments)",
-                    "customID" => "instrumentCredentials",
-                    "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in the instrument or form name. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                    "tabIcon" => "key",
-                    "defaultVisibility" => false,
-                    "sql" => "SELECT projects.project_id AS 'PID',
-    projects.app_title AS 'Project Title',
-    meta.form_menu_description AS 'Instrument Name',
-    CAST(CASE
-        WHEN projects.date_deleted IS NULL THEN 'N/A'
-        ELSE projects.date_deleted
-    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-FROM redcap_projects AS projects,
-    redcap_metadata AS meta,
-    redcap_user_information AS users
-WHERE (projects.created_by = users.ui_id) AND
-    (projects.project_id = meta.project_id) AND
-    (meta.form_menu_description IS NOT NULL) AND
-    " . $pwordInstrumentSql
-                ),
-                array
-                (
-                    "reportName" => "Credentials Check (Fields)",
-                    "customID" => "fieldCredentials",
-                    "description" => "List of projects that contain strings related to login credentials (usernames/passwords) in fields. Search terms include the following: " . implode(', ', $pwordSearchTerms),
-                    "tabIcon" => "key",
-                    "defaultVisibility" => false,
-                    "sql" => "SELECT
-    projects.project_id AS 'PID',
-    projects.app_title AS 'Project Title',
-    meta.form_name AS 'Form Name',
-    meta.field_name AS 'Variable Name',
-    meta.element_label AS 'Field Label',
-    meta.element_note AS 'Field Note',
-    CAST(CASE
-        WHEN projects.date_deleted IS NULL THEN 'N/A'
-        ELSE projects.date_deleted
-    END AS CHAR(50)) AS 'Project Deleted Date (Hidden)'
-FROM redcap_projects AS projects,
-    redcap_metadata AS meta,
-    redcap_user_information AS users
-WHERE (projects.created_by = users.ui_id) AND
-    (projects.project_id = meta.project_id) AND
-    " . $pwordFieldSql . "
-ORDER BY
-    projects.project_id,
-    form_name,
-    field_name;
-            "
-                )
-            );
-
-            $existingCustomReports = $this->getSystemSetting('custom-reports');
-            $mergedCustomReports = array_merge($credentialCheckReports, $existingCustomReports);
-            $this->setSystemSetting('custom-reports', $mergedCustomReports);
-
-            $this->setSystemSetting('show-user-icons', true);
-
-            $result = $this->sqlQuery('select value from redcap_config where field_name = \'auth_meth_global\'');
-            $authMethod = db_fetch_assoc($result)['value'];
-
-            if ($authMethod == 'shibboleth') {
-                $this->setSystemSetting('use-api-urls', false);
-            } else {
-                $this->setSystemSetting('use-api-urls', true);
-            }
-
-            $oldExportSetting = $this->getSystemSetting('executive-export-enabled');
-            $exportEnabledLookup = [];
-
-            if ($oldExportSetting) {
-                foreach ($this->getSystemSetting('executive-users') as $user) {
-                    array_push($exportEnabledLookup, $user);
-                }
-            }
-
-            $this->setSystemSetting('executive-user-export', $exportEnabledLookup);
-        }
-
-        $this->setSystemSetting('show-changelog', true);
-    }
+    public $currentPID;
 
     public function __construct()
     {
@@ -245,47 +19,39 @@ ORDER BY
     }
 
     function redcap_module_link_check_display($project_id, $link) {
-        $config_report_id = $_GET['id'];
-        $link_id = intval(explode('_', $link['name'])[1]);
+        if ($project_id) {
+            $link_id = intval(explode('_', $link['name'])[1]);
 
-        $reportRights = $this->getReportRights(USERID, $project_id);
+            $reportRights = $this->getUserAccess(USERID, $project_id);
 
-        $reportId = json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
-            'fields' => array('report_id'),
-            'return_format' => 'json',
-            'filterLogic' => '[user_access_arm_1][sync_project_id] = ' . $project_id
-        )), true)[$link_id]['report_id'];
+            $reportId = json_decode(\REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'fields' => array('report_id'),
+                'return_format' => 'json',
+                'filterLogic' => '[user_access_arm_1][sync_project_id] = ' . $project_id
+            )), true)[$link_id]['report_id'];
 
-        $reportInfo = json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
-            'events' => 'report_config_arm_1',
-            'records' => $reportId,
-            'fields' => ['report_id', 'report_title', 'report_icon'],
-            'return_format' => 'json'
-        )), true)[0];
+            $reportInfo = json_decode(\REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'events' => 'report_config_arm_1',
+                'records' => $reportId,
+                'fields' => ['report_id', 'report_title', 'report_icon'],
+                'return_format' => 'json'
+            )), true)[0];
 
-        // inside config project only
-//        if (
-//            $link['name'] == 'Open Admin Dashboard (Current Report)' &&
-//            isset($config_report_id) &&
-//            $_GET['prefix'] != 'admin_dash' &&
-//            $project_id == $this->configPID
-//        ) {
-//            $link['url'] = $link['url'] . '&id=' . $config_report_id;
-//        }
-        // project sync reports
-        if (
-            $reportRights[$reportInfo['report_id']]['project_view'] &&
-            isset($reportId)
-        ) {
-            $link['name'] = 'Dashboard - ' . $reportInfo['report_title'];
-            $link['url'] = $link['url'] . '&id=' . $reportInfo['report_id'];
-            $link['icon'] = 'fas fa-' . $reportInfo['report_icon'];
-        }
-        else {
-            $link['name'] = '';
-            $link['url'] = '';
+            // project sync reports
+            if (
+                $reportRights[$reportInfo['report_id']]['project_view'] &&
+                isset($reportId)
+            ) {
+                $link['name'] = 'Dashboard - ' . $reportInfo['report_title'];
+                $link['url'] = $link['url'] . '&id=' . $reportInfo['report_id'];
+                $link['icon'] = 'fas fa-' . $reportInfo['report_icon'];
+            }
+            else {
+                $link['name'] = '';
+                $link['url'] = '';
+            }
         }
 
         return $link;
@@ -294,26 +60,9 @@ ORDER BY
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
         if ($project_id == $this->configPID) {
-            $configDataDictionary = json_decode(\REDCap::getDataDictionary(
-                $this->configPID, 'json', null, 'icon_lookup'), true);
-
-            $formattingReference = array();
-
-            foreach($configDataDictionary as $row) {
-                $codes = preg_replace('(\d, )', '', $row['select_choices_or_calculations']);
-                $formattingReference[$row['field_label']] = explode(' | ', $codes);
-            }
-
             ?>
             <script>
-                let UIOWA_AdminDash = {
-                    reportUrl: '<?= $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")) ?>',
-                    postUrl: '<?= $this->getUrl("post.php") ?>',
-                    queryTimeout: <?= $this->getSystemSetting('test-query-timeout') ?>,
-                    fields: <?= json_encode(\REDCap::getFieldNames($_GET['page'])) ?>,
-                    record: '<?= $_GET['id'] ?>',
-                    iconLookup: <?= json_encode($formattingReference['icons']) ?>
-                }
+                let UIOWA_AdminDash = <?= $this->getJavascriptObject(-1, true) ?>;
             </script>
             <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("/resources/ace/ext-language_tools.js") ?>" type="text/javascript" charset="utf-8"></script>
@@ -329,83 +78,121 @@ ORDER BY
         }
     }
 
-    public function getJavascriptObject($report_id)
+    // todo get rid of report_id probably
+    public function getJavascriptObject($report_id = -1, $isDataEntryForm = false)
     {
-        $reportList = json_decode(\REDCap::getData(array(
+        $jsObject = array(
+            'urlLookup' => array(
+                'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
+                'reportBase' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
+                'post' => $this->getUrl("post_internal.php", false, $this->getSystemSetting("use-api-urls"))
+                // todo is this needed?
+                //. ($report_id !== -1 ? "?id=" . $report_id : '')
+            )
+        );
+
+        // remove PID if project context added it
+        foreach ($jsObject['urlLookup'] as $key => $url) {
+            $jsObject['urlLookup'][$key] = str_replace('&pid=' . $this->configPID, '', $url);
+        }
+
+        // redcap data entry only
+        if ($isDataEntryForm) {
+            $configDataDictionary = json_decode(\REDCap::getDataDictionary(
+                $this->configPID, 'json', null, 'icon_lookup'), true);
+
+            $formattingReference = array();
+
+            foreach($configDataDictionary as $row) {
+                $codes = preg_replace('(\d, )', '', $row['select_choices_or_calculations']);
+                $formattingReference[$row['field_label']] = explode(' | ', $codes);
+            }
+
+            $jsObject = array_merge($jsObject, array(
+                'dataEntryForm' => array(
+                    'queryTimeout' => $this->getSystemSetting('test-query-timeout'),
+                    'fields' => \REDCap::getFieldNames($_GET['page']),
+                    'iconLookup' => $formattingReference['icons']
+                )
+            ));
+
+            return json_encode($jsObject);
+        }
+
+        // get list of reports
+        $reportLookup = json_decode(\REDCap::getData(array(
             'project_id' => $this->configPID,
             'return_format' => 'json',
             'filterLogic' => '[report_visibility] = "1"',
             'fields' => array('report_id', 'report_title', 'report_icon', 'report_type', 'folder_name', 'tab_color', 'tab_color_custom')
         )), true);
 
-        $reportRights = $this->getReportRights(USERID, $_GET['pid']);
+        $reportAccess = $this->getUserAccess(USERID, $_GET['pid']);
 
         // remove any reports user does not have access to
-        foreach($reportList as $index => $report) {
-            $accessDetails = $reportRights[$report['report_id']];
+        foreach($reportLookup as $index => $report) {
+            $accessDetails = $reportAccess[$report['report_id']];
 
             if (SUPER_USER !== '1' && !$accessDetails['sync_project_access'] && !$accessDetails['executive_view']) {
-                unset($reportList[$index]);
+                unset($reportLookup[$index]);
             }
         }
 
-        $loadedReportMetadata = json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
-            'return_format' => 'json',
-            'records' => $report_id
-        )), true);
+        $jsObject['reportLookup'] = $reportLookup;
 
-        $configDataDictionary = json_decode(\REDCap::getDataDictionary(
-            $this->configPID, 'json', null, null, 'formatting_reference'), true);
+        if ($report_id !== -1) {
+            $loadedReportMetadata = json_decode(\REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'events' => ['report_config_arm_1', 'report_config_arm_2'],
+                'return_format' => 'json',
+                'records' => $report_id
+            )), true);
 
-        $formattingReference = array();
+            $configDataDictionary = json_decode(\REDCap::getDataDictionary(
+                $this->configPID, 'json', null, null, 'formatting_reference'), true);
 
-        foreach($configDataDictionary as $row) {
-            $codes = preg_replace('(\d, )', '', $row['select_choices_or_calculations']);
-            $formattingReference[$row['field_label']] = explode(' | ', $codes);
-        }
+            $formattingReference = array();
 
-        $formattedMeta = array();
-
-        foreach($loadedReportMetadata as $index => $row) {
-            if ($row['redcap_repeat_instrument'] !== '') {
-                if (isset($row['column_name'])) {
-                    $instrument = $row['redcap_repeat_instrument'];
-                    $instanceKey = $row['column_name'];
-//                $formattedMeta['columnVis']['dashboard'][$column_name] = $row['show_column___1'] === '1';
-//                $formattedMeta['columnVis']['childRow'][$column_name] = $row['show_column___2'] === '1';
-//                $formattedMeta['columnVis']['export'][$column_name] = $row['show_column___3'] === '1';
-                }
-                else if (isset($row['join_project_id'])) {
-                    $instrument = $row['redcap_repeat_instrument'];
-                    $instanceKey = $row['join_project_id'];
-                }
-
-                $formattedMeta[$instrument][$instanceKey] = $row;
+            foreach($configDataDictionary as $row) {
+                $codes = preg_replace('(\d, )', '', $row['select_choices_or_calculations']);
+                $formattingReference[$row['field_label']] = explode('|', $codes);
             }
-            else {
-                if ($row['redcap_event_name'] == 'report_config_arm_1') {
+
+            $formattedMeta = array();
+
+            foreach($loadedReportMetadata as $index => $row) {
+                if ($row['redcap_repeat_instrument'] !== '') {
+                    if ($row['column_name'] !== '') {
+                        $instrument = $row['redcap_repeat_instrument'];
+                        $instanceKey = $row['column_name'];
+                    }
+                    else if ($row['join_project_id'] !== '') {
+                        $instrument = $row['redcap_repeat_instrument'];
+                        $instanceKey = $row['join_project_id'];
+                    }
+
+                    $formattedMeta[$instrument][$instanceKey] = $row;
+                }
+                else {
                     $formattedMeta['config'] = $row;
                 }
             }
+
+            $jsObject = array_merge($jsObject, array(
+                'loadedReport' => array(
+                    'meta' => $formattedMeta,
+                    'error' => '',
+                    'ready' => false
+                ),
+                'showAdminControls' => SUPER_USER,
+                'configPID' => $this->configPID,
+                'formattingReference' => $formattingReference,
+                'executiveView' => $reportAccess[$report_id]['executive_view'],
+                'redcap_csrf_token' => $this->getCSRFToken()
+            ));
         }
 
-        return json_encode(array(
-            'baseRedcapUrl' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
-            'baseReportUrl' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
-            'postUrl' => $this->getUrl("post.php?id=" . $report_id),
-            'reportLookup' => $reportList,
-            'loadedReport' => array(
-                'meta' => $formattedMeta,
-                'ready' => false
-            ),
-            'noReportId' => sizeof($formattedMeta) === 0,
-            'showAdminControls' => SUPER_USER,
-            'configPID' => $this->configPID,
-            'formattingReference' => $formattingReference,
-            'isFetching' => true,
-            'executiveView' => $reportRights[$report_id]['executive_view']
-        ));
+        return json_encode($jsObject);
 
 //        if ($showChangelog) { // todo changelog?
 //            $this->setSystemSetting('show-changelog', false);
@@ -415,6 +202,8 @@ ORDER BY
     public function runReport($params) { // id, sql
         $report_id = $params['id']; // user-facing call - lookup query by record id
         $sql = $params['sql']; // test query from data entry form
+        $username = isset($params['username']) ? $params['username'] : USERID;
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
 
         // get sql query from REDCap record
         if (!isset($sql)) {
@@ -430,7 +219,8 @@ ORDER BY
 
         $returnData = array();
 
-        $sql = \Piping::pipeSpecialTags($sql, $this->currentPID);
+        // supports [user-name] and [project-id]
+        $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
 
         // error out if no query
         if ($sql == '') {
@@ -602,7 +392,7 @@ ORDER BY
         );
     }
 
-    public function getReportRights($username, $pid)
+    public function getUserAccess($username, $pid)
     {
         $userRightsArray = array();
 
@@ -684,110 +474,18 @@ ORDER BY
         return $userRightsArray;
     }
 
-//    public function updateProjectSyncBookmark($report_id, $target_project_id, $report_title) {
-//        $next_ext_id = db_fetch_assoc($this->query("select max(ext_id) as 'ext_id' from redcap_external_links", []))['ext_id'] + 1;
-//        $next_link_order = db_fetch_assoc($this->query("select max(link_order) as 'link_order' from redcap_external_links where project_id = ?", [$target_project_id]))['link_order'] + 1;
-//
-//        $this->query("
-//                insert into redcap_external_links (
-//                   project_id,
-//                   link_order,
-//                   link_url,
-//                   link_label,
-//                   open_new_window,
-//                   link_type,
-//                   user_access,
-//                   append_record_info,
-//                   append_pid
-//                )
-//                values(?, ?, ?, ?, ?, ?, ?, ?, ?)
-//            ",
-//            [
-//                $target_project_id,
-//                $next_link_order,
-//                $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")),
-//                $report_title,
-//                0,
-//                'LINK',
-//                'ALL',
-//                0,
-//                1
-//            ]
-//        );
-//    }
-
-    public function getProjectList()
-    {
-        $result = $this->query("
-            select
-                ur.project_id,
-                p.app_title
-            from redcap_user_rights ur
-            left join redcap_projects p on p.project_id = ur.project_id
-            where ur.username = ?
-        ", [USERID]);
-
-        $projects = array();
-
-        while ($row = db_fetch_assoc($result)) {
-            $projects[] = array(
-                "value" => $row['project_id'],
-                "label" => $row['project_id'] . ' - ' . $row['app_title']
-            );
-        }
-
-        echo json_encode($projects);
-    }
-
-    public function getProjectFields($pid)
-    {
-        $dd = \REDCap::getDataDictionary($pid, 'array');
-
-        $fields = array();
-
-        foreach ($dd as $field) {
-            $fields[$field['form_name']][] = $field['field_name'];
-        }
-
-        $result = $this->query("select app_title from redcap_projects where project_id = ?", [$pid]);
-        $projectTitle = db_fetch_assoc($result)['app_title'];
-
-        echo json_encode(array(
-            'projectTitle' => $projectTitle,
-            'fieldLookup' => $fields
-        ));
-    }
-
-    public function getProjectReports() {
-        $reportList = array();
-
-        $sql = "
-            select report_id, title
-            from redcap_reports
-            where project_id = 19
-            order by report_order asc
-        ";
-
-        $result = $this->query($sql);
-
-        while ($row = db_fetch_assoc($result)) {
-            $reportList[$result['report_id']] = $result['title'];
-        }
-
-        echo json_encode($reportList);
-    }
-
-    public function joinProjectData($record_id)
+    public function joinProjectData($params)
     {
         $joinConfig = json_decode(\REDCap::getData(array(
             'project_id' => $this->configPID,
             'return_format' => 'json',
-            'records' => $record_id,
+            'records' => $params['report_id'],
             'fields' => array(
                 'join_project_id',
                 'join_report_id',
                 'join_primary_field'
-            )
+            ),
+            'filterLogic' => '[join_project_id] <> ""'
         )), true);
 
         $joinedData = array();
@@ -816,7 +514,7 @@ ORDER BY
             }
 
             $newData = json_decode(\REDCap::getData(array(
-                'project_id' => $pid,
+                'project_id' => $join['join_project_id'],
                 'return_format' => 'json',
 //                'exportAsLabels' => $params['showChoiceLabels'],
                 'filterLogic' => $logic,
@@ -885,6 +583,87 @@ ORDER BY
 
     public function convertOldReports() {
         // get custom reports from db and import them into redcap project
+    }
+
+    public function createConfigProject() {
+        $content = file_get_contents($this->getUrl("AdminDashboardReportsTemplate.xml"));
+        $query = $this->query("SELECT api_token FROM redcap_user_information where username = ?", USERID);
+        $supertoken = $query->fetch_assoc()['api_token'];
+
+        $project_token = $this->apiCall(APP_PATH_WEBROOT_FULL . 'api/', array(
+            'token' => $supertoken,
+            'content' => 'project',
+            'format' => 'json',
+            'data' => "[{
+                \"project_title\": \"Admin Dashboard Reports\",
+                \"purpose\": 4
+            }]",
+            'odm' => $content
+        ));
+
+        $query = $this->query("SELECT project_id FROM redcap_user_rights WHERE api_token = ?", $project_token);
+        $pid = $query->fetch_assoc()['project_id'];
+
+        // adding this after import since it doesn't persist through XML export
+        $link_source_column_sql = "select value, value from redcap_data
+            where project_id = [project-id] and
+            field_name = 'column_name' and
+            record = [record-name]
+            order by instance asc";
+
+        $this->query("
+                update redcap_metadata
+                set element_type = 'sql',
+                    element_enum = ?
+                where project_id = ? and field_name = 'link_source_column'
+            ",
+            [
+                $link_source_column_sql,
+                $pid
+            ]);
+
+        $this->setSystemSetting("config-pid", "$pid");
+
+        $module_info = explode('_', $this->getModuleDirectoryName());
+        $module_version = array_pop($module_info);
+        $module_name = implode('_', $module_info);
+
+        ExternalModules::enableForProject($module_name, $module_version, $pid);
+
+        // Get the next order number for bookmark
+        $query = $this->query("select max(link_order) from redcap_external_links where project_id = ?", $pid);
+        $max_link_order = $query->fetch_assoc()['link_order'];
+        $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
+
+        // Insert into table
+        $query = $this->query("insert into redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
+			link_to_project_id, user_access, append_record_info) values
+			(?, ?, ?, ?, ?, ?, ?, ?, ?)", [$pid, $next_link_order, "Open Admin Dashboard", "test", 1, "LINK", "ALL", 1, 0]);
+
+        echo $pid;
+    }
+
+    public function apiCall($url, $data) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_VERBOSE, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data, '', '&'));
+        $output = curl_exec($ch);
+
+        curl_close($ch);
+
+        return $output;
+    }
+
+    public function getRedcapUrl() {
+        return (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
     }
 }
 ?>

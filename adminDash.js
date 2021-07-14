@@ -4,61 +4,79 @@ $.extend(UIOWA_AdminDash, {
 
         // report edit shortcut (admins only)
         $('.edit-report').click(function () {
-            let loadedId = self.loadedReport.meta.config.report_id;
-            let url = self.baseRedcapUrl + '/DataEntry/record_home.php?pid=' + self.configPID + '&id=' + loadedId;
+            let loadedReportMeta = self.loadedReport.meta;
+            let url = self.urlLookup.redcapBase + '/DataEntry/record_home.php?pid=' + self.configPID + '&id=' + loadedReportMeta.config.report_id;
+
+            if ("project_join_info" in loadedReportMeta) {
+                url += "&arm=2";
+            }
 
             window.open(url, '_blank');
         })
 
-        // set column titles and renderers
+        let data = self.loadedReport.data;
         let columns = $.map(self.loadedReport.columns, function (column_name) {
-            let columnDetails = self.loadedReport.meta.column_formatting[column_name];
-            let column = {
-                title: columnDetails.displayHeader !== '' ? columnDetails.displayHeader : column_name,
+            return {
+                title: column_name,
                 data: column_name,
-                className: columnDetails.dashboard_show_column === '0' ? 'noVis' : '',
+                className: '',
                 contentPadding: "mmm",
                 createdCell: function (td, cellData, rowData, row, col) {
                     $(td).css('text-align', 'center')
                 }
             };
+        });
 
-            // only apply column formatting for sql reports
-            if (self.loadedReport.meta.config.report_sql !== '') {
-                $.fn.dataTable.render.adFormat = function(column_name) {
-                    return function(data, type, row) {
-                        return self.adFormat(column_name, data, type, row);
-                    };
+        if (self.loadedReport.meta.column_formatting) {
+            // set column titles and renderers
+            columns = $.map(self.loadedReport.columns, function (column_name) {
+                let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+                let column = {
+                    title: columnDetails.displayHeader !== '' ? columnDetails.displayHeader : column_name,
+                    data: column_name,
+                    className: columnDetails.dashboard_show_column === '0' ? 'noVis' : '',
+                    contentPadding: "mmm",
+                    createdCell: function (td, cellData, rowData, row, col) {
+                        $(td).css('text-align', 'center')
+                    }
+                };
+
+                // only apply column formatting for sql reports
+                if (self.loadedReport.meta.config.report_sql !== '') {
+                    $.fn.dataTable.render.adFormat = function(column_name) {
+                        return function(data, type, row) {
+                            return self.adFormat(column_name, data, type, row);
+                        };
+                    }
+
+                    column.render = $.fn.dataTable.render.adFormat(column_name);
                 }
 
-                column.render = $.fn.dataTable.render.adFormat(column_name);
-            }
-
-            return column;
-        });
-        let data = self.loadedReport.data;
-
-        // add column for child row collapse buttons (if at least one column needs it)
-        let hasChildRow = false;
-        $.each(self.loadedReport.meta.column_formatting, function (column_name, value) {
-
-            if (value.dashboard_show_column === '2') {
-                hasChildRow = true;
-            }
-        });
-        if (hasChildRow) {
-            $('.report-table > thead > tr:first').prepend('<th></th>');
-
-            columns.unshift({
-                className: 'details-control',
-                orderable: false,
-                data: null,
-                defaultContent: '',
-                render: function () {
-                    return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
-                },
-                width:"15px"
+                return column;
             });
+
+            // add column for child row collapse buttons (if at least one column needs it)
+            let hasChildRow = false;
+            $.each(self.loadedReport.meta.column_formatting, function (column_name, value) {
+
+                if (value.dashboard_show_column === '2') {
+                    hasChildRow = true;
+                }
+            });
+            if (hasChildRow) {
+                $('.report-table > thead > tr:first').prepend('<th></th>');
+
+                columns.unshift({
+                    className: 'details-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '',
+                    render: function () {
+                        return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
+                    },
+                    width:"15px"
+                });
+            }
         }
 
         // init DataTable
@@ -89,7 +107,7 @@ $.extend(UIOWA_AdminDash, {
                 } );
 
                 if (hasFilters) {
-                    $('.dataTables_scrollHead thead').append($filterRow);
+                    $('thead').append($filterRow);
                 }
             }
         });
@@ -183,16 +201,21 @@ $.extend(UIOWA_AdminDash, {
                         .draw();
                 } );
 
+            // console.log(column.data().unique())
+
             // get unique values and add to dropdown list
             column.data().unique().sort().each( function ( value ) {
                 // todo filtering for null values
-                // if (value === undefined || value === null || value === '') {
-                //     $select.prepend( '<option value="null">[null]</option>' )
-                // }
+                if (value == null) {
+                    $select.prepend( '<option value="null">[null]</option>' )
+                }
                 // else {
                 let formattedValue = self.adFormat_code(value, columnDetails.code_type)
 
-                $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' )
+                if (formattedValue) {
+                    $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' );
+                }
+
                 // }
                 // if ($(d).has('<a>')) {
                 //     d = $(d).text();
@@ -207,6 +230,10 @@ $.extend(UIOWA_AdminDash, {
 
             $( 'input', $filterTd ).on( 'keyup change clear', function () {
                 if ( column.search() !== this.value ) {
+
+                    // todo split grouped data and filter items
+                    // let groupData = column.data().split()
+
                     column
                         .search( this.value )
                         .draw();
@@ -280,13 +307,19 @@ $.extend(UIOWA_AdminDash, {
                 return type === 'display' ? '<span class="text-muted">null</span>' : 'null';
             }
 
+            //todo
+            // fix for "Archived" projects
+            // if (value === 3) {
+            //     value = 2;
+            // }
+
             let formattedVal = item;
             let rawUrl = '';
             let iconsHtml = '';
 
             // Replace coded value with label
-            try {
-                if (columnDetails.code_type !== '') {
+            if (columnDetails.code_type !== '') {
+                try {
                     // if export, check if labels are preferred
                     if (type === 'export' && columnDetails.export_codes === '0') {
                         formattedVal = item
@@ -299,16 +332,17 @@ $.extend(UIOWA_AdminDash, {
                         return formattedVal; //todo broken
                     }
                 }
-            }
-            catch(e) {
-                console.groupCollapsed("Failed to replace codes with labels for " + column_name);
-                console.log(e)
-                console.groupEnd()
+                catch(e) {
+                    console.groupCollapsed("Failed to replace codes with labels for " + column_name);
+                    console.log(columnDetails.code_type, item)
+                    console.log(e)
+                    console.groupEnd()
+                }
             }
 
             // generate url for linking
-            try {
-                if (columnDetails.link_type !== '' && !self.executiveView) {
+            if (columnDetails.link_type !== '' && !self.executiveView) {
+                try {
                     rawUrl = self.adFormat_url(
                         item,
                         sourceData[index],
@@ -319,45 +353,47 @@ $.extend(UIOWA_AdminDash, {
                     if (type === 'export') {
                         if (columnDetails.export_urls === '1') {
                             formattedVal = rawUrl;
-                        }
-                        else {
+                        } else {
                             formattedVal = item;
                         }
-                    }
-                    else if (type === 'filter') {
+                    } else if (type === 'filter') {
                         formattedVal = item;
-                    }
-                    else {
+                    } else {
                         formattedVal = `<a href="${rawUrl}" target="_blank">${formattedVal}</a>`;
                     }
                 }
-            }
-            catch(e) {
-                console.groupCollapsed("Failed to generate url(s) for " + column_name)
-                console.log(e)
-                console.groupEnd()
-            }
-            // prepend hint icons
-            try {
-                if (
-                    (columnDetails.hint_icons___1 === '1' ||
-                    columnDetails.hint_icons___2 === '1') &&
-                    type === 'display'
-                ) {
-                    let columnReference = {
-                        withTags: self.loadedReport.columns,
-                        tagless: $.map(self.loadedReport.columns, function(value) {
-                            return value.split('#')[0]
-                        })
-                    }
-
-                    iconsHtml = self.adFormat_icons(item, index, row, columnReference, columnDetails);
+                catch(e) {
+                    console.groupCollapsed("Failed to generate url(s) for " + column_name)
+                    console.log(e)
+                    console.groupEnd()
                 }
             }
-            catch(e) {
-                console.groupCollapsed("Failed to process hint icon(s) for " + column_name)
-                console.log(e)
-                console.groupEnd()
+
+            // prepend hint icons
+            if (
+                (columnDetails.hint_icons___1 === '1' ||
+                columnDetails.hint_icons___2 === '1') &&
+                type === 'display'
+            ) {
+                try {
+
+                        let columnReference = {
+                            withTags: self.loadedReport.columns,
+                            tagless: $.map(self.loadedReport.columns, function(value) {
+                                return value.split('#')[0]
+                            })
+                        }
+
+                        if (item) {
+                            iconsHtml = self.adFormat_icons(item, index, row, columnReference, columnDetails);
+                        }
+                    }
+                catch(e) {
+                    console.groupCollapsed("Failed to process hint icon(s) for " + column_name)
+                    console.log(item)
+                    console.log(e)
+                    console.groupEnd()
+                }
             }
 
             return iconsHtml + formattedVal;
@@ -380,7 +416,7 @@ $.extend(UIOWA_AdminDash, {
         // set redcap url
         else {
             try {
-                url = this.baseRedcapUrl + this.formattingReference.links[linkIndex - 1] + sourceValue;
+                url = this.baseRedcapUrl + this.formattingReference.links[linkIndex - 1].trim() + sourceValue;
             }
             catch (error) { // invalid link index
                 console.error(error);
@@ -397,8 +433,19 @@ $.extend(UIOWA_AdminDash, {
         else if (codeIndex === '2') { // Project Purpose
             return this.formattingReference.purpose[value];
         }
-        else if (codeIndex === '3') { // Research Purpose
-            return this.formattingReference.purpose_other[value];
+        else if (codeIndex === '3') { // Research/Other Purpose
+            let self = this;
+            let valueArray = value.split(',');
+
+            if (Array.isArray(valueArray) && !valueArray.some(isNaN)) {
+                valueArray = $.map(value, function (code) {
+                    return self.formattingReference.purpose_other[code]
+                });
+
+                value = valueArray.join(', ')
+            }
+
+            return value;
         }
         // else if (userConfig.specify_code_lookup === '4') { // todo Research Purpose split
         //     codeReference = this.formattingReference.research_code_lookup;
@@ -573,21 +620,21 @@ $(document).ready(function() {
         }
     })
 
-    // run report SQL query on server
-    if (!self.noReportId) {
-        let reportId = self.loadedReport.meta.config.report_id;
-        let requestType = self.loadedReport.meta.config.report_type === '2' ? 'joinProjectData' : 'runReport';
+    // complete: function() {
+    //     $('#reportLoading').hide();
+    // }
 
-        $.ajax({
-            url: self.postUrl,
-            type: 'POST',
-            dataType: 'json',
-            data: {
+    // run report SQL query on server
+    if (!self.loadedReport.ready) {
+        let reportId = self.loadedReport.meta.config.report_id;
+        let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
+
+        $.post(UIOWA_AdminDash.postUrl, {
                 method: requestType,
-                fromModule: true,
-                id: reportId
+                id: reportId,
+                redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
             },
-            success: function(result) {
+            function(result) {
                 if (result.length > 0) {
                     let columns = [];
 
@@ -597,10 +644,13 @@ $(document).ready(function() {
                     else {
                         let columnFormatting = self.loadedReport.meta.column_formatting;
 
-                        columns = Object.keys(columnFormatting)
-                        // columns = $.map(columnFormatting, function (columnMeta, column_name) {
-                        //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
-                        // });
+                        if (columnFormatting) {
+                            columns = Object.keys(columnFormatting)
+
+                            // columns = $.map(columnFormatting, function (columnMeta, column_name) {
+                            //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
+                            // });
+                        }
                     }
 
                     $.extend(self.loadedReport, {
@@ -613,9 +663,7 @@ $(document).ready(function() {
                     self.loadedReport.error = "Zero rows returned."
                 }
             },
-            complete: function() {
-                $('#reportLoading').hide();
-            }
-        })
+            'json'
+        )
     }
 });

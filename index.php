@@ -7,20 +7,16 @@ if (!isset($module->configPID) && SUPER_USER == '1') {
     die();
 }
 
-$report_id = -1;
+$report_id = isset($_GET['id']) ? $_GET['id'] : -1;
 
-if (isset($_GET['id'])) {
-    $report_id = $_GET['id'];
+// clean bookmark url if no record context piped in
+if ($report_id == '[record-name]') {
+    $query = $_GET;
+    unset($query['id']);
+    $query['type'] = 'module';
+    $query_result = http_build_query($query);
 
-    // clean bookmark url if out of record context
-    if ($report_id == '[record-name]') {
-        $query = $_GET;
-        unset($query['id']);
-        $query['type'] = 'module';
-        $query_result = http_build_query($query);
-
-        header('Location: ' . str_replace($_SERVER['PHP_SELF'], 'index.php', '') . '?' . $query_result);
-    }
+    header('Location: ' . str_replace($_SERVER['PHP_SELF'], 'index.php', '') . '?' . $query_result);
 }
 elseif (isset($_GET['record'])) {
     $query = array(
@@ -34,7 +30,7 @@ elseif (isset($_GET['record'])) {
     header('Location: ' . str_replace($_SERVER['PHP_SELF'], 'index.php', '') . '?' . $query_result);
 }
 
-$reportRights = $module->getReportRights(USERID, $_GET['pid']);
+$reportRights = $module->getUserAccess(USERID, $_GET['pid']);
 
 // if not superuser, verify access
 if (SUPER_USER !== '1' && !$reportRights[$report_id]['project_view'] && !$reportRights[$report_id]['executive_view']) {
@@ -43,7 +39,7 @@ if (SUPER_USER !== '1' && !$reportRights[$report_id]['project_view'] && !$report
 
 $executiveView = $reportRights[$report_id]['executive_view'];
 $syncProjectView = $reportRights[$report_id]['project_view'];
-$exportEnabled = $reportRights[$report_id]['export_access'];
+$exportEnabled = SUPER_USER || $reportRights[$report_id]['export_access'];
 
 if ($syncProjectView) {
     require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
@@ -55,6 +51,7 @@ else {
 }
 
 ?>
+<!--todo move into .css-->
 <style>
     /* make the display the full width */
     div#outer
@@ -85,12 +82,15 @@ else {
         padding-right: 2px;
     }
 
+    /*table.dataTable thead tr {*/
+    /*    background-color: darkgrey;*/
+    /*}*/
+
     .dt-head-center {text-align: center;}
 
     [v-cloak] { display: none; }
 
 </style>
-
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.7/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.css"/>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
@@ -98,10 +98,10 @@ else {
 <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.22/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.7/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.js"></script>
 <script type="text/javascript" src="//cdn.datatables.net/plug-ins/1.10.22/dataRender/datetime.js"></script>
 <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
-<script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+<script src="<?= $module->getUrl("/resources/vue.min.js") ?>"></script>
 
 <script>
-    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id) ?>;
+    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id, false) ?>;
 </script>
 
 <script src="<?= $module->getUrl("/adminDash.js") ?>"></script>
@@ -121,13 +121,12 @@ else {
                         <span class="fas fa-bars">&nbsp;</span>
                         {{ name }}
                     </a>
-                    <div class="dropdown-menu"
-                         v-for="report in value"
-                         :key="report.report_id"
-                         :data-id="report.report_id"
-                    >
+                    <div class="dropdown-menu">
                         <a class="dropdown-item"
-                           :href="baseReportUrl + '&id=' + report.report_id"
+                           v-for="report in value"
+                           :key="report.report_id"
+                           :data-id="report.report_id"
+                           :href="urlLookup.reportBase + '&id=' + report.report_id"
                            :style="{ backgroundColor: getTabColor(report), color: getTabColor(report, true) }"
                         >
                             <span class="report-icon" :class="getReportIcon(report.report_icon)">&nbsp;</span>
@@ -141,8 +140,8 @@ else {
                     :data-id="report.report_id"
                 >
                     <a class="nav-link"
-                       :href="baseReportUrl + '&id=' + report.report_id"
-                       :class="noReportId ? '' : isActiveReport(report.report_id)"
+                       :href="urlLookup.reportBase + '&id=' + report.report_id"
+                       :class="!loadedReport.ready ? '' : isActiveReport(report.report_id)"
                        :style="{ backgroundColor: getTabColor(report), color: getTabColor(report, true) }"
                     >
                         <span class="report-icon" :class="getReportIcon(report.report_icon)">&nbsp;</span>
@@ -151,9 +150,9 @@ else {
                 </li>
         </ul>
     </div>
-    <? endif; ?>
+    <?php endif; ?>
 
-    <div id="reportContent" v-cloak v-if="loadedReport.meta.config" style="width: 98%">
+    <div id="reportContent" v-cloak v-if="loadedReport" style="width: 98%">
         <div style="padding: 25px">
             <div style="float: left">
                 <div id="visButtons"></div>
@@ -184,10 +183,18 @@ else {
                 >{{ getDisplayHeader(column) }}</th>
             </tr></thead>
         </table>
+        <div v-if="loadedReport.error !== ''">
+            <div class="alert alert-warning" style="border-color: black !important; margin-top: 10%; width: 30%; text-align: center">
+                <h4 class="center-block">
+                    <i class="fas fa-exclamation-triangle fa-2x" style="vertical-align: sub">&nbsp;</i>
+                    {{ loadedReport.error }}
+                </h4>
+            </div>
+        </div>
     </div>
 
     <div style="text-align: center; padding: 50px" v-cloak>
-        <h4 v-if="loadedReport.meta.config">
+        <h4 v-if="loadedReport">
             <div id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px">
                 <i class="fas fa-spinner fa-pulse"></i>
             </div>
@@ -197,10 +204,6 @@ else {
             <span>Click one of the tabs above to view a report.</span>
         </span>
     </div>
-    <div>
-
-    </div>
-
 <?php
 
 if ($syncProjectView) {

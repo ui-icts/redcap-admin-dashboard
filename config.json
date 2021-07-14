@@ -4,7 +4,7 @@
   "documentation": "README.md",
 
   "namespace": "UIOWA\\AdminDash",
-  "framework-version": 5,
+  "framework-version": 8,
 
   "authors": [
     {
@@ -53,11 +53,14 @@
 
   "permissions": [
     "redcap_data_entry_form",
-    "redcap_module_system_change_version",
     "redcap_save_record"
   ],
 
   "no-auth-pages": [
+    "post"
+  ],
+
+  "no-csrf-pages": [
     "post"
   ],
 
@@ -81,7 +84,7 @@
     },
     {
       "key": "null-value-handling",
-      "name": "Display null values returned in reports as:",
+      "name": "Display null values returned in reports as",
       "type": "text",
       "default": "null"
     }
