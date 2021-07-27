@@ -68,16 +68,14 @@ $(document).ready(function() {
 
                 $.ajax({
                     method: 'POST',
-                    url: UIOWA_AdminDash.postUrl,
+                    url: UIOWA_AdminDash.urlLookup.post,
                     dataType: 'json',
                     data: {
-                        params: {
-                            sql: editor.getValue(),
-                            test: true
-                        },
-                        method: 'runReport'
+                        adMethod: 'runReport',
+                        sql: editor.getValue(),
+                        test: true
                     },
-                    timeout: UIOWA_AdminDash.dataEntryForm.queryTimeout,
+                    timeout: UIOWA_AdminDash.queryTimeout,
                     success: function(data) {
                         let endTime = performance.now();
 
@@ -95,8 +93,12 @@ $(document).ready(function() {
                         $resultDiv.html('<span style="color:green;">Query returned ' + data.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
                     },
                     error: function(err) {
-                        console.log(err.responseText);
-                        console.log($(err.responseText).find('div').children[7]);
+                        let errorMsg = err.responseText;
+
+                        errorMsg = errorMsg.substring(
+                            errorMsg.lastIndexOf("The error from the database was:"),
+                            errorMsg.lastIndexOf("See the server error log for more details")
+                        );
 
                         $('[name="test_query_column_list"], [name="test_query_columns"]').val('');
                         $('[name="test_query_success___radio"][value="0"]')
@@ -105,7 +107,7 @@ $(document).ready(function() {
                             .prop('disabled', 'disabled');
 
                         $this.html('<i class="fas fa-times"></i> Error').removeClass('btn-info').addClass('btn-danger');
-                        $resultDiv.html('<span style="color:red;">Query failed! Check your browser\'s console for more details.</span>');
+                        $resultDiv.html('<span style="color:red;">Query failed! ' + errorMsg + '</span>');
                     }
                 })
             });
@@ -160,7 +162,7 @@ $(document).ready(function() {
             })
         },
         api_url: function() {
-            let apiUrl = UIOWA_AdminDash.postUrl + '&NOAUTH=&id=' + UIOWA_AdminDash.record;
+            let apiUrl = UIOWA_AdminDash.urlLookup.post + '&NOAUTH=&id=' + UIOWA_AdminDash.record;
 
             $('#api_url-tr')
                 .find('.url-placeholder')
@@ -218,7 +220,7 @@ $(document).ready(function() {
         },
         executive_url: function() {
             let $fieldTr = $('#executive_url-tr');
-            let execUrl = UIOWA_AdminDash.urlLookup.reportBase + '&id=' + UIOWA_AdminDash.record;
+            let execUrl = UIOWA_AdminDash.urlLookup.reportBase + '&id=' + UIOWA_AdminDash.reportId;
 
             $fieldTr
                 .find('.url-placeholder')
@@ -237,7 +239,7 @@ $(document).ready(function() {
             `);
 
             $('.exec-action-preview').click(function() {
-                window.open(execUrl + '&exec=1', '_blank'); //todo not working
+                window.open(execUrl + '&asUser=' + $('#executive_username-tr input').val(), '_blank'); //todo not working
             })
 
             // todo update email button on change
@@ -276,16 +278,16 @@ $(document).ready(function() {
 
     UIOWA_AdminDash.fillInfoFields = function(fieldSuffix, type, whereVal) {
         $.ajax({
-            url: UIOWA_AdminDash.postUrl,
+            url: UIOWA_AdminDash.urlLookup.post,
             method: 'POST',
             data: {
-                params: {
-                    type: type,
-                    whereVal: whereVal
-                },
-                method: 'getAdditionalInfo'
+                adMethod: 'getAdditionalInfo',
+                type: type,
+                whereVal: whereVal,
+                redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
             },
             success: function(json) {
+                console.log(json)
                 json = JSON.parse(json);
 
                 $.each(json, function(key, value) {

@@ -7,7 +7,14 @@ if (!isset($module->configPID) && SUPER_USER == '1') {
     die();
 }
 
-$report_id = isset($_GET['id']) ? $_GET['id'] : -1;
+if (isset($_GET['report'])) {
+    $customReportIdLookup = $module->getCustomReportIds();
+
+    $report_id = $customReportIdLookup[$_GET['report']] + 1;
+}
+else {
+    $report_id = isset($_GET['id']) ? $_GET['id'] : -1;
+}
 
 // clean bookmark url if no record context piped in
 if ($report_id == '[record-name]') {
@@ -37,7 +44,7 @@ if (SUPER_USER !== '1' && !$reportRights[$report_id]['project_view'] && !$report
     die('You do not have access to this page.');
 }
 
-$executiveView = $reportRights[$report_id]['executive_view'];
+$executiveView = $reportRights[$report_id]['executive_view'] || isset($_GET['asUser']);
 $syncProjectView = $reportRights[$report_id]['project_view'];
 $exportEnabled = SUPER_USER || $reportRights[$report_id]['export_access'];
 
@@ -101,7 +108,7 @@ else {
 <script src="<?= $module->getUrl("/resources/vue.min.js") ?>"></script>
 
 <script>
-    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id, false) ?>;
+    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id, false, $_GET['asUser']) ?>;
 </script>
 
 <script src="<?= $module->getUrl("/adminDash.js") ?>"></script>
@@ -167,9 +174,11 @@ else {
         <div style="text-align: center; clear: both;">
             <h3 id="reportTitle">
                 <span class="report-icon" :class="getReportIcon(loadedReport.meta.config.report_icon)">&nbsp;</span>{{ loadedReport.meta.config.report_title ? loadedReport.meta.config.report_title : 'Untitled Report' }}
+                <?php if(!$executiveView): ?>
                 <button v-if="showAdminControls === '1'" class="btn-sm btn-primary edit-report" style="margin: 5px; vertical-align: text-top">
                     <span class="fas fa-edit"></span>
                 </button>
+                <?php endif; ?>
             </h3>
         </div>
         <div style="text-align: center; font-size: 14px">
@@ -195,7 +204,7 @@ else {
 
     <div style="text-align: center; padding: 50px" v-cloak>
         <h4 v-if="loadedReport">
-            <div id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px">
+            <div v-if="!loadedReport.ready" id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px">
                 <i class="fas fa-spinner fa-pulse"></i>
             </div>
         </h4>

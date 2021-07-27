@@ -9,7 +9,7 @@ if (isset($_POST['token'])) { // from API endpoint
         'records' => $_GET['id']
     )), true)[0];
 
-    $_POST['method'] = $reportType['redcap_event_name'] == 'report_config_arm_2' ? 'joinProjectData' : 'runReport';
+    $_POST['adMethod'] = $reportType['redcap_event_name'] == 'report_config_arm_2' ? 'joinProjectData' : 'runReport';
 
     $query = $module->query('
         select * from redcap_user_rights
@@ -36,15 +36,14 @@ if (isset($_POST['token'])) { // from API endpoint
         die('You do not have permissions to use the API');
     }
 
-    $_POST['params']['username'] = $userRights['username'];
-    $_POST['params']['project_id'] = $_POST['project_id'];
+    $_POST['username'] = $userRights['username'];
 }
 else {
     die('No API token defined.');
 }
 
-if (!isset($_POST['params']['id'])) {
-    $_POST['params']['id'] = $_GET['id'];
+if (!isset($_POST['id'])) {
+    $_POST['id'] = $_GET['id'];
 }
 
-$module->runReport($_POST['params']);
+call_user_func(array($module, $_POST['adMethod']), $_POST);

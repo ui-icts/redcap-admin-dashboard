@@ -17,7 +17,7 @@ $hasSupertoken = $query->fetch_assoc()['token_exists'] == 1;
                 method: 'POST',
                 url: '<?= $module->getUrl("post_internal.php") ?>',
                 data: {
-                    method: 'createConfigProject'
+                    adMethod: 'createConfigProject'
                 },
                 success: function (pid) {
                     $('.success-msg').show()

@@ -127,6 +127,17 @@ $.extend(UIOWA_AdminDash, {
             ]
         }).container().appendTo($('#visButtons'));
 
+        // sync filter visibility with column
+        table.on( 'column-visibility.dt', function ( e, settings, column, state ) {
+            console.log(
+                'Column '+ column +' has changed to '+ (state ? 'visible' : 'hidden')
+            );
+
+            let $filterTd = $('.filter-row > td').eq(column);
+
+            state ? $filterTd.show() : $filterTd.hide();
+        } );
+
         // child row show/hide logic
         $('.report-table tbody').on('click', 'td.details-control', function () {
             let tr = $(this).closest('tr');
@@ -172,7 +183,7 @@ $.extend(UIOWA_AdminDash, {
     },
     dtFilterInit: function(column) {
         let self = this;
-        let $filterTd = $('<td></td>');
+        let $filterTd = $('<td data-column-index="' + column.index() + '"></td>');
         let column_name = self.loadedReport.columns[column.index()];
         let columnDetails = self.loadedReport.meta.column_formatting[column_name];
 
@@ -200,8 +211,6 @@ $.extend(UIOWA_AdminDash, {
                         .search( val ? '^'+val+'$' : '', true, false )
                         .draw();
                 } );
-
-            // console.log(column.data().unique())
 
             // get unique values and add to dropdown list
             column.data().unique().sort().each( function ( value ) {
@@ -416,7 +425,7 @@ $.extend(UIOWA_AdminDash, {
         // set redcap url
         else {
             try {
-                url = this.baseRedcapUrl + this.formattingReference.links[linkIndex - 1].trim() + sourceValue;
+                url = this.urlLookup.redcapBase + this.formattingReference.links[linkIndex - 1].trim() + sourceValue;
             }
             catch (error) { // invalid link index
                 console.error(error);
@@ -620,21 +629,21 @@ $(document).ready(function() {
         }
     })
 
-    // complete: function() {
-    //     $('#reportLoading').hide();
-    // }
-
     // run report SQL query on server
     if (!self.loadedReport.ready) {
         let reportId = self.loadedReport.meta.config.report_id;
         let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
 
-        $.post(UIOWA_AdminDash.postUrl, {
-                method: requestType,
+        $.ajax({
+            method: 'POST',
+            url: UIOWA_AdminDash.urlLookup.post,
+            dataType: 'json',
+            data: {
+                adMethod: requestType,
                 id: reportId,
-                redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
             },
-            function(result) {
+            timeout: UIOWA_AdminDash.queryTimeout,
+            success: function(result) {
                 if (result.length > 0) {
                     let columns = [];
 
@@ -662,8 +671,16 @@ $(document).ready(function() {
                 else {
                     self.loadedReport.error = "Zero rows returned."
                 }
-            },
-            'json'
-        )
+            }
+            ,
+            error: function(err) {
+                let errorMsg = err.responseText;
+
+                self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
+                    errorMsg.lastIndexOf("The error from the database was:"),
+                    errorMsg.lastIndexOf("See the server error log for more details")
+                );
+            }
+        })
     }
 });

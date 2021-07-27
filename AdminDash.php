@@ -62,7 +62,7 @@ class AdminDash extends AbstractExternalModule
         if ($project_id == $this->configPID) {
             ?>
             <script>
-                let UIOWA_AdminDash = <?= $this->getJavascriptObject(-1, true) ?>;
+                let UIOWA_AdminDash = <?= $this->getJavascriptObject($record, true) ?>;
             </script>
             <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("/resources/ace/ext-language_tools.js") ?>" type="text/javascript" charset="utf-8"></script>
@@ -79,16 +79,17 @@ class AdminDash extends AbstractExternalModule
     }
 
     // todo get rid of report_id probably
-    public function getJavascriptObject($report_id = -1, $isDataEntryForm = false)
+    public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
         $jsObject = array(
             'urlLookup' => array(
                 'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
                 'reportBase' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
                 'post' => $this->getUrl("post_internal.php", false, $this->getSystemSetting("use-api-urls"))
-                // todo is this needed?
-                //. ($report_id !== -1 ? "?id=" . $report_id : '')
-            )
+            ),
+            'reportId' => $report_id,
+            'queryTimeout' => $this->getSystemSetting('test-query-timeout'),
+            'redcap_csrf_token' => $this->getCSRFToken()
         );
 
         // remove PID if project context added it
@@ -110,7 +111,6 @@ class AdminDash extends AbstractExternalModule
 
             $jsObject = array_merge($jsObject, array(
                 'dataEntryForm' => array(
-                    'queryTimeout' => $this->getSystemSetting('test-query-timeout'),
                     'fields' => \REDCap::getFieldNames($_GET['page']),
                     'iconLookup' => $formattingReference['icons']
                 )
@@ -120,20 +120,18 @@ class AdminDash extends AbstractExternalModule
         }
 
         // get list of reports
-        $reportLookup = json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
-            'return_format' => 'json',
-            'filterLogic' => '[report_visibility] = "1"',
-            'fields' => array('report_id', 'report_title', 'report_icon', 'report_type', 'folder_name', 'tab_color', 'tab_color_custom')
-        )), true);
-
-        $reportAccess = $this->getUserAccess(USERID, $_GET['pid']);
+        $reportLookup = $this->getReportLookup();
+        $reportAccess = $this->getUserAccess(isset($execPreviewUser) ? $execPreviewUser : USERID, $_GET['pid']);
 
         // remove any reports user does not have access to
         foreach($reportLookup as $index => $report) {
             $accessDetails = $reportAccess[$report['report_id']];
 
-            if (SUPER_USER !== '1' && !$accessDetails['sync_project_access'] && !$accessDetails['executive_view']) {
+            if (
+                (SUPER_USER !== '1' || $execPreviewUser) &&
+                !$accessDetails['sync_project_access'] &&
+                !$accessDetails['executive_view']
+            ) {
                 unset($reportLookup[$index]);
             }
         }
@@ -187,7 +185,7 @@ class AdminDash extends AbstractExternalModule
                 'showAdminControls' => SUPER_USER,
                 'configPID' => $this->configPID,
                 'formattingReference' => $formattingReference,
-                'executiveView' => $reportAccess[$report_id]['executive_view'],
+                'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
                 'redcap_csrf_token' => $this->getCSRFToken()
             ));
         }
@@ -233,9 +231,12 @@ class AdminDash extends AbstractExternalModule
             // fix for group_concat limit
             $this->query('SET SESSION group_concat_max_len = 1000000;', []);
 
-            //todo handle error
-
             $result = $this->query($sql, []);
+
+            if (is_string($result)) {
+                echo $result;
+                return;
+            }
 
             // prepare data for table
             while ($row = db_fetch_assoc($result)) {
@@ -664,6 +665,29 @@ class AdminDash extends AbstractExternalModule
 
     public function getRedcapUrl() {
         return (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
+    }
+
+    public function getReportLookup() {
+        return json_decode(\REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'filterLogic' => '[report_visibility] = "1"',
+            'fields' => array('report_id', 'report_id_custom', 'report_title', 'report_icon', 'report_type', 'folder_name', 'tab_color', 'tab_color_custom')
+        )), true);
+    }
+
+    public function getCustomReportIds() {
+        $reportLookup = $this->getReportLookup();
+        $idLookup = array();
+
+        // remove any reports user does not have access to
+        foreach($reportLookup as $index => $report) {
+            if ($report['report_id_custom'] !== '') {
+                $idLookup[$report['report_id_custom']] = $index;
+            }
+        }
+
+        return $idLookup;
     }
 }
 ?>
