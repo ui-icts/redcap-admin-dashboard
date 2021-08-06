@@ -162,7 +162,7 @@ $(document).ready(function() {
             })
         },
         api_url: function() {
-            let apiUrl = UIOWA_AdminDash.urlLookup.post + '&NOAUTH=&id=' + UIOWA_AdminDash.record;
+            let apiUrl = UIOWA_AdminDash.urlLookup.post + '&NOAUTH=&id=' + UIOWA_AdminDash.reportId;
 
             $('#api_url-tr')
                 .find('.url-placeholder')

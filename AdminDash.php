@@ -18,6 +18,17 @@ class AdminDash extends AbstractExternalModule
         $this->currentPID = isset($_GET['pid']) ? $_GET['pid'] : $this->configPID;
     }
 
+    function redcap_module_system_change_version($version, $old_version) {
+        $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'');
+        $authMethod = db_fetch_assoc($result)['value'];
+
+        if ($authMethod == 'shibboleth') {
+            $this->setSystemSetting('use-api-urls', false);
+        } else {
+            $this->setSystemSetting('use-api-urls', true);
+        }
+    }
+
     function redcap_module_link_check_display($project_id, $link) {
         if ($project_id) {
             $link_id = intval(explode('_', $link['name'])[1]);
@@ -85,11 +96,12 @@ class AdminDash extends AbstractExternalModule
             'urlLookup' => array(
                 'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
                 'reportBase' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
-                'post' => $this->getUrl("post_internal.php", false, $this->getSystemSetting("use-api-urls"))
+                'post' => $this->getUrl("post_internal.php")
             ),
             'reportId' => $report_id,
-            'queryTimeout' => $this->getSystemSetting('test-query-timeout'),
-            'redcap_csrf_token' => $this->getCSRFToken()
+            'queryTimeout' => $this->getSystemSetting('query-timeout'),
+            'redcap_csrf_token' => $this->getCSRFToken(),
+            'loadedReport' => false
         );
 
         // remove PID if project context added it

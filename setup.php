@@ -17,7 +17,8 @@ $hasSupertoken = $query->fetch_assoc()['token_exists'] == 1;
                 method: 'POST',
                 url: '<?= $module->getUrl("post_internal.php") ?>',
                 data: {
-                    adMethod: 'createConfigProject'
+                    adMethod: 'createConfigProject',
+                    redcap_csrf_token: '<?= $module->getCSRFToken() ?>'
                 },
                 success: function (pid) {
                     $('.success-msg').show()
@@ -32,7 +33,6 @@ $hasSupertoken = $query->fetch_assoc()['token_exists'] == 1;
         });
     });
 </script>
-<script src="<?= $module->getUrl("setup.js") ?>"></script>
 
 <div style="text-align: center">
     <h2 style="padding-top: 50px">Thank you for installing the Admin Dashboard module!</h2>
@@ -44,7 +44,7 @@ $hasSupertoken = $query->fetch_assoc()['token_exists'] == 1;
     If this is your first time using the Admin Dashboard (or you're upgrading from an older version), you can press the button below to automatically create the configuration project and link it to the module.
 </p>
 <div style="margin:10px; text-align: center">
-    <button class="btn btn-primary create-config-project" <?= !$hasSupertoken ? "disabled" : "" ?> data-toggle="tooltip" data-placement="top" title="Tooltip on top">Create & Link Configuration Project</button>
+    <button class="btn btn-primary create-config-project" disabled <?= !$hasSupertoken ? "disabled" : "" ?> data-toggle="tooltip" data-placement="top" title="Tooltip on top">Create & Link Configuration Project</button>
     <div>
         <?= !$hasSupertoken ?
             "<small style='color:red'>Super API token required</small>" :
@@ -52,6 +52,7 @@ $hasSupertoken = $query->fetch_assoc()['token_exists'] == 1;
             </div>"
         ?>
     </div>
+    <small style='color:red'>Auto-create project is a WIP and disabled for now</small>
 </div>
 <details>
     <summary>If the button doesn't work or you would simply prefer to set things up manually, click here for manual steps.</summary>
