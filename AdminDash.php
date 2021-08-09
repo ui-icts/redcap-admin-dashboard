@@ -68,6 +68,29 @@ class AdminDash extends AbstractExternalModule
         return $link;
     }
 
+    function redcap_module_project_enable($version, $project_id) {
+        $query = $this->query('select element_enum from redcap_metadata where field_name = "link_source_column" and project_id = ?', [$project_id]);
+        $sqlEnum = $query->fetch_assoc()['element_enum'];
+
+        if ($sqlEnum == '') {
+            // add missing sql field (and other settings not included in XML)
+            $this->query(
+                    "
+                        update redcap_metadata set element_enum =
+'select value, value from redcap_data
+where project_id = [project-id] and
+field_name = \"column_name\" and
+record = [record-name]
+order by instance asc'
+                        where field_name = 'link_source_column' and project_id = ?
+                    ",
+                [$project_id]
+            );
+
+            $this->query("update redcap_projects set secondary_pk_display_value = 0, secondary_pk_display_label = 0 where project_id = ?", [$project_id]);
+        }
+    }
+
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
         if ($project_id == $this->configPID) {
