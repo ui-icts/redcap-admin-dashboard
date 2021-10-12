@@ -316,7 +316,7 @@ ORDER BY
         $configSettings = $this::$configSettings;
         $executiveUsers = $this->getSystemSetting("executive-users");
         $executiveAccess = ($_REQUEST['page'] == 'executiveView' && (in_array(USERID, $executiveUsers) || SUPER_USER) ? 1 : 0);
-        $executiveExportLookup = $this->getSystemSetting("executive-user-export");
+        $executiveExportLookup = $this->getSystemSetting("executive-user-export") ? $this->getSystemSetting("executive-user-export") : array();
         $exportEnabled = (in_array(USERID, $executiveExportLookup) && $executiveAccess) || (SUPER_USER && !$executiveAccess);
         $reportIDlookup = [];
         $moduleDirectory = $this->getModulePath();
@@ -355,7 +355,7 @@ ORDER BY
         $executiveVisibility = $this->loadVisibilitySettings('executive', $reportReference);
         $executiveVisible = false;
 
-        if ($pageInfo['reportName']) {
+        if ($pageInfo['reportName'] && $executiveVisibility->{$pageInfo['reportName']}) {
             $executiveVisible = in_array(USERID, $executiveVisibility->{$pageInfo['reportName']});
         }
 
@@ -592,7 +592,7 @@ ORDER BY
             foreach ($row as $key => $value) {
                 if (!array_search($key, $fieldNames)) {
                     $row[$tableData['project_headers'][$index]] = $value;
-                    array_push($key, $fieldNames);
+                    array_push($fieldNames, $key);
                     $index++;
                 }
 
