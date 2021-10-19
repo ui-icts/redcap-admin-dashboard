@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-08-03T10:42:07" CreationDateTime="2021-08-03T10:42:07" SourceSystem="REDCap" SourceSystemVersion="11.1.3">
+<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-10-19T09:22:03" CreationDateTime="2021-10-19T09:22:03" SourceSystem="REDCap" SourceSystemVersion="11.2.6">
 <Study OID="Project.AdminDashboardReports">
 <GlobalVariables>
 	<StudyName>Admin Dashboard Reports</StudyName>
@@ -37,11 +37,11 @@
 		</redcap:RepeatingInstruments>
 	</redcap:RepeatingInstrumentsAndEvents>
 	<redcap:ReportsGroup>
-		<redcap:Reports title="SQL Reports" unique_report_name="R-417CMFAYJR" report_order="1" user_access="ALL" user_edit_access="ALL" description="Does not include User Access data. Ideal for sharing queries with other institutions." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql,column_name,dashboard_show_column,dashboard_show_filter,dashboard_display_header,export_show_column,export_display_header,link_type,link_source_column,specify_custom_link,export_urls,code_type,export_codes,group_concat_separator,hint_icons,column_formatting_complete" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="0ca9277f91e40054767f69afeb0426711ca0fddd"/>
-		<redcap:Reports title="SQL Reports (Queries Only)" unique_report_name="R-624RY48DDK" report_order="2" user_access="ALL" user_edit_access="ALL" description="Does not include Column Formatting or User Access data." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="114d4eefde1dae3983e7a79f04c72feb9a3a7efd"/>
+		<redcap:Reports title="SQL Reports" unique_report_name="R-417CMFAYJR" report_order="1" user_access="ALL" user_edit_access="ALL" description="Does not include User Access data. Ideal for sharing queries with other institutions." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KM9FLWPTYWMFN8DL" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql,column_name,dashboard_show_column,dashboard_show_filter,dashboard_display_header,export_show_column,export_display_header,link_type,link_source_column,specify_custom_link,export_urls,code_type,export_codes,group_concat_separator,hint_icons,column_formatting_complete" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="77de68daecd823babbb58edb1c8e14d7106e83bb"/>
+		<redcap:Reports title="SQL Reports (Queries Only)" unique_report_name="R-624RY48DDK" report_order="2" user_access="ALL" user_edit_access="ALL" description="Does not include Column Formatting or User Access data." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KCM8DTHJCY38D3XF" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="1b6453892473a467d07372d45eb05abc2031647a"/>
 	</redcap:ReportsGroup>
 </GlobalVariables>
-<MetaDataVersion OID="Metadata.AdminDashboardReports_2021-08-03_1042" Name="Admin Dashboard Reports" redcap:RecordIdField="report_id">
+<MetaDataVersion OID="Metadata.AdminDashboardReports_2021-10-19_0922" Name="Admin Dashboard Reports" redcap:RecordIdField="report_id">
 	<Protocol>
 		<StudyEventRef StudyEventOID="Event.report_config_arm_1" OrderNumber="1" Mandatory="No"/>
 		<StudyEventRef StudyEventOID="Event.user_access_arm_1" OrderNumber="2" Mandatory="No"/>
@@ -239,6 +239,7 @@
 	</ItemGroupDef>
 	<ItemGroupDef OID="api_endpoint.api_url" Name="API Endpoint" Repeating="No">
 		<ItemRef ItemOID="api_url" Mandatory="No" redcap:Variable="api_url"/>
+		<ItemRef ItemOID="alert_warning_api" Mandatory="No" redcap:Variable="alert_warning_api"/>
 	</ItemGroupDef>
 	<ItemGroupDef OID="api_endpoint.api_endpoint_complete" Name="Form Status" Repeating="No">
 		<ItemRef ItemOID="api_endpoint_complete" Mandatory="No" redcap:Variable="api_endpoint_complete"/>
@@ -340,11 +341,11 @@
 		<Question><TranslatedText>Include data from this column in Dashboard View?</TranslatedText></Question>
 		<CodeListRef CodeListOID="dashboard_show_column.choices"/>
 	</ItemDef>
-	<ItemDef OID="dashboard_show_filter" Name="dashboard_show_filter" DataType="text" Length="1" redcap:Variable="dashboard_show_filter" redcap:FieldType="radio" redcap:FieldNote="A general &quot;Search&quot; field is always available, but multiple per-column filters can be used at once" redcap:BranchingLogic="[dashboard_show_column] = &#039;1&#039; or [dashboard_show_column] = &#039;2&#039;">
+	<ItemDef OID="dashboard_show_filter" Name="dashboard_show_filter" DataType="text" Length="1" redcap:Variable="dashboard_show_filter" redcap:FieldType="radio" redcap:FieldNote="A general &quot;Search&quot; field is always available, but multiple per-column filters can be used at once" redcap:BranchingLogic="[dashboard_show_column] = &#039;1&#039;">
 		<Question><TranslatedText>Show column filter as:</TranslatedText></Question>
 		<CodeListRef CodeListOID="dashboard_show_filter.choices"/>
 	</ItemDef>
-	<ItemDef OID="dashboard_display_header" Name="dashboard_display_header" DataType="text" Length="999" redcap:Variable="dashboard_display_header" redcap:FieldType="text" redcap:FieldNote="Overrides SQL column name. If left blank, &quot;[column_name]&quot; will be used" redcap:BranchingLogic="[dashboard_show_column] = &#039;1&#039; or [dashboard_show_column] = &#039;2&#039;">
+	<ItemDef OID="dashboard_display_header" Name="dashboard_display_header" DataType="text" Length="999" redcap:Variable="dashboard_display_header" redcap:FieldType="text" redcap:FieldNote="Overrides SQL column name. If left blank, &quot;[column_name]&quot; will be used" redcap:BranchingLogic="[dashboard_show_column] = &#039;1&#039;">
 		<Question><TranslatedText>Alternate column header:</TranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="export_show_column" Name="export_show_column" DataType="boolean" Length="1" redcap:Variable="export_show_column" redcap:FieldType="yesno" redcap:SectionHeader="Display Options (Exports)" redcap:FieldAnnotation="@DEFAULT=&#039;1&#039;">
@@ -489,6 +490,9 @@
 The API token specific to this configuration project (each token is unique to each user for each project). project_id (optional)
 An override value for the &#039;project-id&#039; Smart Variable (if being used in a SQL query). If not defined, any use of &#039;project-id&#039; will default to the PID of this config project ([project-id]).</TranslatedText><redcap:FormattedTranslatedText>&lt;p&gt;Request URL:&lt;/p&gt; &lt;pre class=&quot;url-placeholder api-pre&quot;&gt;&lt;/pre&gt; &lt;p&gt;Supported Request Method:&lt;/p&gt; &lt;pre  class=&quot;api-pre&quot;&gt;POST&lt;/pre&gt; &lt;p&gt;Parameters (case sensitive):&lt;/p&gt; &lt;pre class=&quot;api-pre&quot;&gt;&lt;em&gt;token&lt;br /&gt;&lt;/em&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;The API token specific to this configuration project (each token is unique to each user for each project).&lt;/span&gt;&lt;/pre&gt; &lt;pre class=&quot;api-pre&quot;&gt;&lt;em&gt;project_id (optional)&lt;br /&gt;&lt;/em&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;An override value for the &#039;project-id&#039; Smart Variable (if being used in a SQL query). If not defined, any use of &#039;project-id&#039; will default to the PID of this config project ([project-id]).&lt;/span&gt;&lt;/pre&gt;</redcap:FormattedTranslatedText></Question>
 	</ItemDef>
+	<ItemDef OID="alert_warning_api" Name="alert_warning_api" DataType="text" Length="999" redcap:Variable="alert_warning_api" redcap:FieldType="descriptive">
+		<Question><TranslatedText>NOTE: API endpoint does not currently support Smart Variables in queries.</TranslatedText></Question>
+	</ItemDef>
 	<ItemDef OID="api_endpoint_complete" Name="api_endpoint_complete" DataType="text" Length="1" redcap:Variable="api_endpoint_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
 		<Question><TranslatedText>Complete?</TranslatedText></Question>
 		<CodeListRef CodeListOID="api_endpoint_complete.choices"/>
@@ -555,7 +559,6 @@ In most cases you should NOT need to edit these fields. Please leave them be unl
 	</CodeList>
 	<CodeList OID="dashboard_show_column.choices" Name="dashboard_show_column" DataType="text" redcap:Variable="dashboard_show_column">
 		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="2"><Decode><TranslatedText>Only in collapsible child row</TranslatedText></Decode></CodeListItem>
 		<CodeListItem CodedValue="0"><Decode><TranslatedText>No, hide it</TranslatedText></Decode></CodeListItem>
 	</CodeList>
 	<CodeList OID="dashboard_show_filter.choices" Name="dashboard_show_filter" DataType="text" redcap:Variable="dashboard_show_filter">
@@ -699,7 +702,7 @@ In most cases you should NOT need to edit these fields. Please leave them be unl
 	</CodeList>
 </MetaDataVersion>
 </Study>
-<ClinicalData StudyOID="Project.AdminDashboardReports" MetaDataVersionOID="Metadata.AdminDashboardReports_2021-08-03_1042">
+<ClinicalData StudyOID="Project.AdminDashboardReports" MetaDataVersionOID="Metadata.AdminDashboardReports_2021-10-19_0922">
 	<SubjectData SubjectKey="1" redcap:RecordIdField="report_id">
 		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
 			<FormData FormOID="Form.report_details" FormRepeatKey="1">
@@ -780,8 +783,6 @@ order by users.username asc"/>
 					<ItemData ItemOID="sql_query_complete" Value="2"/>
 				</ItemGroupData>
 			</FormData>
-		</StudyEventData>
-		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
 			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
 				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="column_name" Value="username"/>
@@ -914,7 +915,7 @@ order by users.username asc"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
-					<ItemData ItemOID="dashboard_display_header" Value="Project Titles"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Ttiles"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="export_show_column" Value="1"/>
@@ -1118,8 +1119,6 @@ order by projects.project_id desc"/>
 					<ItemData ItemOID="sql_query_complete" Value="2"/>
 				</ItemGroupData>
 			</FormData>
-		</StudyEventData>
-		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
 			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
 				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="column_name" Value="project_id"/>
@@ -1158,13 +1157,10 @@ order by projects.project_id desc"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
-					<ItemData ItemOID="dashboard_display_header" Value="Project Titles"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Title"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="export_show_column" Value="1"/>
-				</ItemGroupData>
-				<ItemGroupData ItemGroupOID="column_formatting.export_display_header" ItemGroupRepeatKey="1">
-					<ItemData ItemOID="export_display_header" Value="project_titles"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="link_type" Value="1"/>
@@ -1221,9 +1217,6 @@ order by projects.project_id desc"/>
 				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="export_show_column" Value="1"/>
 				</ItemGroupData>
-				<ItemGroupData ItemGroupOID="column_formatting.export_display_header" ItemGroupRepeatKey="1">
-					<ItemData ItemOID="export_display_header" Value="total_records"/>
-				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="hint_icons___1" Value="0"/>
 					<ItemData ItemOID="hint_icons___2" Value="0"/>
@@ -1271,9 +1264,6 @@ order by projects.project_id desc"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="export_show_column" Value="1"/>
-				</ItemGroupData>
-				<ItemGroupData ItemGroupOID="column_formatting.export_display_header" ItemGroupRepeatKey="1">
-					<ItemData ItemOID="export_display_header" Value="usernames"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="link_type" Value="6"/>
@@ -2084,8 +2074,6 @@ order by projects.project_id desc"/>
 					<ItemData ItemOID="sql_query_complete" Value="2"/>
 				</ItemGroupData>
 			</FormData>
-		</StudyEventData>
-		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
 			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
 				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="column_name" Value="project_id"/>
@@ -2613,8 +2601,6 @@ limit 50"/>
 					<ItemData ItemOID="sql_query_complete" Value="2"/>
 				</ItemGroupData>
 			</FormData>
-		</StudyEventData>
-		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
 			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
 				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="column_name" Value="project_id"/>

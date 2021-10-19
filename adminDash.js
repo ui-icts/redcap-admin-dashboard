@@ -56,27 +56,27 @@ $.extend(UIOWA_AdminDash, {
             });
 
             // add column for child row collapse buttons (if at least one column needs it)
-            let hasChildRow = false;
-            $.each(self.loadedReport.meta.column_formatting, function (column_name, value) {
-
-                if (value.dashboard_show_column === '2') {
-                    hasChildRow = true;
-                }
-            });
-            if (hasChildRow) {
-                $('.report-table > thead > tr:first').prepend('<th></th>');
-
-                columns.unshift({
-                    className: 'details-control',
-                    orderable: false,
-                    data: null,
-                    defaultContent: '',
-                    render: function () {
-                        return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
-                    },
-                    width:"15px"
-                });
-            }
+            // let hasChildRow = false;
+            // $.each(self.loadedReport.meta.column_formatting, function (column_name, value) {
+            //
+            //     if (value.dashboard_show_column === '2') {
+            //         hasChildRow = true;
+            //     }
+            // });
+            // if (hasChildRow) {
+            //     $('.report-table > thead > tr:first').prepend('<th></th>');
+            //
+            //     columns.unshift({
+            //         className: 'details-control',
+            //         orderable: false,
+            //         data: null,
+            //         defaultContent: '',
+            //         render: function () {
+            //             return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
+            //         },
+            //         width:"15px"
+            //     });
+            // }
         }
 
         // init DataTable
@@ -669,7 +669,8 @@ $(document).ready(function() {
                     });
                 }
                 else {
-                    self.loadedReport.error = "Zero rows returned."
+                    // self.loadedReport.error = "Zero rows returned."
+                    self.loadedReport.ready = true;
                 }
             }
             ,

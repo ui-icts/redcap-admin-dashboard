@@ -15,7 +15,9 @@ The following reports are included by default:
 Each report configuration is stored as a record in a dedicated REDCap project.
 
 ### Usage
-After downloading and enabling this module on your REDCap instance, a link to the Admin Dashboard will appear at the bottom of the Control Center sidebar. A REDCap project (created with the included template) is required before the module can properly function. 
+After downloading and enabling this module on your REDCap instance, a link to the Admin Dashboard will appear at the bottom of the Control Center sidebar. A REDCap project (created with the included template) is required before the module can properly function. Once the module is enabled on the template project, setup is complete.
+
+*NOTE:* The first time this module is enabled at the project level, that project will be linked as the configuration source. Enabling on additional projects is possible (and necessary, if using the "Project Sync" feature), but the configuration PID will not change. If you need to switch to another PID for some reason, the config PID should be set to *NONE* in the module's system settings and enabled on the new project shortly after. The project template requires some extra customizations that are only applied under these circumstances (enabling at the project level while config PID is set to NONE).
 
 ### Exporting
 Export options can be found in the top right corner (above the report title), though they may be hidden on a per-report, per-user (if accessed via Executive Dashboard), or per-project (if accessed via Project Sync) basis by setting the relevant option in report config. Report results can be downloaded in CSV format, JSON format, or simply copied directly to your clipboard. Exports will include all data regardless of paging, but it will also respect any active filtering.
@@ -36,7 +38,7 @@ The User Access section is available in both arms and all forms are completely o
 * **Project Sync**: A repeatable instrument that can grant user access at the project-level. This additionally requires the Admin Dashboard module to be enabled at the project-level, and any "synced" reports (up to 5) will be available as links in the project sidebar.
 * **API Endpoint**: This instrument allows any user with a valid API token for the Admin Dashboard config project to request report data via POST request.
 
-NOTE: It is not recommended to edit/delete the default reports as they can be helpful examples to reference when creating your own custom reports. If you do not wish to use them, you can change their visibility settings to not appear in the Admin Dashboard's navigation bar.
+*NOTE:* It is not recommended to edit/delete the default reports as they can be helpful examples to reference when creating your own custom reports. If you do not wish to use them, you can change their visibility settings to not appear in the Admin Dashboard's navigation bar.
 
 ### System-Level Settings
 * **Project ID of report configuration project:** This must be set for the Admin Dashboard to function. The configuration project must also use the included template.

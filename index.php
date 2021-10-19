@@ -58,7 +58,6 @@ else {
 }
 
 ?>
-<!--todo move into .css-->
 <style>
     /* make the display the full width */
     div#outer

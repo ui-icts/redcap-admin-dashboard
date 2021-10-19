@@ -69,12 +69,15 @@ class AdminDash extends AbstractExternalModule
     }
 
     function redcap_module_project_enable($version, $project_id) {
-        $query = $this->query('select element_enum from redcap_metadata where field_name = "link_source_column" and project_id = ?', [$project_id]);
-        $sqlEnum = $query->fetch_assoc()['element_enum'];
+        $configPid = $this->getSystemSetting("config-pid");
 
-        if ($sqlEnum == '') {
-            // add missing sql field (and other settings not included in XML)
-            $this->query(
+        if (!isset($configPid)) {
+            $query = $this->query('select element_enum from redcap_metadata where field_name = "link_source_column" and project_id = ?', [$project_id]);
+            $sqlEnum = $query->fetch_assoc()['element_enum'];
+
+            if ($sqlEnum == '') {
+                // add missing sql field (and other settings not included in XML)
+                $this->query(
                     "
                         update redcap_metadata set element_enum =
 'select value, value from redcap_data
@@ -84,10 +87,23 @@ record = [record-name]
 order by instance asc'
                         where field_name = 'link_source_column' and project_id = ?
                     ",
-                [$project_id]
-            );
+                    [$project_id]
+                );
 
-            $this->query("update redcap_projects set secondary_pk_display_value = 0, secondary_pk_display_label = 0 where project_id = ?", [$project_id]);
+                $this->query("update redcap_projects set secondary_pk_display_value = 0, secondary_pk_display_label = 0 where project_id = ?", [$project_id]);
+            }
+
+            // Get the next order number for bookmark
+            $query = $this->query("select max(link_order) from redcap_external_links where project_id = ?", [$project_id]);
+            $max_link_order = $query->fetch_assoc()['link_order'];
+            $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
+
+            // Insert into table
+            $this->query("insert into redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
+                link_to_project_id, user_access, append_record_info) values
+                (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
+
+            $this->setSystemSetting("config-pid", $project_id);
         }
     }
 
@@ -226,10 +242,6 @@ order by instance asc'
         }
 
         return json_encode($jsObject);
-
-//        if ($showChangelog) { // todo changelog?
-//            $this->setSystemSetting('show-changelog', false);
-//        }
     }
 
     public function runReport($params) { // id, sql
@@ -253,7 +265,9 @@ order by instance asc'
         $returnData = array();
 
         // supports [user-name] and [project-id]
-        $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+        if (!isset($params['token'])) {
+            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+        }
 
         // error out if no query
         if ($sql == '') {
@@ -615,68 +629,6 @@ order by instance asc'
         $result = $this->query($queries[$params['type']], $params['whereVal']);
 
         echo json_encode(db_fetch_assoc($result));
-    }
-
-    public function convertOldReports() {
-        // get custom reports from db and import them into redcap project
-    }
-
-    public function createConfigProject() {
-        $content = file_get_contents($this->getUrl("AdminDashboardReportsTemplate.xml"));
-        $query = $this->query("SELECT api_token FROM redcap_user_information where username = ?", USERID);
-        $supertoken = $query->fetch_assoc()['api_token'];
-
-        $project_token = $this->apiCall(APP_PATH_WEBROOT_FULL . 'api/', array(
-            'token' => $supertoken,
-            'content' => 'project',
-            'format' => 'json',
-            'data' => "[{
-                \"project_title\": \"Admin Dashboard Reports\",
-                \"purpose\": 4
-            }]",
-            'odm' => $content
-        ));
-
-        $query = $this->query("SELECT project_id FROM redcap_user_rights WHERE api_token = ?", $project_token);
-        $pid = $query->fetch_assoc()['project_id'];
-
-        // adding this after import since it doesn't persist through XML export
-        $link_source_column_sql = "select value, value from redcap_data
-            where project_id = [project-id] and
-            field_name = 'column_name' and
-            record = [record-name]
-            order by instance asc";
-
-        $this->query("
-                update redcap_metadata
-                set element_type = 'sql',
-                    element_enum = ?
-                where project_id = ? and field_name = 'link_source_column'
-            ",
-            [
-                $link_source_column_sql,
-                $pid
-            ]);
-
-        $this->setSystemSetting("config-pid", "$pid");
-
-        $module_info = explode('_', $this->getModuleDirectoryName());
-        $module_version = array_pop($module_info);
-        $module_name = implode('_', $module_info);
-
-        ExternalModules::enableForProject($module_name, $module_version, $pid);
-
-        // Get the next order number for bookmark
-        $query = $this->query("select max(link_order) from redcap_external_links where project_id = ?", $pid);
-        $max_link_order = $query->fetch_assoc()['link_order'];
-        $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
-
-        // Insert into table
-        $query = $this->query("insert into redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
-			link_to_project_id, user_access, append_record_info) values
-			(?, ?, ?, ?, ?, ?, ?, ?, ?)", [$pid, $next_link_order, "Open Admin Dashboard", "test", 1, "LINK", "ALL", 1, 0]);
-
-        echo $pid;
     }
 
     public function apiCall($url, $data) {

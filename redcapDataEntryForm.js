@@ -79,6 +79,8 @@ $(document).ready(function() {
                     success: function(data) {
                         let endTime = performance.now();
 
+                        console.log(data);
+
                         $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-info').addClass('btn-success');
 
                         $('[name="test_query_error"]').val('');
@@ -319,7 +321,7 @@ $(document).ready(function() {
                 margin: '15px'
             })
 
-        $('<i class="fas fa-' + alertIcon + ' fa-2x" style="vertical-align: sub">&nbsp;</i>').prependTo($alertWrapper);
+        $('<i class="fas fa-' + alertIcon + ' fa">&nbsp;</i>').prependTo($alertWrapper);
     });
 
     console.log('Customizations for Admin Dashboard configuration project active');

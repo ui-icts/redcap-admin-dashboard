@@ -70,7 +70,7 @@
   "system-settings": [
     {
       "key": "config-pid",
-      "name": "Project ID of report configuration project",
+      "name": "Project ID of report configuration project. This should be automatically set when enabling the module for the first time. DO NOT edit this manually.",
       "type": "project-id",
       "required": true
     },
