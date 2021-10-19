@@ -4,7 +4,7 @@
   "documentation": "README.md",
 
   "namespace": "UIOWA\\AdminDash",
-
+  "framework-version": 8,
 
   "authors": [
     {
@@ -15,31 +15,82 @@
   ],
 
   "links": {
+    "project": [
+      {
+        "name": "report_0",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_1",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_2",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_3",
+        "icon": "table",
+        "url": "index.php"
+      },
+      {
+        "name": "report_4",
+        "icon": "table",
+        "url": "index.php"
+      }
+    ],
     "control-center": [
       {
         "name": "Admin Dashboard",
         "icon": "table",
-        "url": "index.php"
+        "url": "index2.php"
       }
     ]
   },
 
   "permissions": [
-    "redcap_module_system_change_version"
+    "redcap_data_entry_form",
+    "redcap_save_record",
+    "redcap_module_link_check_display",
+    "redcap_module_system_change_version",
+    "redcap_module_project_enable"
+  ],
+
+  "no-auth-pages": [
+    "post"
+  ],
+
+  "no-csrf-pages": [
+    "post"
   ],
 
   "system-settings": [
     {
+      "key": "config-pid",
+      "name": "Project ID of report configuration project. This should be automatically set when enabling the module for the first time. DO NOT edit this manually.",
+      "type": "project-id",
+      "required": true
+    },
+    {
       "key": "use-api-urls",
       "name": "Use versionless URLs for easier bookmarking (disable to fix issues with Shibboleth authentication)",
       "type": "checkbox",
-      "required": false
+      "default": true
     },
     {
       "key": "test-query-timeout",
-      "name": "Timeout (in milliseconds) for running test queries (set to 0 for no timeout)",
+      "name": "Timeout (in milliseconds) for running queries (set to 0 for no timeout)",
       "type": "text",
       "default": "3000"
+    },
+    {
+      "key": "null-value-handling",
+      "name": "Display null values returned in reports as",
+      "type": "text",
+      "default": "null"
     }
   ]
 }

@@ -1,926 +1,687 @@
-(function($, window, document) {
-    $(document).ready(function () {
-        $('#pagecontainer').css('cursor', 'default');
-        $('#loading').hide();
+$.extend(UIOWA_AdminDash, {
+    initDatatable: function () {
+        let self = this;
 
-        // build report table
-        if (UIOWA_AdminDash.data != null) {
-            var data = UIOWA_AdminDash.data['data'];
-            var headers = UIOWA_AdminDash.data['headers'];
-            var table = $('#reportTable');
-            var specialFormatting = {};
+        // report edit shortcut (admins only)
+        $('.edit-report').click(function () {
+            let loadedReportMeta = self.loadedReport.meta;
+            let url = self.urlLookup.redcapBase + '/DataEntry/record_home.php?pid=' + self.configPID + '&id=' + loadedReportMeta.config.report_id;
 
-            $.each(data, function (i, row) {
-                var formattedRow = [];
-
-                $.each(headers, function (j, header) {
-                    formattedRow.push(row[header]);
-                });
-
-                data[i] = formattedRow;
-            });
-
-            if (UIOWA_AdminDash.reportInfo['formatting']) {
-                specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
-                data = UIOWA_AdminDash.formatTableData(data, headers, specialFormatting);
+            if ("project_join_info" in loadedReportMeta) {
+                url += "&arm=2";
             }
 
-            headers = UIOWA_AdminDash.data['headers'];
-            specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
-
-            var strTable = "";
-            strTable += "<thead>";
-
-            $.each(headers, function(headerIndex, headerValue) {
-                strTable += "<th>";
-                strTable += "<span class='edit-column' style='display:none'><i class='fas fa-arrows-alt drag-handle move-column'></i>&nbsp;" +
-                    "<a data-toggle='tooltip' data-placement='bottom' title='Hide Column'>" +
-                    "<i class='fa fa-eye-slash hide-column'></i>" +
-                    "</a>&nbsp;</span>";
-                strTable += headerValue;
-                strTable += "</th>";
-            });
-
-            strTable += "</thead>";
-
-            $.each(data, function(rowIndex, rowValue) {
-                strTable += "<tr>";
-
-                $.each(rowValue, function(cellIndex, cellValue) {
-                    strTable += "<td>";
-                    strTable += cellValue;
-                    strTable += "</td>";
-                });
-
-                strTable += "</tr>";
-            });
-
-            // get column indexes to hide in export
-            var columnId = 0;
-            var hiddenExportColumns = [];
-            $.each(specialFormatting, function(key, value) {
-                if (value['display'] == 1 || value['display'] == 3) {
-                    hiddenExportColumns.push(columnId);
-                }
-                columnId++;
-            });
-
-            table.append(strTable);
-            table.tablesorter({
-                theme: UIOWA_AdminDash.theme,
-                widthFixed: true,
-                usNumberFormat: false,
-                sortReset: false,
-                sortRestart: true,
-                widgets: ['zebra', 'filter', 'stickyHeaders', 'pager', 'output'],
-
-                widgetOptions: {
-                    // output default: '{page}/{totalPages}'
-                    // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
-                    // also {page:input} & {startRow:input} will add a modifiable input in place of the value
-                    pager_output: '{startRow:input} – {endRow} / {totalRows} rows', // '{page}/{totalPages}'
-
-                    // apply disabled classname to the pager arrows when the rows at either extreme is visible
-                    pager_updateArrows: true,
-
-                    // starting page of the pager (zero based index)
-                    pager_startPage: 0,
-
-                    // Number of visible rows
-                    pager_size: 10,
-
-                    // Save pager page & size if the storage script is loaded (requires $.tablesorter.storage in jquery.tablesorter.widgets.js)
-                    pager_savePages: false,
-
-                    // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
-                    // table row set to a height to compensate; default is false
-                    pager_fixedHeight: false,
-
-                    // remove rows from the table to speed up the sort of large tables.
-                    // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
-                    pager_removeRows: false, // removing rows in larger tables speeds up the sort
-
-                    // use this format: "http://mydatabase.com?page={page}&size={size}&{sortList:col}&{filterList:fcol}"
-                    // where {page} is replaced by the page number, {size} is replaced by the number of records to show,
-                    // {sortList:col} adds the sortList to the url into a "col" array, and {filterList:fcol} adds
-                    // the filterList to the url into an "fcol" array.
-                    // So a sortList = [[2,0],[3,0]] becomes "&col[2]=0&col[3]=0" in the url
-                    // and a filterList = [[2,Blue],[3,13]] becomes "&fcol[2]=Blue&fcol[3]=13" in the url
-                    pager_ajaxUrl: null,
-
-                    // modify the url after all processing has been applied
-                    pager_customAjaxUrl: function (table, url) {
-                        return url;
-                    },
-
-                    // ajax error callback from $.tablesorter.showError function
-                    // pager_ajaxError: function( config, xhr, settings, exception ){ return exception; };
-                    // returning false will abort the error message
-                    pager_ajaxError: null,
-
-                    // modify the $.ajax object to allow complete control over your ajax requests
-                    pager_ajaxObject: {
-                        dataType: 'json'
-                    },
-
-                    // process ajax so that the following information is returned:
-                    // [ total_rows (number), rows (array of arrays), headers (array; optional) ]
-                    // example:
-                    // [
-                    //   100,  // total rows
-                    //   [
-                    //     [ "row1cell1", "row1cell2", ... "row1cellN" ],
-                    //     [ "row2cell1", "row2cell2", ... "row2cellN" ],
-                    //     ...
-                    //     [ "rowNcell1", "rowNcell2", ... "rowNcellN" ]
-                    //   ],
-                    //   [ "header1", "header2", ... "headerN" ] // optional
-                    // ]
-                    pager_ajaxProcessing: function (ajax) {
-                        return [0, [], null];
-                    },
-
-                    // css class names that are added
-                    pager_css: {
-                        container: 'tablesorter-pager',    // class added to make included pager.css file work
-                        errorRow: 'tablesorter-errorRow', // error information row (don't include period at beginning); styled in theme file
-                        disabled: 'disabled'              // class added to arrows @ extremes (i.e. prev/first arrows "disabled" on first page)
-                    },
-
-                    // jQuery selectors
-                    pager_selectors: {
-                        container: '.pager',       // target the pager markup (wrapper)
-                        first: '.first',       // go to first page arrow
-                        prev: '.prev',        // previous page arrow
-                        next: '.next',        // next page arrow
-                        last: '.last',        // go to last page arrow
-                        gotoPage: '.gotoPage',    // go to page selector - select dropdown that sets the current page
-                        pageDisplay: '.pagedisplay', // location of where the "output" is displayed
-                        pageSize: '.pagesize'     // page size selector - select dropdown that sets the "size" option
-                    },
-
-                    //stickyHeaders_attachTo: '.redcap-home-navbar-collapse',
-                    stickyHeaders_offset: 50,
-
-                    output_separator     : ',',         // ',' 'json', 'array' or separator (e.g. ';')
-                    output_ignoreColumns : hiddenExportColumns,         // columns to ignore [0, 1,... ] (zero-based index)
-                    output_hiddenColumns : true,       // include hidden columns in the output
-                    output_includeFooter : true,        // include footer rows in the output
-                    output_includeHeader : true,        // include header rows in the output
-                    output_headerRows    : false,       // output all header rows (if multiple rows)
-                    output_dataAttrib    : 'data-export', // data-attribute containing alternate cell text
-                    output_delivery      : 'd',         // (p)opup, (d)ownload
-                    output_saveRows      : 'a',         // (a)ll, (v)isible, (f)iltered, jQuery filter selector (string only) or filter function
-                    output_duplicateSpans: true,        // duplicate output data in tbody colspan/rowspan
-                    output_replaceQuote  : '\u201c;',   // change quote to left double quote
-                    output_includeHTML   : false,        // output includes all cell HTML (except the header cells)
-                    output_trimSpaces    : true,       // remove extra white-space characters from beginning & end
-                    output_wrapQuotes    : false,       // wrap every cell output in quotes
-                    output_popupStyle    : 'width=580,height=310',
-                    output_saveFileName  : UIOWA_AdminDash.csvFileName,
-                    // callback executed after the content of the table has been processed
-                    output_formatContent : function(config, widgetOptions, data) {
-                        // data.isHeader (boolean) = true if processing a header cell
-                        // data.$cell = jQuery object of the cell currently being processed
-                        // data.content = processed cell content (spaces trimmed, quotes added/replaced, etc)
-                        // data.columnIndex = column in which the cell is contained
-                        // data.parsed = cell content parsed by the associated column parser
-                        return data.content.replace(/Email All/ig, '');
-                    },
-                    // callback executed when processing completes
-                    output_callback      : function(config, data, url) {
-                        // return false to stop delivery & do something else with the data
-                        // return true OR modified data (v2.25.1) to continue download/output
-
-                        if (config['widgetOptions']['output_delivery'] == 'd') {
-                            data = '\ufeff' + data;
-                        }
-
-                        return data;
-                    },
-                    // callbackJSON used when outputting JSON & any header cells has a colspan - unique names required
-                    output_callbackJSON  : function($cell, txt, cellIndex) {
-                        return txt + '(' + cellIndex + ')';
-                    },
-                    // the need to modify this for Excel no longer exists
-                    //output_encoding      : 'data:application/octet-stream;charset=utf8',
-                    // override internal save file code and use an external plugin such as
-                    // https://github.com/eligrey/FileSaver.js
-                    output_savePlugin    : null /* function(config, widgetOptions, data) {
-                     var blob = new Blob([data], {type: widgetOptions.output_encoding});
-                     saveAs(blob, widgetOptions.output_saveFileName);
-                     } */
-
-                }
-            });
-
-            // additonal post-tablesorter formatting
-            columnId = 1;
-            specialFormatting = UIOWA_AdminDash.reportInfo['formatting'];
-            $.each(specialFormatting, function(key, value) {
-                var column = $('td:nth-child(' + columnId + ')');
-
-                column.each(function (i, td) {
-                    var links = $('span', td).not('#user-detail');
-                    var csvList = '';
-                    var mailto = 'mailto:?bcc=';
-
-                    // format link lists into csv for export
-                    if (links.length > 1) {
-                        links.each(function (j, link) {
-                            var linkText = $(link).text();
-
-                            if (value['link'] == 'Email') {
-                                mailto += linkText + ';';
-                            }
-
-                            if (csvList == '') {
-                                csvList = linkText;
-                            }
-                            else {
-                                csvList += ',' + linkText;
-                            }
-                        });
-
-                        if (value['link'] == 'Email' && !UIOWA_AdminDash.executiveAccess) {
-                            // add 'Email All' button where appropriate
-                            $(td).append('<div style="padding-top:10px;"><button style="float:right;" class="btn btn-info btn-sm" onclick="location.href=\'' + mailto + '\'">Email All</button></div>')
-                        }
-
-                        $(td).attr('data-export', csvList);
-                    }
-                });
-
-                if (value['display'] == 2 || value['display'] == 3) {
-                    column = $('td:nth-child(' + columnId + '),th:nth-child(' + columnId + ')');
-                    column.hide();
-                }
-                columnId++;
-            });
-
-            var $this = $(".output-button");
-
-            $this.find('.dropdown-toggle').click(function(e) {
-                // this is needed because clicking inside the dropdown will close
-                // the menu with only bootstrap controlling it.
-                $this.find('.dropdown-menu').toggle();
-                return false;
-            });
-            // make separator & replace quotes buttons update the value
-            $this.find('.output-separator').click(function() {
-                $this.find('.output-separator').removeClass('active');
-                var txt = $(this).addClass('active').html();
-                $this.find('.output-separator-input').val( txt );
-                var filename = $this.find('.output-filename');
-                var filetype = (txt === 'json' || txt === 'array') ? 'js' :
-                    txt === ',' ? 'csv' : 'txt';
-                filename.val(function(i, v) {
-                    // change filename extension based on separator
-                    return v.replace(/\.\w+$/, '.' + filetype);
-                });
-                var outputType = $($this.find('.output-type.active'))[0].innerText;
-                if (outputType == 'File') {
-                    $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
-                }
-                else if (outputType == 'Popup') {
-                    $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
-                }
-                return false;
-            });
-            $this.find('.output-type').click(function() {
-                var outputType = $(this)[0].innerText;
-                var filename = $this.find('.output-filename');
-                var txt = $($this.find('.output-separator.active')).html();
-                var filetype = (txt === 'json' || txt === 'array') ? 'js' :
-                    txt === ',' ? 'csv' : 'txt';
-                if (outputType == 'File') {
-                    $this.find('.download').html('<span class="fas fa-download"></span> Export ' + filetype.toUpperCase() + ' File');
-                    $this.find('.filename-field-display').removeClass('hidden');
-                    $this.find('.separator-field-display').removeClass('hidden');
-                    $this.find('.include-field-display').removeClass('hidden');
-                    $this.find('.target-field-display').addClass('hidden');
-                    $this.find('.download').prop('disabled', false);
-                }
-                else if (outputType == 'Popup') {
-                    $this.find('.download').html('<span class="far fa-window-maximize"></span> Open ' + filetype.toUpperCase() + ' Popup');
-                    $this.find('.filename-field-display').addClass('hidden');
-                    $this.find('.separator-field-display').removeClass('hidden');
-                    $this.find('.include-field-display').removeClass('hidden');
-                    $this.find('.target-field-display').addClass('hidden');
-                    $this.find('.download').prop('disabled', false);
-                }
-                else if (outputType == 'Project') {
-                    $this.find('.download').html('<span class="far fa-list-alt"></span> Send to REDCap');
-                    $this.find('.filename-field-display').addClass('hidden');
-                    $this.find('.separator-field-display').addClass('hidden');
-                    $this.find('.include-field-display').addClass('hidden');
-                    $this.find('.target-field-display').removeClass('hidden');
-                    $this.find('.download').prop('disabled', true);
-                }
-                //return false;
-            });
-            // clicking the download button; all you really need is to
-            // trigger an "output" event on the table
-            $this.find('.download').click(function() {
-                $this.find('.dropdown-menu').hide();
-
-                var outputType = $($this.find('.output-type.active'))[0].innerText;
-
-                if (outputType == 'Project') {
-                    $('#projectImportConfirm').modal({backdrop: 'static', keyboard: false});
-                }
-                else {
-                    var typ,
-                        $table = $("#reportTable"),
-                        wo = $table[0].config.widgetOptions,
-                        val = $this.find('.output-filter-all :checked').attr('class');
-
-                    wo.output_saveRows     = val === 'output-filter' ? 'f' :
-                        val === 'output-visible' ? 'v' :
-                            // checked class name, see table.config.checkboxClass
-                            val === 'output-selected' ? '.checked' :
-                                val === 'output-sel-vis' ? '.checked:visible' :
-                                    'a';
-                    val = $this.find('.output-download-popup :checked').attr('class');
-                    wo.output_delivery     = val === 'output-download' ? 'd' : 'p';
-                    wo.output_separator    = $this.find('.output-separator-input').val();
-                    //wo.output_replaceQuote = $this.find('.output-replacequotes').val();
-                    //wo.output_trimSpaces   = $this.find('.output-trim').is(':checked');
-                    //wo.output_includeHTML  = $this.find('.output-html').is(':checked');
-                    //wo.output_wrapQuotes   = $this.find('.output-wrap').is(':checked');
-
-                    var filename = $this.find('.output-filename').val();
-
-                    if ($this.find('.filename-datetime').is(':checked')) {
-                        var splitFilename = filename.split('.');
-                        splitFilename.splice(-1, 0, UIOWA_AdminDash.renderDatetime);
-                        wo.output_saveFileName = splitFilename.join('.');
-                    }
-                    else {
-                        wo.output_saveFileName = filename;
-                    }
-
-                    $table.trigger('outputTable');
-                    return false;
-                }
-            });
-
-            if (!UIOWA_AdminDash.executiveAccess) {
-                $(".output-button").show();
-            }
-
-            $('#report-content').show();
-        }
-        else {
-            $('#no-results').show();
-        }
-
-        if (UIOWA_AdminDash.hideColumns) {
-            for (var i in UIOWA_AdminDash.hideColumns) {
-                $('#reportTable tr > *:nth-child(' + UIOWA_AdminDash.hideColumns[i] + ')').hide();
-                $('#reportTable-sticky tr > *:nth-child(' + UIOWA_AdminDash.hideColumns[i] + ')').hide();
-            }
-        }
-
-        var execUserSelect = $('.executiveUser');
-
-        execUserSelect.change(function() {
-            sessionStorage.setItem("selectedUser", this.value);
-
-            UIOWA_AdminDash.userID = execUserSelect.val();
-            UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
-
-            if (UIOWA_AdminDash.executiveExportLookup.indexOf(UIOWA_AdminDash.userID) !== -1) {
-                $(".output-button").show();
-            }
-            else {
-                $(".output-button").hide();
-            }
-        });
-
-        if (UIOWA_AdminDash.executiveAccess) {
-            if (sessionStorage.getItem("selectedUser") && UIOWA_AdminDash.superuser) {
-                execUserSelect.val( sessionStorage.getItem("selectedUser") );
-
-                if (execUserSelect.val() == null) {
-                    execUserSelect.val('');
-                }
-
-                execUserSelect.trigger('change');
-
-            }
-            else {
-                if (UIOWA_AdminDash.executiveExportLookup.indexOf(UIOWA_AdminDash.userID) !== -1) {
-                    $(".output-button").show();
-                }
-                else {
-                    $(".output-button").hide();
-                }
-            }
-
-        }
-
-        $('.output-filename').val(UIOWA_AdminDash.csvFileName);
-
-        $('#exportProjectSelect').change(function() {
-            $('#pagecontainer').css('cursor', 'progress');
-            $this.find('.download').prop('disabled', true);
-
-            var projectLink = $('.target-project-link');
-
-            projectLink.html($('#exportProjectSelect option:selected').text());
-            projectLink.attr('href', UIOWA_AdminDash.redcapVersionUrl + 'ProjectSetup/index.php?pid=' + $('#exportProjectSelect').val());
-
-            if (this.value != '') {
-                $.ajax({
-                    method: 'POST',
-                    url: UIOWA_AdminDash.requestHandlerUrl + '&type=getApiToken',
-                    data: {
-                        pid: $this.find('#exportProjectSelect')[0].value
-                    }
-                })
-                .done(function(token) {
-                    $.ajax({
-                        method: 'POST',
-                        url: UIOWA_AdminDash.redcapBaseUrl + 'api/',
-                        data: {
-                            token: token,
-                            content: 'metadata',
-                            format: 'json',
-                            field: JSON.stringify(UIOWA_AdminDash.data['project_headers'])
-                        },
-                        success: function(data) {
-                            var projectFields = $.map(data, function (field) {
-                                return field['field_name'];
-                            });
-
-                            var requiredFields = UIOWA_AdminDash.data['project_headers'];
-
-                            var validProject = projectFields.filter(function (elem) {
-                                return requiredFields.indexOf(elem) > -1;
-                            }).length == requiredFields.length;
-
-                            // if project contains required fields for import, enable button
-                            if (validProject) {
-                                $this.find('.download').prop('disabled', false);
-                            }
-                            else {
-                                $this.find('.download').prop('disabled', true);
-                                $('#invalidProjectWarning').modal('show');
-                            }
-
-                            $('#pagecontainer').css('cursor', 'default');
-                        }
-                    })
-                });
-            }
-            else {
-                $this.find('.download').prop('disabled', true);
-            }
-        });
-
-        $('#invalidProjectWarning').on('hidden.bs.modal', function () {
-            $('#confirmProjectUpdate').hide();
-            $('.force-import').hide();
-            $('.force-import-close').html('Close');
-        });
-
-        $('.show-project-warning-text').click(function () {
-            $('#confirmProjectUpdate').show();
-
-            $('.force-import').show();
-            $('.force-import-close').html('Cancel');
-        });
-
-        $('.confirm-import').click(function () {
-            $(this).prop('disabled', true);
-            $('.import-close').prop('disabled', true);
-            $(this).html('<i class="fas fa-spinner fa-spin import-progress"></i>');
-
-            // get project api token
-            $.ajax({
-                method: 'POST',
-                url: UIOWA_AdminDash.requestHandlerUrl + '&type=getApiToken',
-                data: {
-                    pid: $this.find('#exportProjectSelect')[0].value
-                }
-            })
-            .done(function(token) {
-                // import data
-                $.ajax({
-                    method: 'POST',
-                    url: UIOWA_AdminDash.redcapBaseUrl + 'api/',
-                    data: {
-                        token: token,
-                        content: 'record',
-                        format: 'json',
-                        data: JSON.stringify(UIOWA_AdminDash.data['project_data'])
-                    },
-                    success: function(data) {
-                        $('.confirm-import').html('<i class="fas fa-check"></i> Success').removeClass('btn-primary').addClass('btn-success');
-                        $('#importInfoText').hide();
-                        $('.import-close').html('Close').prop('disabled', false);
-
-                        if (data['count']) {
-                            $('#importedRecordCount').html(data['count']);
-                            $('#importCompleteText').show();
-                        }
-                    },
-                    error: function(data) {
-                        var response = data['responseJSON'];
-                        $('.confirm-import').html('<i class="fas fa-times"></i> Error').removeClass('btn-primary').addClass('btn-danger');
-                        $('#importInfoText').hide();
-                        $('.import-close').html('Close').prop('disabled', false);
-
-                        if (response['error']) {
-                            $('#redcapApiErrorText').html(response['error']);
-                            $('#importErrorText').show();
-                        }
-                        else {
-                            $('#redcapApiErrorText').html('An unknown error occurred.');
-                            $('#importErrorText').show();
-                        }
-                    }
-                })
-            })
-        });
-
-        $('#projectImportConfirm').on('hidden.bs.modal', function () {
-            $('#importErrorText').hide();
-            $('#importCompleteText').hide();
-            $('#importInfoText').show();
-            $('.import-close').html('Cancel');
-            $('.confirm-import').html('Import').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-primary');
-        });
-
-        $('.force-import').click(function () {
-            $.ajax({
-                method: 'POST',
-                url: UIOWA_AdminDash.requestHandlerUrl + '&type=getApiToken',
-                data: {
-                    pid: $this.find('#exportProjectSelect')[0].value
-                }
-            })
-            .done(function (token) {
-                UIOWA_AdminDash.importProjectMetadata(token);
-            });
-        });
-
-        $('.open-settings').click(function() {
-            window.open(UIOWA_AdminDash.settingsUrl, "_self");
-        });
-
-        $('.toggle-edit-columns').click(function() {
-            var $button = $(this);
-            var $editControls = $('.edit-column');
-
-            $editControls.toggle();
-
-            if($editControls.is(":visible")) {
-                $button.html('<span class="fas fa-check"></span> Hide Edit Controls');
-                $button.removeClass('btn-outline-primary');
-                $button.addClass('btn-outline-success');
-
-                $('#reportTable').trigger('removeWidget', 'stickyHeaders');
-            }
-            else {
-                // todo saving column edits
-                // var urlParams = new URLSearchParams(window.location.search);
-                // var reportId = urlParams.get('report');
-                // var ls = window.localStorage;
-                // var columns = [];
-                //
-                // $('#reportTable > thead > tr.tablesorter-headerRow > th:visible').each(function(index, elm) {
-                //     columns.push($(elm).data('column'));
-                // })
-                //
-                // ls.setItem('customColumns_' + reportId, JSON.stringify(columns));
-
-                $button.html('<span class="fas fa-columns"></span> Edit Columns');
-                $button.removeClass('btn-outline-success');
-                $button.addClass('btn-outline-primary');
-
-                $('#reportTable').trigger('applyWidgetId', 'stickyHeaders');
-            }
-        });
-
-
-        $('#primaryUserSelect').change(function() {
-            UIOWA_AdminDash.updateReportTabs($('#primaryUserSelect').val());
-        });
-
-        // Enable tooltips
-        $('[data-toggle="tooltip"]').tooltip();
-
-        // load report navigation tabs
-        if (UIOWA_AdminDash.executiveAccess) {
-            if (UIOWA_AdminDash.superuser) {
-                UIOWA_AdminDash.updateReportTabs($('#primaryUserSelect').val());
-            }
-            else {
-                UIOWA_AdminDash.updateReportTabs(UIOWA_AdminDash.userID);
-            }
-        }
-        else {
-            UIOWA_AdminDash.updateReportTabs('');
-        }
-
-        if (UIOWA_AdminDash.showChangelog) {
-            $('#changelogModal').modal('show');
-        }
-
-        // on click
-        $('.hide-column').click( function() {
-            var $cell = $(this).closest('th,td')
-            UIOWA_AdminDash.hideColumnIndex($cell.data('column'));
+            window.open(url, '_blank');
         })
 
-        // restore columns footer
-        $(".restore-columns").click(function(e) {
-            var $table = $('#reportTable');
-            $(".footer-restore-columns").hide()
-            $table.find("th, td")
-                .removeClass('hide-col');
-        })
-
-        $('[data-toggle="tooltip"]').tooltip({
-            trigger: 'hover'
-        })
-
-            $('#reportTable').dragtable({
-            dragHandle:'.drag-handle',
-            maxMovingRows:2
-            // todo persist column edits
-            //     , persistState: function(table) {
-            //     if (!window.sessionStorage) return;
-            //     var ss = window.sessionStorage;
-            //     $('#reportTable > thead > tr.tablesorter-headerRow > th').each(function(i, col) {
-            //         if($(col).data('column') != '') {table.sortOrder[$(col).data('column')]=i;}
-            //     });
-            //     ss.setItem('tableorder',JSON.stringify(table.sortOrder));
-            // },
-            // restoreState: eval('(' + window.sessionStorage.getItem('tableorder') + ')')
+        let data = self.loadedReport.data;
+        let columns = $.map(self.loadedReport.columns, function (column_name) {
+            return {
+                title: column_name,
+                data: column_name,
+                className: '',
+                contentPadding: "mmm",
+                createdCell: function (td, cellData, rowData, row, col) {
+                    $(td).css('text-align', 'center')
+                }
+            };
         });
-    });
 
-}(window.jQuery, window, document));
-
-var UIOWA_AdminDash = {};
-
-UIOWA_AdminDash.hideColumnIndex = function(colIndex) {
-    // // find and hide col index
-    $("tbody tr, thead tr")
-        .children(":nth-child(" + (colIndex + 1) + ")")
-        .addClass('hide-col');
-
-    // // show restore footer
-    $(".footer-restore-columns").show()
-}
-
-UIOWA_AdminDash.formatTableData = function(data, headers, formatting)
-{
-    var formattingReference = UIOWA_AdminDash.formattingReference['links'];
-    var formattedData = [];
-    var newHeaders = [];
-    var newHeadersIndex = -1;
-
-    // loop through each row
-    $.each(data, function(rowIndex, row) {
-        formattedData[rowIndex] = [];
-        var newValues = [];
-
-        // loop through each cell
-        $.each(row, function(cellIndex, cell) {
-            formattedData[rowIndex][cellIndex] = '';
-            var cellValues = (cell == null) ? [] : cell.split('@@@');
-            // prepare reference columns
-            var projectIds = (row[headers.indexOf('project_id')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('project_id')].split('@@@')) : null;
-            var projectStatuses = (row[headers.indexOf('status')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('status')].split('@@@')) : null;
-            var projectDeletedDates = (row[headers.indexOf('date_deleted')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('date_deleted')].split('@@@')) : null;
-            var userSuspendedTimes = (row[headers.indexOf('user_suspended_time')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('user_suspended_time')].split('@@@')) : null;
-            var userExistences = (row[headers.indexOf('user_exists')]) ? UIOWA_AdminDash.normalizeGroupedValues(row[headers.indexOf('user_exists')].split('@@@')) : null;
-
-            // repeat for each group item in cell
-            $.each(cellValues, function (index, value) {
-                var columnFormatting = formatting[cellIndex] ? formatting[cellIndex] : {
-                    linkGroup: 'none',
-                    link: 'not set'
+        if (self.loadedReport.meta.column_formatting) {
+            // set column titles and renderers
+            columns = $.map(self.loadedReport.columns, function (column_name) {
+                let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+                let column = {
+                    title: columnDetails.displayHeader !== '' ? columnDetails.displayHeader : column_name,
+                    data: column_name,
+                    className: columnDetails.dashboard_show_column === '0' ? 'noVis' : '',
+                    contentPadding: "mmm",
+                    createdCell: function (td, cellData, rowData, row, col) {
+                        $(td).css('text-align', 'center')
+                    }
                 };
-                var linkGroup = columnFormatting['linkGroup'];
-                var linkType = columnFormatting['link'];
 
-                if (linkType != 'not set' && linkGroup != 'Code Lookup') {
-                    var linkUrl = '';
-                    var linkId = '';
-                    var userStatusIcon = '';
-                    var noLink = false;
-
-                    if (linkType == 'Custom') {
-                        linkUrl = columnFormatting['custom'].replace('{value}', value);
-                    }
-                    else if (linkType == 'Survey Hash') {
-                        linkUrl = UIOWA_AdminDash.redcapBaseUrl + formattingReference[linkGroup][linkType] + value;
-                    }
-                    else if (linkType == 'Email') {
-                        linkUrl = 'mailto:' + value;
-                    }
-                    else if (linkGroup == 'Project Links (project_id)') {
-                        if (projectDeletedDates != null) {
-                            var dateDeleted = projectDeletedDates[index];
-
-                            if (dateDeleted != null) {
-                                linkId = 'id="deleted"';
-                            }
-                        }
-                        if (projectStatuses != null) {
-                            var status = projectStatuses[index];
-
-                            if (status == '3') {
-                                linkId = 'id="archived"';
-                            }
-                        }
-
-                        linkUrl = UIOWA_AdminDash.redcapVersionUrl + formattingReference[linkGroup][linkType] + projectIds[index];
-                    }
-                    else if (linkGroup == 'User Links (username)') {
-                        if (userExistences != null) {
-                            var userExists = userExistences[index];
-
-                            if (userExists == null && UIOWA_AdminDash.showUserIcons) {
-                                userStatusIcon = '<span id="user-detail" title="User does not exist" data-toggle="tooltip" data-placement="left"><i class="fas fa-times fa-fw"></i></span>';
-                                noLink = true;
-                            }
-                        }
-                        if (userSuspendedTimes != null) {
-                            var suspended = userSuspendedTimes[index];
-
-                            if (suspended != null && UIOWA_AdminDash.showUserIcons) {
-                                userStatusIcon = '<span id="user-detail" title="User account suspended" data-toggle="tooltip" data-placement="left"><i class="fas fa-ban fa-fw"></i></span>';
-                            }
-                        }
-
-                        linkUrl = UIOWA_AdminDash.redcapVersionUrl + formattingReference[linkGroup][linkType] + value;
+                // only apply column formatting for sql reports
+                if (self.loadedReport.meta.config.report_sql !== '') {
+                    $.fn.dataTable.render.adFormat = function(column_name) {
+                        return function(data, type, row) {
+                            return self.adFormat(column_name, data, type, row);
+                        };
                     }
 
-                    if (!UIOWA_AdminDash.executiveAccess && !noLink) {
-                        formattedData[rowIndex][cellIndex] += userStatusIcon + '<span><a href="' + linkUrl + '" target="_blank"' + linkId + ' style="font-size: 14px">' + value + '</a></span><br />';
-                    }
-                    else {
-                        formattedData[rowIndex][cellIndex] += userStatusIcon + '<span>' + value + '</span><br />';
-                    }
+                    column.render = $.fn.dataTable.render.adFormat(column_name);
                 }
-                else if (linkType == 'Project Purpose' || linkType == 'Project Status') {
-                    formattedData[rowIndex][cellIndex] = formattingReference[linkGroup][linkType][value];
-                }
-                else if (linkType == 'Research Purpose') {
-                    value = value.split(',');
-                    value = $.map(value, function (index, item) {
-                        return formattingReference[linkGroup][linkType][item];
-                    });
 
-                    formattedData[rowIndex][cellIndex] = value.join(', ');
-                }
-                else if (linkType == 'Research Purpose (Split)') {
-                    value = value.split(',');
-
-                    $.each(formattingReference[linkGroup][linkType], function (index, item) {
-                        if (newHeadersIndex == -1) {
-                            newHeaders.push(item);
-                        }
-
-                        if (value.indexOf(String(index)) != -1) {
-                            newValues.push('TRUE');
-                        }
-                        else {
-                            newValues.push('FALSE');
-                        }
-                    });
-
-                    if (newHeadersIndex == -1) {
-                        newHeadersIndex = cellIndex;
-                    }
-                }
-                else {
-                    formattedData[rowIndex][cellIndex] += value + '<br />';
-                }
+                return column;
             });
 
-            formattedData[rowIndex][cellIndex] = '<div style="overflow: auto; max-height: 300px">' + formattedData[rowIndex][cellIndex] + '</div>';
-        });
-
-        if (newValues.length > 0) {
-            formattedData[rowIndex].splice(newHeadersIndex, 1);
-
-            $.each(newValues, function (index, value) {
-                formattedData[rowIndex].splice(newHeadersIndex + index, 0, value);
-            });
+            // add column for child row collapse buttons (if at least one column needs it)
+            // let hasChildRow = false;
+            // $.each(self.loadedReport.meta.column_formatting, function (column_name, value) {
+            //
+            //     if (value.dashboard_show_column === '2') {
+            //         hasChildRow = true;
+            //     }
+            // });
+            // if (hasChildRow) {
+            //     $('.report-table > thead > tr:first').prepend('<th></th>');
+            //
+            //     columns.unshift({
+            //         className: 'details-control',
+            //         orderable: false,
+            //         data: null,
+            //         defaultContent: '',
+            //         render: function () {
+            //             return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
+            //         },
+            //         width:"15px"
+            //     });
+            // }
         }
-    });
 
-    if (newHeaders.length > 0) {
-        var originalFormatting = UIOWA_AdminDash.reportInfo['formatting'][newHeadersIndex];
-        UIOWA_AdminDash.reportInfo['formatting'].splice(newHeadersIndex, 1);
-        UIOWA_AdminDash.data['headers'].splice(newHeadersIndex, 1);
+        // init DataTable
+        let table = $('.report-table').DataTable({
+            data: data,
+            scrollXInner: true,
+            // scrollY: true,
+            // stateSave: true, todo - saved sorting can be confusing
+            colReorder: true,
+            fixedHeader: {
+                header: true,
+                headerOffset: $('#redcap-home-navbar-collapse').height()
+            },
+            columns: columns,
+            order: [],
+            initComplete: function() {
+                let hasFilters = false;
+                let $filterRow = $('<tr class="filter-row"></tr>');
 
-        $.each(newHeaders, function (index, header) {
-            var updatedFormatting = $.extend(true, {}, originalFormatting);
-            updatedFormatting['column'] = header;
+                // add column filters
+                this.api().columns().every( function () {
+                    let $filter = self.dtFilterInit(this);
 
-            UIOWA_AdminDash.data['headers'].splice(newHeadersIndex + index, 0, header);
-            UIOWA_AdminDash.reportInfo['formatting'].splice(newHeadersIndex + index, 0, updatedFormatting);
-        });
-    }
+                    if ($filter) {
+                        $filterRow.append($filter);
+                        hasFilters = true
+                    }
+                } );
 
-    return formattedData;
-};
-
-UIOWA_AdminDash.normalizeGroupedValues = function (array) {
-    if (typeof array == 'object') {
-        $.each(array, function (index, value) {
-            if (value == 'N/A') {
-                array[index] = null;
+                if (hasFilters) {
+                    $('thead').append($filterRow);
+                }
             }
         });
-    }
 
-    return array;
-};
+        // generate export buttons
+        self.dtExportInit(table);
+        $('#buttons').show();
 
-UIOWA_AdminDash.updateReportTabs = function(user, animate) {
-    if (animate) {
-        var speed = 'slow';
-    }
+        // show/hide columns
+        new $.fn.dataTable.Buttons(table, {
+            buttons: [
+                {
+                    text: 'Show/Hide Columns',
+                    extend: 'colvis',
+                    columns: ':not(.noVis)'
+                }
+            ]
+        }).container().appendTo($('#visButtons'));
 
-    var keys = Object.keys(UIOWA_AdminDash.adminVisibility);
+        // sync filter visibility with column
+        table.on( 'column-visibility.dt', function ( e, settings, column, state ) {
+            console.log(
+                'Column '+ column +' has changed to '+ (state ? 'visible' : 'hidden')
+            );
 
-    for (var i in keys) {
-        var reportTitle = keys[i];
-        var adminVisible = UIOWA_AdminDash.adminVisibility[reportTitle];
-        var executiveVisible = $.inArray(user, UIOWA_AdminDash.executiveVisibility[reportTitle]) != -1;
-        var reportTab = $('.report-tabs > li ').filter(function() {
-            return $('.report-title', this).text() === reportTitle;
-        });
+            let $filterTd = $('.filter-row > td').eq(column);
 
-        if (!adminVisible && !UIOWA_AdminDash.executiveAccess) {
-            reportTab.hide(speed);
+            state ? $filterTd.show() : $filterTd.hide();
+        } );
+
+        // child row show/hide logic
+        $('.report-table tbody').on('click', 'td.details-control', function () {
+            let tr = $(this).closest('tr');
+            let row = table.row( tr );
+
+            if ( row.child.isShown() ) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            }
+            else {
+                // Open this row
+                row.child( self.formatChildRow(row.data()) ).show();
+                tr.addClass('shown');
+            }
+        } );
+    },
+    formatChildRow: function(row) {
+        let self = this;
+        let columnDetails = this.loadedReport.meta.column_formatting;
+        let htmlRows = '';
+
+        $.each(columnDetails, function(column_name, details) {
+            let data = self.adFormat(column_name, row[column_name], row)
+
+            if (details.dashboard_show_column === '2') {
+                htmlRows = htmlRows.concat('<tr>' +
+                    '<td>' + (details.dashboard_display_header !== '' ? details.dashboard_display_header : column_name) + '</td>' +
+                    '<td>' + data + '</td>' +
+                    '</tr>');
+            }
+        })
+
+        // `d` is the original data object for the row
+        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+            htmlRows+
+        '</table>';
+    },
+    splitData: function(data, column_name) {
+        let separator = this.loadedReport.meta.column_formatting[column_name].group_concat_separator;
+
+        return separator !== '' ? data.split(separator) : [data];
+    },
+    dtFilterInit: function(column) {
+        let self = this;
+        let $filterTd = $('<td data-column-index="' + column.index() + '"></td>');
+        let column_name = self.loadedReport.columns[column.index()];
+        let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+
+        // todo
+        if (column_name === undefined) {
+            return;
         }
-        else if (!executiveVisible && UIOWA_AdminDash.executiveAccess) {
-            reportTab.hide();
+
+        // hide column
+        if (columnDetails.dashboard_show_column === '0') {
+            column.visible(false);
+            return;
         }
-        else {
-            reportTab.show(speed);
+
+        // add dropdown filter
+        if (columnDetails.dashboard_show_filter === '2') {
+            $filterTd.append('<select style="width: 100%"><option value=""></option></select>');
+            let $select = $filterTd.find('select')
+                .on( 'change', function () {
+                    let val = $.fn.dataTable.util.escapeRegex(
+                        $(this).val()
+                    );
+
+                    column
+                        .search( val ? '^'+val+'$' : '', true, false )
+                        .draw();
+                } );
+
+            // get unique values and add to dropdown list
+            column.data().unique().sort().each( function ( value ) {
+                // todo filtering for null values
+                if (value == null) {
+                    $select.prepend( '<option value="null">[null]</option>' )
+                }
+                // else {
+                let formattedValue = self.adFormat_code(value, columnDetails.code_type)
+
+                if (formattedValue) {
+                    $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' );
+                }
+
+                // }
+                // if ($(d).has('<a>')) {
+                //     d = $(d).text();
+                // }
+                // console.log(j)
+
+            } );
         }
-    }
-};
+        // add free text filter
+        else if (columnDetails.dashboard_show_filter === '1') {
+            $filterTd.append('<input style="width: 100%"/>');
 
-UIOWA_AdminDash.importProjectMetadata = function (token) {
-    var reportTitle = $('#reportTitle').html().trim().toLowerCase().split(' ').join('_');
+            $( 'input', $filterTd ).on( 'keyup change clear', function () {
+                if ( column.search() !== this.value ) {
 
-    var metadata = [];
-    var fieldInfo = {
-        field_name: 'record_id',
-        form_name: reportTitle,
-        section_header: '',
-        field_type: 'text',
-        field_label: 'Record ID'
-    };
+                    // todo split grouped data and filter items
+                    // let groupData = column.data().split()
 
-    metadata.push(fieldInfo);
+                    column
+                        .search( this.value )
+                        .draw();
+                }
+            } );
+        }
 
-    $.each(UIOWA_AdminDash.data['project_headers'], function (index, value) {
-        fieldInfo = {
-            field_name: value,
-            form_name: reportTitle,
-            section_header: '',
-            field_type: 'text',
-            field_label: UIOWA_AdminDash.data['headers'][index]
+        return $filterTd;
+    },
+    dtExportInit: function(table) {
+        let buttonCommon = {
+            title: this.loadedReport.meta.config.report_title,
+            exportOptions: {
+                orthogonal: 'export',
+                // format: {
+                //     body: function ( data, row, column, node ) {
+                //         // Strip $ from salary column to make it numeric
+                //         return column === 5 ?
+                //             data.replace( /[$,]/g, '' ) :
+                //             data;
+                //     }
+                // }
+            }
         };
 
-        metadata.push(fieldInfo);
-    });
+        // export buttons
+        new $.fn.dataTable.Buttons(table, {
+            buttons: [
+                $.extend( true, {}, buttonCommon, {
+                    extend: 'copyHtml5'
+                } ),
+                $.extend( true, {}, buttonCommon, {
+                    extend: 'csvHtml5'
+                } ),
+                // $.extend( true, {}, buttonCommon, {
+                //     extend: 'pdfHtml5'
+                // } ),
+                $.extend( true, {
+                    text: 'JSON',
+                    action: function ( e, dt, button, config ) {
+                        let data = dt.buttons.exportData();
 
-    $.ajax({
-        method: 'POST',
-        url: UIOWA_AdminDash.redcapBaseUrl + 'api/',
-        data: {
-            token: token,
-            content: 'metadata',
-            format: 'json',
-            data: JSON.stringify(metadata)
-        },
-        success: function(data) {
-            $('#invalidProjectWarning').modal('hide');
-            $('#projectImportConfirm').modal({backdrop: 'static', keyboard: false});
-        },
-        error: function(data) {
-            var response = data['responseJSON'];
+                        $.fn.dataTable.fileSave(
+                            new Blob( [ JSON.stringify( data ) ] ),
+                            buttonCommon.title + '.json'
+                        );
+                    }
+                }, buttonCommon)
+            ]
+        }).container().appendTo($('#buttons'));
+    },
+    adFormat: function (column_name, data, type, row) {
+        if (data === null) {
+            return type === 'display' ? '<span class="text-muted">null</span>' : 'null';
+        }
 
-            if (response['error']) {
-                alert(response['error']);
+        let self = this;
+        let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+        let sourceColumn = columnDetails.link_source_column !== '' ? columnDetails.link_source_column : column_name;
+        data = self.splitData(data, column_name);
+        let sourceData = data;
+        let formattedSeparator = type === 'export' ? ';' : '<br />'
+
+        if (sourceColumn !== column_name) {
+            sourceData = self.splitData(row[sourceColumn], sourceColumn);
+        }
+
+        // for each item (in case data is grouped)
+        data = $.map(data, function(item, index) {
+            if (item === null) {
+                return type === 'display' ? '<span class="text-muted">null</span>' : 'null';
             }
-            else {
-                alert('An unknown error occurred when attempting to update your project.');
+
+            //todo
+            // fix for "Archived" projects
+            // if (value === 3) {
+            //     value = 2;
+            // }
+
+            let formattedVal = item;
+            let rawUrl = '';
+            let iconsHtml = '';
+
+            // Replace coded value with label
+            if (columnDetails.code_type !== '') {
+                try {
+                    // if export, check if labels are preferred
+                    if (type === 'export' && columnDetails.export_codes === '0') {
+                        formattedVal = item
+                    }
+                    else {
+                        formattedVal = self.adFormat_code(item, columnDetails.code_type);
+                    }
+
+                    if (type === 'filter') {
+                        return formattedVal; //todo broken
+                    }
+                }
+                catch(e) {
+                    console.groupCollapsed("Failed to replace codes with labels for " + column_name);
+                    console.log(columnDetails.code_type, item)
+                    console.log(e)
+                    console.groupEnd()
+                }
+            }
+
+            // generate url for linking
+            if (columnDetails.link_type !== '' && !self.executiveView) {
+                try {
+                    rawUrl = self.adFormat_url(
+                        item,
+                        sourceData[index],
+                        columnDetails.link_type,
+                        columnDetails.specify_custom_link
+                    );
+
+                    if (type === 'export') {
+                        if (columnDetails.export_urls === '1') {
+                            formattedVal = rawUrl;
+                        } else {
+                            formattedVal = item;
+                        }
+                    } else if (type === 'filter') {
+                        formattedVal = item;
+                    } else {
+                        formattedVal = `<a href="${rawUrl}" target="_blank">${formattedVal}</a>`;
+                    }
+                }
+                catch(e) {
+                    console.groupCollapsed("Failed to generate url(s) for " + column_name)
+                    console.log(e)
+                    console.groupEnd()
+                }
+            }
+
+            // prepend hint icons
+            if (
+                (columnDetails.hint_icons___1 === '1' ||
+                columnDetails.hint_icons___2 === '1') &&
+                type === 'display'
+            ) {
+                try {
+
+                        let columnReference = {
+                            withTags: self.loadedReport.columns,
+                            tagless: $.map(self.loadedReport.columns, function(value) {
+                                return value.split('#')[0]
+                            })
+                        }
+
+                        if (item) {
+                            iconsHtml = self.adFormat_icons(item, index, row, columnReference, columnDetails);
+                        }
+                    }
+                catch(e) {
+                    console.groupCollapsed("Failed to process hint icon(s) for " + column_name)
+                    console.log(item)
+                    console.log(e)
+                    console.groupEnd()
+                }
+            }
+
+            return iconsHtml + formattedVal;
+        })
+        data = data.join(formattedSeparator)
+
+        return data;
+    },
+    adFormat_url: function (value, sourceValue, linkIndex, customUrl) {
+        let url = '';
+
+        // set custom url
+        if (linkIndex === '99') {
+            url = customUrl.replace('{value}', sourceValue);
+        }
+        // set mailto
+        else if (linkIndex === '9') {
+            url = 'mailto:' + sourceValue;
+        }
+        // set redcap url
+        else {
+            try {
+                url = this.urlLookup.redcapBase + this.formattingReference.links[linkIndex - 1].trim() + sourceValue;
+            }
+            catch (error) { // invalid link index
+                console.error(error);
+                return value;
+            }
+        }
+
+        return url;
+    },
+    adFormat_code: function (value, codeIndex) {
+        if (codeIndex === '1') { // Project Status
+            return this.formattingReference.status[value];
+        }
+        else if (codeIndex === '2') { // Project Purpose
+            return this.formattingReference.purpose[value];
+        }
+        else if (codeIndex === '3') { // Research/Other Purpose
+            let self = this;
+            let valueArray = value.split(',');
+
+            if (Array.isArray(valueArray) && !valueArray.some(isNaN)) {
+                valueArray = $.map(value, function (code) {
+                    return self.formattingReference.purpose_other[code]
+                });
+
+                value = valueArray.join(', ')
+            }
+
+            return value;
+        }
+        // else if (userConfig.specify_code_lookup === '4') { // todo Research Purpose split
+        //     codeReference = this.formattingReference.research_code_lookup;
+        // }
+    },
+    adFormat_icons: function (value, index, row, columnReference, columnDetails) {
+        let returnHtml = '';
+
+        // suspended users
+        if (columnDetails.hint_icons___1 === '1' && columnReference.tagless.includes('user_suspended_time')) {
+            let suspendedColumnName = columnReference.withTags[columnReference.tagless.indexOf('user_suspended_time')];
+            let suspendedValue = row[suspendedColumnName] !== null ? this.splitData(row[suspendedColumnName], suspendedColumnName)[index] : null;
+
+            if (suspendedValue.length > 8) {
+                returnHtml +=
+                    `<span class="user-detail" title="User suspended" data-toggle="tooltip" data-placement="left">
+                    <i class="fas fa-ban fa-fw" style="color: red;"></i>
+                </span>`;
+            }
+        }
+        // project status
+        if (columnDetails.hint_icons___2 === '1') {
+            let hintIcon = {};
+
+            if (columnReference.tagless.includes('status')) {
+                let iconLookup = [
+                    {
+                        class: '',
+                        tooltip: 'Development',
+                        icon: 'wrench',
+                        color: '#444'
+                    },
+                    {
+                        class: '',
+                        tooltip: 'Production',
+                        icon: 'check-square',
+                        color: '#00A000'
+                    },
+                    {
+                        class: '',
+                        tooltip: 'Analysis/Cleanup',
+                        icon: 'minus-circle',
+                        color: '#A00000'
+                    }
+                ]
+
+                let statusColumnName = columnReference.withTags[columnReference.tagless.indexOf('status')];
+                let statusValue = this.splitData(row[statusColumnName], statusColumnName)[index];
+
+                hintIcon = iconLookup[statusValue]
+            }
+            if (columnReference.tagless.includes('completed_time')) {
+                let completedColumnName = columnReference.withTags[columnReference.tagless.indexOf('completed_time')];
+                let completedValue = this.splitData(row[completedColumnName], completedColumnName)[index];
+
+                if (completedValue) {
+                    hintIcon = {
+                        class: '',
+                        tooltip: 'Completed',
+                        icon: 'archive',
+                        color: '#C00000'
+                    }
+                }
+            }
+            if (columnReference.tagless.includes('date_deleted')) {
+                let deletedColumnName = columnReference.withTags[columnReference.tagless.indexOf('date_deleted')];
+                let deletedValue = this.splitData(row[deletedColumnName], deletedColumnName)[index];
+
+                if (deletedValue) {
+                    hintIcon = {
+                        class: '',
+                        tooltip: 'Deleted',
+                        icon: 'trash',
+                        color: '#A00000'
+                    }
+                }
+            }
+
+            returnHtml +=
+                `<span class="${hintIcon.class}" title="${hintIcon.tooltip}" data-toggle="tooltip" data-placement="left">
+                    <i class="fas fa-${hintIcon.icon} fa-fw" style="color: ${hintIcon.color};"></i>
+                </span>`;
+        }
+
+        return returnHtml;
+    }
+});
+
+$(document).ready(function() {
+    let self = UIOWA_AdminDash;
+
+    // initialize Vue.js
+    new Vue({
+        el: '#adminDashApp',
+        data: self,
+        updated: function() {
+            this.$nextTick(function () {
+                $('#adminDashApp').show();
+                self.initDatatable();
+            })
+        },
+        methods: {
+            isActiveReport: function (id) {
+                let loadedId = self.loadedReport.meta.config.report_id;
+
+                return id === loadedId ? 'active' : '';
+            },
+            getReportIcon: function (icon) {
+                return icon !== '' ? 'fas fa-' + icon : 'fas fa-file';
+            },
+            getDisplayHeader: function (column_name) {
+                if (typeof self.loadedReport.meta.column_formatting !== 'undefined') {
+                    let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+                    column_name = columnDetails.dashboard_display_header !== '' ? columnDetails.dashboard_display_header : column_name;
+                }
+
+                return column_name;
+            },
+            getReports: function (reportLookup, inFolders) {
+                let formattedLookup = inFolders ? {} : [];
+
+                $.each(reportLookup, function (index, report) {
+                    if (report.report_title === '') {
+                        report.report_title = 'Untitled Report';
+                    }
+
+                    if (inFolders) {
+                        if (report.folder_name !== '') {
+                            if (!(report.folder_name in formattedLookup)) {
+                                formattedLookup[report.folder_name] = [];
+                            }
+
+                            formattedLookup[report.folder_name].push(report);
+                        }
+                    }
+                    else if (report.folder_name === '') {
+                        formattedLookup.push(report);
+                    }
+                })
+
+                return formattedLookup;
+            },
+            getTabColor: function (reportMeta, forFont = false) {
+                let tab_color = reportMeta.tab_color;
+                let tab_color_custom = reportMeta.tab_color_custom;
+
+                if (tab_color === '99') {  // use custom color
+                    tab_color = tab_color_custom.replace('#', '');
+                }
+                else if (tab_color === '') { // no color defined, skip
+                    return;
+                }
+
+                if (forFont) {
+                    // break hex code apart
+                    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(tab_color);
+                    let color = {
+                        r: parseInt(result[1], 16),
+                        g: parseInt(result[2], 16),
+                        b: parseInt(result[3], 16)
+                    }
+
+                    // return black/white for light/dark color
+                    return ((color.r*0.299 + color.g*0.587 + color.b*0.114) > 186) ? '#000000' : '#ffffff';
+                }
+                else {
+                    tab_color = '#' + tab_color;
+                }
+
+                return tab_color;
             }
         }
     })
-};
+
+    // run report SQL query on server
+    if (!self.loadedReport.ready) {
+        let reportId = self.loadedReport.meta.config.report_id;
+        let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
+
+        $.ajax({
+            method: 'POST',
+            url: UIOWA_AdminDash.urlLookup.post,
+            dataType: 'json',
+            data: {
+                adMethod: requestType,
+                id: reportId,
+            },
+            timeout: UIOWA_AdminDash.queryTimeout,
+            success: function(result) {
+                if (result.length > 0) {
+                    let columns = [];
+
+                    if (requestType === 'joinProjectData') {
+                        columns = Object.keys(result[0]);
+                    }
+                    else {
+                        let columnFormatting = self.loadedReport.meta.column_formatting;
+
+                        if (columnFormatting) {
+                            columns = Object.keys(columnFormatting)
+
+                            // columns = $.map(columnFormatting, function (columnMeta, column_name) {
+                            //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
+                            // });
+                        }
+                    }
+
+                    $.extend(self.loadedReport, {
+                        columns: columns,
+                        data: result,
+                        ready: true
+                    });
+                }
+                else {
+                    // self.loadedReport.error = "Zero rows returned."
+                    self.loadedReport.ready = true;
+                }
+            }
+            ,
+            error: function(err) {
+                let errorMsg = err.responseText;
+
+                self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
+                    errorMsg.lastIndexOf("The error from the database was:"),
+                    errorMsg.lastIndexOf("See the server error log for more details")
+                );
+            }
+        })
+    }
+});

@@ -1,0 +1,2712 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-10-19T09:22:03" CreationDateTime="2021-10-19T09:22:03" SourceSystem="REDCap" SourceSystemVersion="11.2.6">
+<Study OID="Project.AdminDashboardReports">
+<GlobalVariables>
+	<StudyName>Admin Dashboard Reports</StudyName>
+	<StudyDescription>This file contains the metadata, events, and data for REDCap project "Admin Dashboard Reports".</StudyDescription>
+	<ProtocolName>Admin Dashboard Reports</ProtocolName>
+	<redcap:RecordAutonumberingEnabled>1</redcap:RecordAutonumberingEnabled>
+	<redcap:CustomRecordLabel>[report_config_arm_1][folder_name][report_config_arm_2][folder_name] &gt; [report_config_arm_1][report_title][report_config_arm_2][report_title]</redcap:CustomRecordLabel>
+	<redcap:SecondaryUniqueField>report_id_custom</redcap:SecondaryUniqueField>
+	<redcap:SchedulingEnabled>0</redcap:SchedulingEnabled>
+	<redcap:SurveysEnabled>0</redcap:SurveysEnabled>
+	<redcap:SurveyInvitationEmailField></redcap:SurveyInvitationEmailField>
+	<redcap:Purpose>4</redcap:Purpose>
+	<redcap:PurposeOther></redcap:PurposeOther>
+	<redcap:ProjectNotes></redcap:ProjectNotes>
+	<redcap:SurveyQueueCustomText></redcap:SurveyQueueCustomText>
+	<redcap:DataMartProjectEnabled>0</redcap:DataMartProjectEnabled>
+	<redcap:DatamartAllowRepeatRevision>0</redcap:DatamartAllowRepeatRevision>
+	<redcap:DatamartAllowCreateRevision>0</redcap:DatamartAllowCreateRevision>
+	<redcap:DatamartCronEnabled>0</redcap:DatamartCronEnabled>
+	<redcap:MissingDataCodes></redcap:MissingDataCodes>
+	<redcap:RepeatingInstrumentsAndEvents>
+		<redcap:RepeatingInstruments>
+			<redcap:RepeatingInstrument redcap:UniqueEventName="report_config_arm_1" redcap:RepeatInstrument="column_formatting" redcap:CustomLabel="[column_name] ([dashboard_display_header])"/>
+		</redcap:RepeatingInstruments>
+		<redcap:RepeatingInstruments>
+			<redcap:RepeatingInstrument redcap:UniqueEventName="user_access_arm_1" redcap:RepeatInstrument="executive_dashboard" redcap:CustomLabel="[executive_username] ([executive_user_firstname] [executive_user_lastname])"/>
+			<redcap:RepeatingInstrument redcap:UniqueEventName="user_access_arm_1" redcap:RepeatInstrument="project_sync" redcap:CustomLabel="[sync_app_title] (PID [sync_project_id])"/>
+		</redcap:RepeatingInstruments>
+		<redcap:RepeatingInstruments>
+			<redcap:RepeatingInstrument redcap:UniqueEventName="report_config_arm_2" redcap:RepeatInstrument="project_join_info" redcap:CustomLabel="[join_app_title] (PID [join_project_id])"/>
+		</redcap:RepeatingInstruments>
+		<redcap:RepeatingInstruments>
+			<redcap:RepeatingInstrument redcap:UniqueEventName="user_access_arm_2" redcap:RepeatInstrument="executive_dashboard" redcap:CustomLabel="[executive_username] ([executive_user_firstname] [executive_user_lastname])"/>
+			<redcap:RepeatingInstrument redcap:UniqueEventName="user_access_arm_2" redcap:RepeatInstrument="project_sync" redcap:CustomLabel="[sync_app_title] (PID [sync_project_id])"/>
+		</redcap:RepeatingInstruments>
+	</redcap:RepeatingInstrumentsAndEvents>
+	<redcap:ReportsGroup>
+		<redcap:Reports title="SQL Reports" unique_report_name="R-417CMFAYJR" report_order="1" user_access="ALL" user_edit_access="ALL" description="Does not include User Access data. Ideal for sharing queries with other institutions." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KM9FLWPTYWMFN8DL" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql,column_name,dashboard_show_column,dashboard_show_filter,dashboard_display_header,export_show_column,export_display_header,link_type,link_source_column,specify_custom_link,export_urls,code_type,export_codes,group_concat_separator,hint_icons,column_formatting_complete" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="77de68daecd823babbb58edb1c8e14d7106e83bb"/>
+		<redcap:Reports title="SQL Reports (Queries Only)" unique_report_name="R-624RY48DDK" report_order="2" user_access="ALL" user_edit_access="ALL" description="Does not include Column Formatting or User Access data." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KCM8DTHJCY38D3XF" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="1b6453892473a467d07372d45eb05abc2031647a"/>
+	</redcap:ReportsGroup>
+</GlobalVariables>
+<MetaDataVersion OID="Metadata.AdminDashboardReports_2021-10-19_0922" Name="Admin Dashboard Reports" redcap:RecordIdField="report_id">
+	<Protocol>
+		<StudyEventRef StudyEventOID="Event.report_config_arm_1" OrderNumber="1" Mandatory="No"/>
+		<StudyEventRef StudyEventOID="Event.user_access_arm_1" OrderNumber="2" Mandatory="No"/>
+		<StudyEventRef StudyEventOID="Event.report_config_arm_2" OrderNumber="3" Mandatory="No"/>
+		<StudyEventRef StudyEventOID="Event.user_access_arm_2" OrderNumber="4" Mandatory="No"/>
+	</Protocol>
+	<StudyEventDef OID="Event.report_config_arm_1" Name="Report Config (Arm 1: SQL Queries)" Type="Common" Repeating="No" redcap:EventName="Report Config" redcap:CustomEventLabel="" redcap:UniqueEventName="report_config_arm_1" redcap:ArmNum="1" redcap:ArmName="SQL Queries" redcap:DayOffset="1" redcap:OffsetMin="0" redcap:OffsetMax="0">
+		<FormRef FormOID="Form.report_details" OrderNumber="1" Mandatory="No" redcap:FormName="report_details"/>
+		<FormRef FormOID="Form.sql_query" OrderNumber="2" Mandatory="No" redcap:FormName="sql_query"/>
+		<FormRef FormOID="Form.column_formatting" OrderNumber="3" Mandatory="No" redcap:FormName="column_formatting"/>
+	</StudyEventDef>
+	<StudyEventDef OID="Event.user_access_arm_1" Name="User Access (Arm 1: SQL Queries)" Type="Common" Repeating="No" redcap:EventName="User Access" redcap:CustomEventLabel="" redcap:UniqueEventName="user_access_arm_1" redcap:ArmNum="1" redcap:ArmName="SQL Queries" redcap:DayOffset="2" redcap:OffsetMin="0" redcap:OffsetMax="0">
+		<FormRef FormOID="Form.executive_dashboard" OrderNumber="1" Mandatory="No" redcap:FormName="executive_dashboard"/>
+		<FormRef FormOID="Form.project_sync" OrderNumber="2" Mandatory="No" redcap:FormName="project_sync"/>
+		<FormRef FormOID="Form.api_endpoint" OrderNumber="3" Mandatory="No" redcap:FormName="api_endpoint"/>
+	</StudyEventDef>
+	<StudyEventDef OID="Event.report_config_arm_2" Name="Report Config (Arm 2: Project Joins)" Type="Common" Repeating="No" redcap:EventName="Report Config" redcap:CustomEventLabel="" redcap:UniqueEventName="report_config_arm_2" redcap:ArmNum="2" redcap:ArmName="Project Joins" redcap:DayOffset="1" redcap:OffsetMin="0" redcap:OffsetMax="0">
+		<FormRef FormOID="Form.report_details" OrderNumber="1" Mandatory="No" redcap:FormName="report_details"/>
+		<FormRef FormOID="Form.project_join_info" OrderNumber="2" Mandatory="No" redcap:FormName="project_join_info"/>
+	</StudyEventDef>
+	<StudyEventDef OID="Event.user_access_arm_2" Name="User Access (Arm 2: Project Joins)" Type="Common" Repeating="No" redcap:EventName="User Access" redcap:CustomEventLabel="" redcap:UniqueEventName="user_access_arm_2" redcap:ArmNum="2" redcap:ArmName="Project Joins" redcap:DayOffset="2" redcap:OffsetMin="0" redcap:OffsetMax="0">
+		<FormRef FormOID="Form.executive_dashboard" OrderNumber="1" Mandatory="No" redcap:FormName="executive_dashboard"/>
+		<FormRef FormOID="Form.project_sync" OrderNumber="2" Mandatory="No" redcap:FormName="project_sync"/>
+		<FormRef FormOID="Form.api_endpoint" OrderNumber="3" Mandatory="No" redcap:FormName="api_endpoint"/>
+	</StudyEventDef>
+	<FormDef OID="Form.report_details" Name="Report Details" Repeating="No" redcap:FormName="report_details">
+		<ItemGroupRef ItemGroupOID="report_details.report_id" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="report_details.report_visibility" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="report_details.folder_name" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="report_details.report_details_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.sql_query" Name="SQL Query" Repeating="No" redcap:FormName="sql_query">
+		<ItemGroupRef ItemGroupOID="sql_query.alert_info_sql" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="sql_query.test_query_success" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="sql_query.test_query_error" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="sql_query.sql_query_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.column_formatting" Name="Column Formatting" Repeating="No" redcap:FormName="column_formatting">
+		<ItemGroupRef ItemGroupOID="column_formatting.alert_info_col_format" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.dashboard_show_column" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.dashboard_show_filter" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.export_show_column" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.export_display_header" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.link_type" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.link_source_column" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.hint_icons___1" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.alert_warning_suspended" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="column_formatting.column_formatting_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.project_join_info" Name="Project Join Info" Repeating="No" redcap:FormName="project_join_info">
+		<ItemGroupRef ItemGroupOID="project_join_info.add_project_info" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="project_join_info.project_join_info_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.executive_dashboard" Name="Executive Dashboard" Repeating="No" redcap:FormName="executive_dashboard">
+		<ItemGroupRef ItemGroupOID="executive_dashboard.executive_username" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="executive_dashboard.executive_user_firstname" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="executive_dashboard.executive_dashboard_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.project_sync" Name="Project Sync" Repeating="No" redcap:FormName="project_sync">
+		<ItemGroupRef ItemGroupOID="project_sync.sync_project_id" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="project_sync.sync_app_title" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="project_sync.project_sync_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.api_endpoint" Name="API Endpoint" Repeating="No" redcap:FormName="api_endpoint">
+		<ItemGroupRef ItemGroupOID="api_endpoint.api_access" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="api_endpoint.api_url" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="api_endpoint.api_endpoint_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.formatting_reference" Name="Formatting Reference" Repeating="No" redcap:FormName="formatting_reference">
+		<ItemGroupRef ItemGroupOID="formatting_reference.do_not_edit_warning" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="formatting_reference.link_lookup" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="formatting_reference.status_code_lookup" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="formatting_reference.purpose_code_lookup" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="formatting_reference.formatting_reference_complete" Mandatory="No"/>
+	</FormDef>
+	<ItemGroupDef OID="report_details.report_id" Name="Report Details" Repeating="No">
+		<ItemRef ItemOID="report_id" Mandatory="No" redcap:Variable="report_id"/>
+		<ItemRef ItemOID="report_title" Mandatory="Yes" redcap:Variable="report_title"/>
+		<ItemRef ItemOID="report_icon" Mandatory="No" redcap:Variable="report_icon"/>
+		<ItemRef ItemOID="report_description" Mandatory="No" redcap:Variable="report_description"/>
+		<ItemRef ItemOID="report_id_custom" Mandatory="No" redcap:Variable="report_id_custom"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="report_details.report_visibility" Name="Visibility Settings" Repeating="No">
+		<ItemRef ItemOID="report_visibility" Mandatory="No" redcap:Variable="report_visibility"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="report_details.folder_name" Name="Report Details" Repeating="No">
+		<ItemRef ItemOID="folder_name" Mandatory="No" redcap:Variable="folder_name"/>
+		<ItemRef ItemOID="tab_color" Mandatory="No" redcap:Variable="tab_color"/>
+		<ItemRef ItemOID="tab_color_custom" Mandatory="No" redcap:Variable="tab_color_custom"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="report_details.report_details_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="report_details_complete" Mandatory="No" redcap:Variable="report_details_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="sql_query.alert_info_sql" Name="SQL Query" Repeating="No">
+		<ItemRef ItemOID="alert_info_sql" Mandatory="No" redcap:Variable="alert_info_sql"/>
+		<ItemRef ItemOID="report_sql" Mandatory="No" redcap:Variable="report_sql"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="sql_query.test_query_success" Name="&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Test Query Results&lt;/p&gt;&lt;/div&gt;" Repeating="No">
+		<ItemRef ItemOID="test_query_success" Mandatory="No" redcap:Variable="test_query_success"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="sql_query.test_query_error" Name="SQL Query" Repeating="No">
+		<ItemRef ItemOID="test_query_error" Mandatory="No" redcap:Variable="test_query_error"/>
+		<ItemRef ItemOID="alert_danger_failed_query" Mandatory="No" redcap:Variable="alert_danger_failed_query"/>
+		<ItemRef ItemOID="test_query_column_list" Mandatory="No" redcap:Variable="test_query_column_list"/>
+		<ItemRef ItemOID="test_query_columns" Mandatory="No" redcap:Variable="test_query_columns"/>
+		<ItemRef ItemOID="alert_info_columns" Mandatory="No" redcap:Variable="alert_info_columns"/>
+		<ItemRef ItemOID="generate_column_formatting___1" Mandatory="No" redcap:Variable="generate_column_formatting"/>
+		<ItemRef ItemOID="alert_danger_columns" Mandatory="No" redcap:Variable="alert_danger_columns"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="sql_query.sql_query_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="sql_query_complete" Mandatory="No" redcap:Variable="sql_query_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.alert_info_col_format" Name="Column Formatting" Repeating="No">
+		<ItemRef ItemOID="alert_info_col_format" Mandatory="No" redcap:Variable="alert_info_col_format"/>
+		<ItemRef ItemOID="column_name" Mandatory="Yes" redcap:Variable="column_name"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.dashboard_show_column" Name="Display Options (Dashboard View)" Repeating="No">
+		<ItemRef ItemOID="dashboard_show_column" Mandatory="No" redcap:Variable="dashboard_show_column"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.dashboard_show_filter" Name="Column Formatting" Repeating="No">
+		<ItemRef ItemOID="dashboard_show_filter" Mandatory="No" redcap:Variable="dashboard_show_filter"/>
+		<ItemRef ItemOID="dashboard_display_header" Mandatory="No" redcap:Variable="dashboard_display_header"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.export_show_column" Name="Display Options (Exports)" Repeating="No">
+		<ItemRef ItemOID="export_show_column" Mandatory="No" redcap:Variable="export_show_column"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.export_display_header" Name="Column Formatting" Repeating="No">
+		<ItemRef ItemOID="export_display_header" Mandatory="No" redcap:Variable="export_display_header"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.link_type" Name="Text Formatting" Repeating="No">
+		<ItemRef ItemOID="link_type" Mandatory="No" redcap:Variable="link_type"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.link_source_column" Name="Column Formatting" Repeating="No">
+		<ItemRef ItemOID="link_source_column" Mandatory="No" redcap:Variable="link_source_column"/>
+		<ItemRef ItemOID="specify_custom_link" Mandatory="No" redcap:Variable="specify_custom_link"/>
+		<ItemRef ItemOID="export_urls" Mandatory="No" redcap:Variable="export_urls"/>
+		<ItemRef ItemOID="code_type" Mandatory="No" redcap:Variable="code_type"/>
+		<ItemRef ItemOID="export_codes" Mandatory="No" redcap:Variable="export_codes"/>
+		<ItemRef ItemOID="group_concat_separator" Mandatory="No" redcap:Variable="group_concat_separator"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.hint_icons___1" Name="Hint Icons" Repeating="No">
+		<ItemRef ItemOID="hint_icons___1" Mandatory="No" redcap:Variable="hint_icons"/>
+		<ItemRef ItemOID="hint_icons___2" Mandatory="No" redcap:Variable="hint_icons"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.alert_warning_suspended" Name="Column Formatting" Repeating="No">
+		<ItemRef ItemOID="alert_warning_suspended" Mandatory="No" redcap:Variable="alert_warning_suspended"/>
+		<ItemRef ItemOID="alert_warning_status" Mandatory="No" redcap:Variable="alert_warning_status"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="column_formatting.column_formatting_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="column_formatting_complete" Mandatory="No" redcap:Variable="column_formatting_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="project_join_info.add_project_info" Name="Project Join Info" Repeating="No">
+		<ItemRef ItemOID="add_project_info" Mandatory="No" redcap:Variable="add_project_info"/>
+		<ItemRef ItemOID="join_project_id" Mandatory="No" redcap:Variable="join_project_id"/>
+		<ItemRef ItemOID="join_app_title" Mandatory="No" redcap:Variable="join_app_title"/>
+		<ItemRef ItemOID="join_report_id" Mandatory="No" redcap:Variable="join_report_id"/>
+		<ItemRef ItemOID="join_title" Mandatory="No" redcap:Variable="join_title"/>
+		<ItemRef ItemOID="add_project_info_2" Mandatory="No" redcap:Variable="add_project_info_2"/>
+		<ItemRef ItemOID="join_primary_field" Mandatory="No" redcap:Variable="join_primary_field"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="project_join_info.project_join_info_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="project_join_info_complete" Mandatory="No" redcap:Variable="project_join_info_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="executive_dashboard.executive_username" Name="Grant report access to specific user (Executive Dashboard)" Repeating="No">
+		<ItemRef ItemOID="executive_username" Mandatory="Yes" redcap:Variable="executive_username"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="executive_dashboard.executive_user_firstname" Name="Executive Dashboard" Repeating="No">
+		<ItemRef ItemOID="executive_user_firstname" Mandatory="No" redcap:Variable="executive_user_firstname"/>
+		<ItemRef ItemOID="executive_user_lastname" Mandatory="No" redcap:Variable="executive_user_lastname"/>
+		<ItemRef ItemOID="executive_user_email" Mandatory="No" redcap:Variable="executive_user_email"/>
+		<ItemRef ItemOID="executive_export" Mandatory="Yes" redcap:Variable="executive_export"/>
+		<ItemRef ItemOID="alert_danger_exec" Mandatory="No" redcap:Variable="alert_danger_exec"/>
+		<ItemRef ItemOID="executive_view" Mandatory="No" redcap:Variable="executive_view"/>
+		<ItemRef ItemOID="executive_url" Mandatory="No" redcap:Variable="executive_url"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="executive_dashboard.executive_dashboard_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="executive_dashboard_complete" Mandatory="No" redcap:Variable="executive_dashboard_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="project_sync.sync_project_id" Name="Sync with User Rights on an existing REDCap project" Repeating="No">
+		<ItemRef ItemOID="sync_project_id" Mandatory="Yes" redcap:Variable="sync_project_id"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="project_sync.sync_app_title" Name="Project Sync" Repeating="No">
+		<ItemRef ItemOID="sync_app_title" Mandatory="No" redcap:Variable="sync_app_title"/>
+		<ItemRef ItemOID="project_sync_access" Mandatory="No" redcap:Variable="project_sync_access"/>
+		<ItemRef ItemOID="project_sync_role" Mandatory="No" redcap:Variable="project_sync_role"/>
+		<ItemRef ItemOID="project_sync_export" Mandatory="Yes" redcap:Variable="project_sync_export"/>
+		<ItemRef ItemOID="project_sync_enabled" Mandatory="No" redcap:Variable="project_sync_enabled"/>
+		<ItemRef ItemOID="alert_warning_sync" Mandatory="No" redcap:Variable="alert_warning_sync"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="project_sync.project_sync_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="project_sync_complete" Mandatory="No" redcap:Variable="project_sync_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="api_endpoint.api_access" Name="API Endpoint" Repeating="No">
+		<ItemRef ItemOID="api_access" Mandatory="No" redcap:Variable="api_access"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="api_endpoint.api_url" Name="API Endpoint" Repeating="No">
+		<ItemRef ItemOID="api_url" Mandatory="No" redcap:Variable="api_url"/>
+		<ItemRef ItemOID="alert_warning_api" Mandatory="No" redcap:Variable="alert_warning_api"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="api_endpoint.api_endpoint_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="api_endpoint_complete" Mandatory="No" redcap:Variable="api_endpoint_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="formatting_reference.do_not_edit_warning" Name="Formatting Reference" Repeating="No">
+		<ItemRef ItemOID="do_not_edit_warning" Mandatory="No" redcap:Variable="do_not_edit_warning"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="formatting_reference.link_lookup" Name="REDCap URLs" Repeating="No">
+		<ItemRef ItemOID="link_lookup" Mandatory="No" redcap:Variable="link_lookup"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="formatting_reference.status_code_lookup" Name="REDCap Codes" Repeating="No">
+		<ItemRef ItemOID="status_code_lookup" Mandatory="No" redcap:Variable="status_code_lookup"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="formatting_reference.purpose_code_lookup" Name="Formatting Reference" Repeating="No">
+		<ItemRef ItemOID="purpose_code_lookup" Mandatory="No" redcap:Variable="purpose_code_lookup"/>
+		<ItemRef ItemOID="research_code_lookup" Mandatory="No" redcap:Variable="research_code_lookup"/>
+		<ItemRef ItemOID="icon_lookup" Mandatory="No" redcap:Variable="icon_lookup"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="formatting_reference.formatting_reference_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="formatting_reference_complete" Mandatory="No" redcap:Variable="formatting_reference_complete"/>
+	</ItemGroupDef>
+	<ItemDef OID="report_id" Name="report_id" DataType="integer" Length="999" redcap:Variable="report_id" redcap:FieldType="text" redcap:TextValidationType="int">
+		<Question><TranslatedText>Report ID</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_title" Name="report_title" DataType="text" Length="999" redcap:Variable="report_title" redcap:FieldType="text" redcap:RequiredField="y">
+		<Question><TranslatedText>Report Title</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_icon" Name="report_icon" DataType="text" Length="999" redcap:Variable="report_icon" redcap:FieldType="text" redcap:FieldNote="Accepts any solid icon from Font Awesome" redcap:FieldAnnotation="@DEFAULT=&#039;file&#039;">
+		<Question><TranslatedText>Report Icon
+(reference)</TranslatedText><redcap:FormattedTranslatedText>&lt;p&gt;Report Icon&lt;br /&gt;&lt;a href=&quot;https://fontawesome.com/cheatsheet#solid&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;(reference)&lt;/a&gt;&lt;/p&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_description" Name="report_description" DataType="text" Length="999" redcap:Variable="report_description" redcap:FieldType="textarea">
+		<Question><TranslatedText>Report Description</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_id_custom" Name="report_id_custom" DataType="text" Length="999" redcap:Variable="report_id_custom" redcap:FieldType="text" redcap:FieldNote="Can be used as an alternative to numeric ID in report URLs">
+		<Question><TranslatedText>Custom Report ID</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_visibility" Name="report_visibility" DataType="text" Length="1" redcap:Variable="report_visibility" redcap:FieldType="radio" redcap:FieldNote="Admins can access any report via direct link, regardless of this setting" redcap:SectionHeader="Visibility Settings" redcap:FieldAnnotation="@DEFAULT=&#039;1&#039;">
+		<Question><TranslatedText>Should this report appear in the Admin Dashboard&#039;s navigation bar?</TranslatedText></Question>
+		<CodeListRef CodeListOID="report_visibility.choices"/>
+	</ItemDef>
+	<ItemDef OID="folder_name" Name="folder_name" DataType="text" Length="999" redcap:Variable="folder_name" redcap:FieldType="text" redcap:FieldNote="Optional. All reports with matching folder names will appear inside a dropdown menu." redcap:BranchingLogic="[report_visibility] = &#039;1&#039; or [report_visibility] = &#039;2&#039;">
+		<Question><TranslatedText>Report folder name:</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="tab_color" Name="tab_color" DataType="text" Length="6" redcap:Variable="tab_color" redcap:FieldType="select" redcap:FieldNote="Optional" redcap:BranchingLogic="[report_visibility] = &#039;1&#039; or [report_visibility] = &#039;2&#039;">
+		<Question><TranslatedText>Navigation tab color:</TranslatedText></Question>
+		<CodeListRef CodeListOID="tab_color.choices"/>
+	</ItemDef>
+	<ItemDef OID="tab_color_custom" Name="tab_color_custom" DataType="text" Length="999" redcap:Variable="tab_color_custom" redcap:FieldType="text" redcap:BranchingLogic="[tab_color] = &#039;99&#039; and ([report_visibility] = &#039;1&#039; or [report_visibility] = &#039;2&#039;)">
+		<Question><TranslatedText>Set custom tab color:</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_details_complete" Name="report_details_complete" DataType="text" Length="1" redcap:Variable="report_details_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="report_details_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="alert_info_sql" Name="alert_info_sql" DataType="text" Length="999" redcap:Variable="alert_info_sql" redcap:FieldType="descriptive">
+		<Question><TranslatedText>[report_title] [report_description]</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;h2 style=&quot;text-align: left;&quot;&gt;[report_title]&lt;/h2&gt; &lt;p&gt;[report_description]&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="report_sql" Name="report_sql" DataType="text" Length="999" redcap:Variable="report_sql" redcap:FieldType="textarea">
+		<Question><TranslatedText>Report SQL (SELECT queries only)</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Report SQL &lt;span style=&quot;font-weight: normal;&quot;&gt;&lt;em&gt;(SELECT queries only)&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="test_query_success" Name="test_query_success" DataType="boolean" Length="1" redcap:Variable="test_query_success" redcap:FieldType="yesno" redcap:SectionHeader="&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Test Query Results&lt;/p&gt;&lt;/div&gt;" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Success?</TranslatedText></Question>
+		<CodeListRef CodeListOID="test_query_success.choices"/>
+	</ItemDef>
+	<ItemDef OID="test_query_error" Name="test_query_error" DataType="text" Length="999" redcap:Variable="test_query_error" redcap:FieldType="textarea" redcap:BranchingLogic="[test_query_success] = &#039;0&#039;" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Error Message</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="alert_danger_failed_query" Name="alert_danger_failed_query" DataType="text" Length="999" redcap:Variable="alert_danger_failed_query" redcap:FieldType="descriptive" redcap:BranchingLogic="[test_query_success] = &#039;0&#039;">
+		<Question><TranslatedText>Please check your query for issues and try again.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="test_query_column_list" Name="test_query_column_list" DataType="text" Length="999" redcap:Variable="test_query_column_list" redcap:FieldType="textarea" redcap:BranchingLogic="[test_query_success] = &#039;1&#039;" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Column Names</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="test_query_columns" Name="test_query_columns" DataType="float" Length="999" SignificantDigits="1" redcap:Variable="test_query_columns" redcap:FieldType="text" redcap:TextValidationType="float" redcap:BranchingLogic="[test_query_success] = &#039;1&#039;" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Column Count</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="alert_info_columns" Name="alert_info_columns" DataType="text" Length="999" redcap:Variable="alert_info_columns" redcap:FieldType="descriptive">
+		<Question><TranslatedText>Column Formatting is a repeatable form that allows data-specific parameters to be tweaked (e.g. displaying project titles as project links). If the following option is checked, Column Formatting instances will be automatically generated on form save.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="generate_column_formatting___1" Name="generate_column_formatting___1" DataType="boolean" Length="1" redcap:Variable="generate_column_formatting" redcap:FieldType="checkbox" redcap:FieldAnnotation="@DEFAULT=&#039;1&#039;">
+		<Question><TranslatedText>Generate Column Formatting?</TranslatedText></Question>
+		<CodeListRef CodeListOID="generate_column_formatting___1.choices"/>
+	</ItemDef>
+	<ItemDef OID="alert_danger_columns" Name="alert_danger_columns" DataType="text" Length="999" redcap:Variable="alert_danger_columns" redcap:FieldType="descriptive" redcap:BranchingLogic="[generate_column_formatting(1)] = &#039;1&#039; and [column_name][first-instance] &lt;&gt; &#039;&#039;">
+		<Question><TranslatedText>WARNING! It appears that this report already has saved Column Formatting instances. If this form is saved, these instances may be overwritten.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="sql_query_complete" Name="sql_query_complete" DataType="text" Length="1" redcap:Variable="sql_query_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="sql_query_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="alert_info_col_format" Name="alert_info_col_format" DataType="text" Length="999" redcap:Variable="alert_info_col_format" redcap:FieldType="descriptive">
+		<Question><TranslatedText>[report_title]   Editing column: [column_name] ([dashboard_display_header])</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;h2&gt;[report_title]&lt;/h2&gt; &lt;p&gt; &lt;/p&gt; &lt;p&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;Editing column: &lt;/span&gt;[column_name] ([dashboard_display_header])&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="column_name" Name="column_name" DataType="text" Length="999" redcap:Variable="column_name" redcap:FieldType="text" redcap:FieldNote="This value uniquely identifies this column and should not be changed." redcap:RequiredField="y" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>SQL Column Name</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="dashboard_show_column" Name="dashboard_show_column" DataType="text" Length="1" redcap:Variable="dashboard_show_column" redcap:FieldType="radio" redcap:FieldNote="&quot;Hidden&quot; data will not be rendered, but still queried for use in dependent columns" redcap:SectionHeader="Display Options (Dashboard View)" redcap:FieldAnnotation="@DEFAULT=&#039;1&#039;">
+		<Question><TranslatedText>Include data from this column in Dashboard View?</TranslatedText></Question>
+		<CodeListRef CodeListOID="dashboard_show_column.choices"/>
+	</ItemDef>
+	<ItemDef OID="dashboard_show_filter" Name="dashboard_show_filter" DataType="text" Length="1" redcap:Variable="dashboard_show_filter" redcap:FieldType="radio" redcap:FieldNote="A general &quot;Search&quot; field is always available, but multiple per-column filters can be used at once" redcap:BranchingLogic="[dashboard_show_column] = &#039;1&#039;">
+		<Question><TranslatedText>Show column filter as:</TranslatedText></Question>
+		<CodeListRef CodeListOID="dashboard_show_filter.choices"/>
+	</ItemDef>
+	<ItemDef OID="dashboard_display_header" Name="dashboard_display_header" DataType="text" Length="999" redcap:Variable="dashboard_display_header" redcap:FieldType="text" redcap:FieldNote="Overrides SQL column name. If left blank, &quot;[column_name]&quot; will be used" redcap:BranchingLogic="[dashboard_show_column] = &#039;1&#039;">
+		<Question><TranslatedText>Alternate column header:</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="export_show_column" Name="export_show_column" DataType="boolean" Length="1" redcap:Variable="export_show_column" redcap:FieldType="yesno" redcap:SectionHeader="Display Options (Exports)" redcap:FieldAnnotation="@DEFAULT=&#039;1&#039;">
+		<Question><TranslatedText>Include data from this column in exports?</TranslatedText></Question>
+		<CodeListRef CodeListOID="export_show_column.choices"/>
+	</ItemDef>
+	<ItemDef OID="export_display_header" Name="export_display_header" DataType="text" Length="999" redcap:Variable="export_display_header" redcap:FieldType="text" redcap:FieldNote="Overrides SQL column name. If left blank, &quot;[column_name]&quot; will be used" redcap:BranchingLogic="[export_show_column] = &#039;1&#039;">
+		<Question><TranslatedText>Alternate column header:</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="link_type" Name="link_type" DataType="text" Length="3" redcap:Variable="link_type" redcap:FieldType="select" redcap:FieldNote="Original values will be displayed as hyperlinks in Dashboard View" redcap:SectionHeader="Text Formatting">
+		<Question><TranslatedText>Generate URLs (to other REDCap pages, email addresses, etc) for this column?</TranslatedText></Question>
+		<CodeListRef CodeListOID="link_type.choices"/>
+	</ItemDef>
+	<ItemDef OID="link_source_column" Name="link_source_column" DataType="text" Length="1" redcap:Variable="link_source_column" redcap:FieldType="sql" redcap:FieldNote="e.g. select &#039;project_id&#039; column as source for &#039;app_title&#039; to display project titles as links" redcap:BranchingLogic="[link_type] &lt;&gt; &#039;&#039;">
+		<Question><TranslatedText>Source column for generating URLs</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="specify_custom_link" Name="specify_custom_link" DataType="text" Length="999" redcap:Variable="specify_custom_link" redcap:FieldType="text" redcap:FieldNote="Use {value} to pipe returned value into URL" redcap:BranchingLogic="[link_type] = &#039;99&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;http://httpbin.org/get?column={value}&quot;">
+		<Question><TranslatedText>Custom URL Format</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="export_urls" Name="export_urls" DataType="boolean" Length="1" redcap:Variable="export_urls" redcap:FieldType="yesno" redcap:BranchingLogic="[export_show_column] = &#039;1&#039; and [link_type] &lt;&gt; &#039;&#039;" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Include URLs in exports (instead of raw values)?</TranslatedText></Question>
+		<CodeListRef CodeListOID="export_urls.choices"/>
+	</ItemDef>
+	<ItemDef OID="code_type" Name="code_type" DataType="text" Length="1" redcap:Variable="code_type" redcap:FieldType="select" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Replace standard REDCap codes with labels?</TranslatedText></Question>
+		<CodeListRef CodeListOID="code_type.choices"/>
+	</ItemDef>
+	<ItemDef OID="export_codes" Name="export_codes" DataType="boolean" Length="1" redcap:Variable="export_codes" redcap:FieldType="yesno" redcap:BranchingLogic="[code_type] &lt;&gt; &#039;&#039;" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Include labels in exports (instead of raw values)?</TranslatedText></Question>
+		<CodeListRef CodeListOID="export_codes.choices"/>
+	</ItemDef>
+	<ItemDef OID="group_concat_separator" Name="group_concat_separator" DataType="text" Length="999" redcap:Variable="group_concat_separator" redcap:FieldType="text" redcap:FieldNote="Optional, helpful for queries using &quot;group_concat()&quot;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;@@@&quot;">
+		<Question><TranslatedText>Split delimited data (with newlines in Dashboard View; semicolons in exports)?</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="hint_icons___1" Name="hint_icons___1" DataType="boolean" Length="1" redcap:Variable="hint_icons" redcap:FieldType="checkbox" redcap:SectionHeader="Hint Icons">
+		<Question><TranslatedText>Include &quot;hint&quot; icons next to returned data?</TranslatedText></Question>
+		<CodeListRef CodeListOID="hint_icons___1.choices"/>
+	</ItemDef>
+	<ItemDef OID="hint_icons___2" Name="hint_icons___2" DataType="boolean" Length="1" redcap:Variable="hint_icons" redcap:FieldType="checkbox" redcap:SectionHeader="Hint Icons">
+		<Question><TranslatedText>Include &quot;hint&quot; icons next to returned data?</TranslatedText></Question>
+		<CodeListRef CodeListOID="hint_icons___2.choices"/>
+	</ItemDef>
+	<ItemDef OID="alert_warning_suspended" Name="alert_warning_suspended" DataType="text" Length="999" redcap:Variable="alert_warning_suspended" redcap:FieldType="descriptive" redcap:BranchingLogic="[hint_icons(1)] = &#039;1&#039;">
+		<Question><TranslatedText>Be sure to include &quot;user_suspended_time&quot; from the redcap_user_information table for suspended user icons to appear properly. The &quot;user_suspended_time&quot; column can be hidden, but it must be included with that exact name.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="alert_warning_status" Name="alert_warning_status" DataType="text" Length="999" redcap:Variable="alert_warning_status" redcap:FieldType="descriptive" redcap:BranchingLogic="[hint_icons(2)] = &#039;1&#039;">
+		<Question><TranslatedText>Be sure to include &quot;status&quot; from the redcap_projects table for project status icons to appear properly. The &quot;status&quot; column can be hidden, but it must be included with that exact name.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="column_formatting_complete" Name="column_formatting_complete" DataType="text" Length="1" redcap:Variable="column_formatting_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="column_formatting_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="add_project_info" Name="add_project_info" DataType="text" Length="999" redcap:Variable="add_project_info" redcap:FieldType="descriptive">
+		<Question><TranslatedText>Each project added as a repeatable instance will be included in the join. Additionally, a REDCap report within each project can be selected to limit the fields included in the join.</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;ad-alert-info&quot;&gt;Each project added as a repeatable instance will be included in the join. Additionally, a REDCap report within each project can be selected to limit the fields included in the join.&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="join_project_id" Name="join_project_id" DataType="float" Length="999" SignificantDigits="1" redcap:Variable="join_project_id" redcap:FieldType="text" redcap:TextValidationType="float">
+		<Question><TranslatedText>Source Project ID</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="join_app_title" Name="join_app_title" DataType="text" Length="999" redcap:Variable="join_app_title" redcap:FieldType="text" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Source Project Title</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="join_report_id" Name="join_report_id" DataType="float" Length="999" SignificantDigits="1" redcap:Variable="join_report_id" redcap:FieldType="text" redcap:TextValidationType="float" redcap:FieldNote="Leave blank to join all fields" redcap:BranchingLogic="[join_project_id] &lt;&gt; &#039;&#039;">
+		<Question><TranslatedText>Specify Report ID (optional)</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="join_title" Name="join_title" DataType="text" Length="999" redcap:Variable="join_title" redcap:FieldType="text" redcap:BranchingLogic="[join_project_id] &lt;&gt; &#039;&#039; and [join_report_id] &lt;&gt; &#039;&#039;" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Report Title</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="add_project_info_2" Name="add_project_info_2" DataType="text" Length="999" redcap:Variable="add_project_info_2" redcap:FieldType="descriptive" redcap:BranchingLogic="[join_project_id] &lt;&gt; &#039;&#039;">
+		<Question><TranslatedText>Enter the exact variable name of a field in the source project which contains data to be matched against other projects.</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;ad-alert-info&quot;&gt;Enter the exact variable name of a field in the source project which contains data to be matched against other projects.&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="join_primary_field" Name="join_primary_field" DataType="text" Length="999" redcap:Variable="join_primary_field" redcap:FieldType="text" redcap:BranchingLogic="[join_project_id] &lt;&gt; &#039;&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;record_id&quot;">
+		<Question><TranslatedText>Variable to join data on:</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="project_join_info_complete" Name="project_join_info_complete" DataType="text" Length="1" redcap:Variable="project_join_info_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="project_join_info_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="executive_username" Name="executive_username" DataType="text" Length="999" redcap:Variable="executive_username" redcap:FieldType="text" redcap:SectionHeader="Grant report access to specific user (Executive Dashboard)" redcap:Identifier="y" redcap:RequiredField="y">
+		<Question><TranslatedText>REDCap Username</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="executive_user_firstname" Name="executive_user_firstname" DataType="text" Length="999" redcap:Variable="executive_user_firstname" redcap:FieldType="text" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>User First Name</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="executive_user_lastname" Name="executive_user_lastname" DataType="text" Length="999" redcap:Variable="executive_user_lastname" redcap:FieldType="text" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>User Last Name</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="executive_user_email" Name="executive_user_email" DataType="text" Length="999" redcap:Variable="executive_user_email" redcap:FieldType="text" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>User Email</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="executive_export" Name="executive_export" DataType="boolean" Length="1" redcap:Variable="executive_export" redcap:FieldType="yesno" redcap:RequiredField="y" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Allow user to export data from this report?</TranslatedText></Question>
+		<CodeListRef CodeListOID="executive_export.choices"/>
+	</ItemDef>
+	<ItemDef OID="alert_danger_exec" Name="alert_danger_exec" DataType="text" Length="999" redcap:Variable="alert_danger_exec" redcap:FieldType="descriptive">
+		<Question><TranslatedText>WARNING: This module runs SQL queries directly against the REDCap database and could expose potentially sensitive data to users running these reports. Please use caution when granting access to non-admin users. Any changes to this record can be audited using REDCap&#039;s built-in logging. Please confirm that the above information is correct, then select &quot;Yes&quot; to grant this user report access.</TranslatedText><redcap:FormattedTranslatedText>&lt;span style=&quot;color: #e03e2d;&quot;&gt;WARNING:&lt;/span&gt; This module runs SQL queries directly against the REDCap database and could &lt;span style=&quot;color: #e03e2d;&quot;&gt;expose potentially sensitive data&lt;/span&gt; to users running these reports. Please use caution when granting access to non-admin users. Any changes to this record can be audited using REDCap&#039;s built-in logging. &lt;p&gt;&lt;span style=&quot;color: #e03e2d;&quot;&gt;Please confirm that the above information is correct&lt;/span&gt;, then select &quot;Yes&quot; to grant this user report access.&lt;/p&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="executive_view" Name="executive_view" DataType="boolean" Length="1" redcap:Variable="executive_view" redcap:FieldType="yesno" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Grant report access via &quot;Executive Dashboard&quot; to [executive_user_firstname] [executive_user_lastname]?</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Grant &lt;span style=&quot;color: #000000;&quot;&gt;report &lt;/span&gt;access via &quot;Executive Dashboard&quot; to &lt;span style=&quot;color: #e03e2d;&quot;&gt;[executive_user_firstname] [executive_user_lastname]&lt;/span&gt;?&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+		<CodeListRef CodeListOID="executive_view.choices"/>
+	</ItemDef>
+	<ItemDef OID="executive_url" Name="executive_url" DataType="text" Length="999" redcap:Variable="executive_url" redcap:FieldType="descriptive" redcap:BranchingLogic="[executive_view] = &#039;1&#039;">
+		<Question><TranslatedText>Report URL: </TranslatedText><redcap:FormattedTranslatedText>&lt;p&gt;Report URL:&lt;/p&gt; &lt;pre class=&quot;url-placeholder api-pre&quot;&gt;&lt;/pre&gt;&lt;div class=&quot;buttons-placeholder&quot;&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="executive_dashboard_complete" Name="executive_dashboard_complete" DataType="text" Length="1" redcap:Variable="executive_dashboard_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="executive_dashboard_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="sync_project_id" Name="sync_project_id" DataType="float" Length="999" SignificantDigits="1" redcap:Variable="sync_project_id" redcap:FieldType="text" redcap:TextValidationType="float" redcap:SectionHeader="Sync with User Rights on an existing REDCap project" redcap:RequiredField="y">
+		<Question><TranslatedText>Sync Project ID</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="sync_app_title" Name="sync_app_title" DataType="text" Length="999" redcap:Variable="sync_app_title" redcap:FieldType="text" redcap:FieldAnnotation="@READONLY">
+		<Question><TranslatedText>Sync Project Title</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="project_sync_access" Name="project_sync_access" DataType="text" Length="1" redcap:Variable="project_sync_access" redcap:FieldType="radio" redcap:FieldAnnotation="@DEFAULT=&#039;2&#039;">
+		<Question><TranslatedText>Of the users included on this project&#039;s User Rights page, who should have access to this report?</TranslatedText></Question>
+		<CodeListRef CodeListOID="project_sync_access.choices"/>
+	</ItemDef>
+	<ItemDef OID="project_sync_role" Name="project_sync_role" DataType="text" Length="999" redcap:Variable="project_sync_role" redcap:FieldType="text" redcap:FieldNote="Must be an exact match" redcap:BranchingLogic="[project_sync_access] = &#039;3&#039;">
+		<Question><TranslatedText>Specify user role:</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="project_sync_export" Name="project_sync_export" DataType="text" Length="1" redcap:Variable="project_sync_export" redcap:FieldType="radio" redcap:RequiredField="y" redcap:FieldAnnotation="@DEFAULT=&quot;3&quot;">
+		<Question><TranslatedText>Of the subset of users defined above, who should be allowed to export report data?</TranslatedText></Question>
+		<CodeListRef CodeListOID="project_sync_export.choices"/>
+	</ItemDef>
+	<ItemDef OID="project_sync_enabled" Name="project_sync_enabled" DataType="boolean" Length="1" redcap:Variable="project_sync_enabled" redcap:FieldType="yesno" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Allow non-admin access via REDCap project sync?</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Allow &lt;span style=&quot;color: #e03e2d;&quot;&gt;non-admin&lt;/span&gt; access via REDCap project sync?&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+		<CodeListRef CodeListOID="project_sync_enabled.choices"/>
+	</ItemDef>
+	<ItemDef OID="alert_warning_sync" Name="alert_warning_sync" DataType="text" Length="999" redcap:Variable="alert_warning_sync" redcap:FieldType="descriptive">
+		<Question><TranslatedText>Please enable the Admin Dashboard module on the sync project for report access.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="project_sync_complete" Name="project_sync_complete" DataType="text" Length="1" redcap:Variable="project_sync_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="project_sync_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="api_access" Name="api_access" DataType="boolean" Length="1" redcap:Variable="api_access" redcap:FieldType="yesno" redcap:SectionHeader="API Endpoint" redcap:FieldAnnotation="@DEFAULT=&#039;0&#039;">
+		<Question><TranslatedText>Allow users with API Export tokens (for this configuration project) to query this report via POST request?</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Allow users with API Export tokens &lt;span style=&quot;color: #e03e2d;&quot;&gt;(for this configuration project)&lt;/span&gt; to query this report via POST request?&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+		<CodeListRef CodeListOID="api_access.choices"/>
+	</ItemDef>
+	<ItemDef OID="api_url" Name="api_url" DataType="text" Length="999" redcap:Variable="api_url" redcap:FieldType="descriptive" redcap:BranchingLogic="[api_access] = &#039;1&#039;">
+		<Question><TranslatedText>Request URL:  Supported Request Method: POST Parameters (case sensitive): token
+The API token specific to this configuration project (each token is unique to each user for each project). project_id (optional)
+An override value for the &#039;project-id&#039; Smart Variable (if being used in a SQL query). If not defined, any use of &#039;project-id&#039; will default to the PID of this config project ([project-id]).</TranslatedText><redcap:FormattedTranslatedText>&lt;p&gt;Request URL:&lt;/p&gt; &lt;pre class=&quot;url-placeholder api-pre&quot;&gt;&lt;/pre&gt; &lt;p&gt;Supported Request Method:&lt;/p&gt; &lt;pre  class=&quot;api-pre&quot;&gt;POST&lt;/pre&gt; &lt;p&gt;Parameters (case sensitive):&lt;/p&gt; &lt;pre class=&quot;api-pre&quot;&gt;&lt;em&gt;token&lt;br /&gt;&lt;/em&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;The API token specific to this configuration project (each token is unique to each user for each project).&lt;/span&gt;&lt;/pre&gt; &lt;pre class=&quot;api-pre&quot;&gt;&lt;em&gt;project_id (optional)&lt;br /&gt;&lt;/em&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;An override value for the &#039;project-id&#039; Smart Variable (if being used in a SQL query). If not defined, any use of &#039;project-id&#039; will default to the PID of this config project ([project-id]).&lt;/span&gt;&lt;/pre&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="alert_warning_api" Name="alert_warning_api" DataType="text" Length="999" redcap:Variable="alert_warning_api" redcap:FieldType="descriptive">
+		<Question><TranslatedText>NOTE: API endpoint does not currently support Smart Variables in queries.</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="api_endpoint_complete" Name="api_endpoint_complete" DataType="text" Length="1" redcap:Variable="api_endpoint_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="api_endpoint_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="do_not_edit_warning" Name="do_not_edit_warning" DataType="text" Length="999" redcap:Variable="do_not_edit_warning" redcap:FieldType="descriptive" redcap:FieldAnnotation="@HIDDEN">
+		<Question><TranslatedText>WARNING: Below are some additional fields used to support the Column Formatting feature. No data is actually stored here - it&#039;s simply used to store lookup values in a location that can be easily updated and customized without directly editing the module&#039;s code.
+
+In most cases you should NOT need to edit these fields. Please leave them be unless you know exactly what you&#039;re doing!</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;&lt;span style=&quot;color: #e03e2d;&quot;&gt;WARNING:&lt;/span&gt; Below are some additional fields used to support the Column Formatting feature. No data is actually stored here - it&#039;s simply used to store lookup values in a location that can be easily updated and customized without directly editing the module&#039;s code.&lt;br /&gt;&lt;br /&gt;&lt;span style=&quot;color: #e03e2d;&quot;&gt;In most cases you should NOT need to edit these fields.&lt;/span&gt; Please leave them be unless you know exactly what you&#039;re doing!&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="link_lookup" Name="link_lookup" DataType="text" Length="1" redcap:Variable="link_lookup" redcap:FieldType="radio" redcap:SectionHeader="REDCap URLs" redcap:FieldAnnotation="@HIDDEN">
+		<Question><TranslatedText>links</TranslatedText></Question>
+		<CodeListRef CodeListOID="link_lookup.choices"/>
+	</ItemDef>
+	<ItemDef OID="status_code_lookup" Name="status_code_lookup" DataType="text" Length="1" redcap:Variable="status_code_lookup" redcap:FieldType="radio" redcap:SectionHeader="REDCap Codes" redcap:FieldAnnotation="@HIDDEN">
+		<Question><TranslatedText>status</TranslatedText></Question>
+		<CodeListRef CodeListOID="status_code_lookup.choices"/>
+	</ItemDef>
+	<ItemDef OID="purpose_code_lookup" Name="purpose_code_lookup" DataType="text" Length="1" redcap:Variable="purpose_code_lookup" redcap:FieldType="radio" redcap:FieldAnnotation="@HIDDEN">
+		<Question><TranslatedText>purpose</TranslatedText></Question>
+		<CodeListRef CodeListOID="purpose_code_lookup.choices"/>
+	</ItemDef>
+	<ItemDef OID="research_code_lookup" Name="research_code_lookup" DataType="text" Length="1" redcap:Variable="research_code_lookup" redcap:FieldType="radio" redcap:FieldAnnotation="@HIDDEN">
+		<Question><TranslatedText>purpose_other</TranslatedText></Question>
+		<CodeListRef CodeListOID="research_code_lookup.choices"/>
+	</ItemDef>
+	<ItemDef OID="icon_lookup" Name="icon_lookup" DataType="text" Length="1" redcap:Variable="icon_lookup" redcap:FieldType="radio">
+		<Question><TranslatedText>icons</TranslatedText></Question>
+		<CodeListRef CodeListOID="icon_lookup.choices"/>
+	</ItemDef>
+	<ItemDef OID="formatting_reference_complete" Name="formatting_reference_complete" DataType="text" Length="1" redcap:Variable="formatting_reference_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="formatting_reference_complete.choices"/>
+	</ItemDef>
+	<CodeList OID="report_visibility.choices" Name="report_visibility" DataType="text" redcap:Variable="report_visibility">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Show for admins only</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Show only for users with explicit access (Executive Dashboard)</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Do not show</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tab_color.choices" Name="tab_color" DataType="text" redcap:Variable="tab_color">
+		<CodeListItem CodedValue="007bff"><Decode><TranslatedText>Blue</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="dc3545"><Decode><TranslatedText>Red</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="ffc107"><Decode><TranslatedText>Yellow</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="28a745"><Decode><TranslatedText>Green</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="343a40"><Decode><TranslatedText>Dark Gray</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Custom</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="report_details_complete.choices" Name="report_details_complete" DataType="text" redcap:Variable="report_details_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="test_query_success.choices" Name="test_query_success" DataType="boolean" redcap:Variable="test_query_success">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="generate_column_formatting___1.choices" Name="generate_column_formatting___1" DataType="boolean" redcap:Variable="generate_column_formatting" redcap:CheckboxChoices="1, &amp;nbsp">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="sql_query_complete.choices" Name="sql_query_complete" DataType="text" redcap:Variable="sql_query_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="dashboard_show_column.choices" Name="dashboard_show_column" DataType="text" redcap:Variable="dashboard_show_column">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No, hide it</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="dashboard_show_filter.choices" Name="dashboard_show_filter" DataType="text" redcap:Variable="dashboard_show_filter">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Free-text input</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Dropdown list (better for categorical data)</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>None</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="export_show_column.choices" Name="export_show_column" DataType="boolean" redcap:Variable="export_show_column">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="link_type.choices" Name="link_type" DataType="text" redcap:Variable="link_type">
+		<CodeListItem CodedValue="100"><Decode><TranslatedText>---REDCap Project ID---</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Project Setup</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Online Designer</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Record Status Dashboard</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>User Rights</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="5"><Decode><TranslatedText>Project Settings (Control Center)</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="200"><Decode><TranslatedText>---REDCap Username---</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="6"><Decode><TranslatedText>User Profile (Control Center)</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="7"><Decode><TranslatedText>User Projects (Control Center)</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="300"><Decode><TranslatedText>---Other---</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="8"><Decode><TranslatedText>REDCap Survey Hash</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="9"><Decode><TranslatedText>Email Address</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Custom URL</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="export_urls.choices" Name="export_urls" DataType="boolean" redcap:Variable="export_urls">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="code_type.choices" Name="code_type" DataType="text" redcap:Variable="code_type">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Project Status</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Project Purpose</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Research Purpose</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>Research Purpose (Split into separate columns)</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="export_codes.choices" Name="export_codes" DataType="boolean" redcap:Variable="export_codes">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="hint_icons___1.choices" Name="hint_icons___1" DataType="boolean" redcap:Variable="hint_icons" redcap:CheckboxChoices="1, User suspended (e.g. &lt;span class=&quot;icon-placeholder&quot;&gt; bob_user&lt;/span&gt;)|2, Project status (e.g. &lt;span class=&quot;icon-placeholder&quot;&gt; Nacho Craving Study&lt;/span&gt;)">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="hint_icons___2.choices" Name="hint_icons___2" DataType="boolean" redcap:Variable="hint_icons" redcap:CheckboxChoices="1, User suspended (e.g. &lt;span class=&quot;icon-placeholder&quot;&gt; bob_user&lt;/span&gt;)|2, Project status (e.g. &lt;span class=&quot;icon-placeholder&quot;&gt; Nacho Craving Study&lt;/span&gt;)">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="column_formatting_complete.choices" Name="column_formatting_complete" DataType="text" redcap:Variable="column_formatting_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="project_join_info_complete.choices" Name="project_join_info_complete" DataType="text" redcap:Variable="project_join_info_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="executive_export.choices" Name="executive_export" DataType="boolean" redcap:Variable="executive_export">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="executive_view.choices" Name="executive_view" DataType="boolean" redcap:Variable="executive_view">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="executive_dashboard_complete.choices" Name="executive_dashboard_complete" DataType="text" redcap:Variable="executive_dashboard_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="project_sync_access.choices" Name="project_sync_access" DataType="text" redcap:Variable="project_sync_access">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>All users</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Only users with &quot;Add/Edit/Organize Reports&quot; rights</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Only users with a specific role (define below)</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="project_sync_export.choices" Name="project_sync_export" DataType="text" redcap:Variable="project_sync_export">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Any user</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Only users with &quot;Full Data Set&quot; export rights</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Do not allow non-admin users to use export features</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="project_sync_enabled.choices" Name="project_sync_enabled" DataType="boolean" redcap:Variable="project_sync_enabled">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="project_sync_complete.choices" Name="project_sync_complete" DataType="text" redcap:Variable="project_sync_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="api_access.choices" Name="api_access" DataType="boolean" redcap:Variable="api_access">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="api_endpoint_complete.choices" Name="api_endpoint_complete" DataType="text" redcap:Variable="api_endpoint_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="link_lookup.choices" Name="link_lookup" DataType="text" redcap:Variable="link_lookup">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>ProjectSetup/index.php?pid=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Design/online_designer.php?pid=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>DataEntry/record_status_dashboard.php?pid=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>UserRights/index.php?pid=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="5"><Decode><TranslatedText>ControlCenter/edit_project.php?project=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="6"><Decode><TranslatedText>ControlCenter/view_users.php?username=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="7"><Decode><TranslatedText>ControlCenter/view_projects.php?userid=</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="8"><Decode><TranslatedText>surveys/?s=</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="status_code_lookup.choices" Name="status_code_lookup" DataType="text" redcap:Variable="status_code_lookup">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Development</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Production</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Analysis/Cleanup</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="purpose_code_lookup.choices" Name="purpose_code_lookup" DataType="text" redcap:Variable="purpose_code_lookup">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Practice / Just for fun</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Other</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Research</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>Quality Improvement</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="5"><Decode><TranslatedText>Operational Support</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="research_code_lookup.choices" Name="research_code_lookup" DataType="text" redcap:Variable="research_code_lookup">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Basic or Bench Research</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Clinical Research Study or Trial</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Translational Research 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>Translational Research 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="5"><Decode><TranslatedText>Behavioral or Psychosocial Research Study</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="6"><Decode><TranslatedText>Epidemiology</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="7"><Decode><TranslatedText>Repository</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="8"><Decode><TranslatedText>Other</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="icon_lookup.choices" Name="icon_lookup" DataType="text" redcap:Variable="icon_lookup">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;User suspended&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-ban fa-fw&quot; style=&quot;color: red;&quot;&gt;&lt;/i&gt;&lt;/span&gt;</TranslatedText><redcap:FormattedTranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;User suspended&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-ban fa-fw&quot; style=&quot;color: red;&quot;&gt;&lt;/i&gt;&lt;/span&gt;</redcap:FormattedTranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;User does not exist&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-times fa-fw&quot; style=&quot;color: red;&quot;&gt;&lt;/i&gt;&lt;/span&gt;</TranslatedText><redcap:FormattedTranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;User does not exist&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-times fa-fw&quot; style=&quot;color: red;&quot;&gt;&lt;/i&gt;&lt;/span&gt;</redcap:FormattedTranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;Development&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-wrench fa-fw&quot;&gt;&lt;/i&gt;&lt;/span&gt;</TranslatedText><redcap:FormattedTranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;Development&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-wrench fa-fw&quot;&gt;&lt;/i&gt;&lt;/span&gt;</redcap:FormattedTranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="formatting_reference_complete.choices" Name="formatting_reference_complete" DataType="text" redcap:Variable="formatting_reference_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+</MetaDataVersion>
+</Study>
+<ClinicalData StudyOID="Project.AdminDashboardReports" MetaDataVersionOID="Metadata.AdminDashboardReports_2021-10-19_0922">
+	<SubjectData SubjectKey="1" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="1"/>
+					<ItemData ItemOID="report_title" Value="Projects by User"/>
+					<ItemData ItemOID="report_icon" Value="user"/>
+					<ItemData ItemOID="report_description" Value="List of all users and the projects to which they have access."/>
+					<ItemData ItemOID="report_id_custom" Value="projectsByUser"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select
+    users.username,                             -- &#039;username&#039;
+    users.user_lastname,                        -- &#039;user_lastname&#039;
+    users.user_firstname,                       -- &#039;user_firstname&#039;
+    users.user_email,                           -- &#039;user_email&#039;
+    group_concat(
+        projects.project_id
+        order by app_title asc
+        separator &#039;@@@&#039;)                        as &#039;project_id#group#hidden&#039;,
+    group_concat(
+        projects.app_title
+        order by app_title asc
+        separator &#039;@@@&#039;)                        as &#039;app_title#group&#039;,
+    group_concat(
+        if(projects.completed_time is null,
+            &#039;&#039;, projects.completed_time)
+        order by app_title asc
+        separator &#039;@@@&#039;)                        as &#039;completed_time#group#hidden&#039;,
+    group_concat(
+        if(projects.date_deleted is null,
+            &#039;&#039;, projects.date_deleted)
+        order by app_title asc
+        separator &#039;@@@&#039;)                        as &#039;date_deleted#group#hidden&#039;,
+    count(projects.project_id)                  as &#039;project_id_count&#039;,
+    users.user_suspended_time                   as &#039;user_suspended_time#hidden&#039;,
+    group_concat(
+        projects.status
+        order by app_title asc
+        separator &#039;@@@&#039;)                        as &#039;status#group#hidden&#039;
+from redcap_user_information as users
+    left join redcap_user_rights as rights
+        on rights.username = users.username
+    left join redcap_projects as projects
+        on projects.project_id = rights.project_id
+group by users.username
+order by users.username asc"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;username&quot;,
+  &quot;user_lastname&quot;,
+  &quot;user_firstname&quot;,
+  &quot;user_email&quot;,
+  &quot;project_id#group#hidden&quot;,
+  &quot;app_title#group&quot;,
+  &quot;completed_time#group#hidden&quot;,
+  &quot;date_deleted#group#hidden&quot;,
+  &quot;project_id_count&quot;,
+  &quot;user_suspended_time#hidden&quot;,
+  &quot;status#group#hidden&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="11"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="username"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Username"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="6"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="username"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="1"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="user_lastname"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Last Name"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="user_firstname"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="First Name"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="user_email"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Email"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="9"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="user_email"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="5">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="6">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title#group"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Ttiles"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id#group#hidden"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="7">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="completed_time#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="8">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="date_deleted#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="9">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Total Projects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="10">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="user_suspended_time#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="11">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="status#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+	<SubjectData SubjectKey="2" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="2"/>
+					<ItemData ItemOID="report_title" Value="Users by Project"/>
+					<ItemData ItemOID="report_icon" Value="users"/>
+					<ItemData ItemOID="report_description" Value="List of all projects and the users which have access."/>
+					<ItemData ItemOID="report_id_custom" Value="usersByProject"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select
+    projects.project_id,                                -- &#039;project_id&#039;
+    projects.app_title,                                 -- &#039;app_title&#039;
+    projects.status,                                    -- &#039;status&#039;
+    if(record_count is null, 0, record_count)           as &#039;record_count&#039;,
+    projects.purpose,                                   -- &#039;purpose&#039;
+    group_concat(
+        if(users.username is null,
+            rights.username, users.username)
+        order by users.username desc
+        separator &#039;@@@&#039;)                                as &#039;username#group&#039;,
+    projects.creation_time,                             -- &#039;creation_time&#039;
+    projects.last_logged_event,                         -- &#039;last_logged_event&#039;
+    datediff(now(), projects.last_logged_event)         as &#039;days_since_last_event&#039;,
+    count(rights.username)                              as &#039;username_count&#039;,
+    projects.date_deleted                               as &#039;date_deleted#hidden&#039;,
+    group_concat(
+        if(users.user_suspended_time is null,
+            &#039;&#039;, users.user_suspended_time)
+        order by users.username desc
+        separator &#039;@@@&#039;)                                as &#039;user_suspended_time#group#hidden&#039;
+from redcap_projects as projects
+    left join redcap_record_counts as rcounts
+        on rcounts.project_id = projects.project_id
+    left join redcap_user_rights as rights
+        on rights.project_id = projects.project_id
+    left join redcap_user_information as users
+        on users.username = rights.username
+group by projects.project_id
+order by projects.project_id desc"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;project_id&quot;,
+  &quot;app_title&quot;,
+  &quot;status&quot;,
+  &quot;record_count&quot;,
+  &quot;purpose&quot;,
+  &quot;username#group&quot;,
+  &quot;creation_time&quot;,
+  &quot;last_logged_event&quot;,
+  &quot;days_since_last_event&quot;,
+  &quot;username_count&quot;,
+  &quot;date_deleted#hidden&quot;,
+  &quot;user_suspended_time#group#hidden&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="12"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PID"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="5"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="status"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Status"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="1"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="record_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Total Records"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="5">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="2"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="6">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="username#group"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Usernames"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="6"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="username#group"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="1"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="7">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="creation_time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Creation Time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="8">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Last Logged Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="9">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="days_since_last_event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Days Since Last Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="10">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="username_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Total Users"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="11">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="date_deleted#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="12">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="user_suspended_time#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+	<SubjectData SubjectKey="3" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="3"/>
+					<ItemData ItemOID="report_title" Value="Research Projects"/>
+					<ItemData ItemOID="report_icon" Value="flask"/>
+					<ItemData ItemOID="report_description" Value="List of all projects identified as being used for research purposes."/>
+					<ItemData ItemOID="report_id_custom" Value="researchProjects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select
+    projects.project_id,                                    -- &#039;project_id&#039;
+    projects.app_title,                                     -- &#039;app_title&#039;
+    projects.status,                                        -- &#039;status&#039;
+    if(rcounts.record_count is null,
+        0, rcounts.record_count)                            as &#039;record_count&#039;,
+    projects.purpose_other,                                 -- &#039;purpose_other&#039;
+    projects.project_pi_lastname,                           -- &#039;project_pi_lastname&#039;
+    projects.project_pi_firstname,                          -- &#039;project_pi_firstname&#039;
+    projects.project_pi_email,                              -- &#039;project_pi_email&#039;
+    projects.project_irb_number,                            -- &#039;project_irb_number&#039;
+    projects.creation_time                                  as &#039;creation_time&#039;,
+    projects.last_logged_event                              as &#039;last_logged_event&#039;,
+    datediff(now(), projects.last_logged_event)             as &#039;last_logged_event_days&#039;
+from redcap_projects as projects
+    left join redcap_record_counts as rcounts on rcounts.project_id = projects.project_id
+where projects.purpose = 2
+order by projects.project_id desc"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;project_id&quot;,
+  &quot;app_title&quot;,
+  &quot;status&quot;,
+  &quot;record_count&quot;,
+  &quot;purpose_other&quot;,
+  &quot;project_pi_lastname&quot;,
+  &quot;project_pi_firstname&quot;,
+  &quot;project_pi_email&quot;,
+  &quot;project_irb_number&quot;,
+  &quot;creation_time&quot;,
+  &quot;last_logged_event&quot;,
+  &quot;last_logged_event_days&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="12"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PID"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="5"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="status"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Status"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="1"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="record_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Record Count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="5">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="purpose_other"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Research Purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="3"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="6">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_pi_lastname"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PI Last Name"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="7">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_pi_firstname"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PI First Name"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="8">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_pi_email"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PI Email"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="9"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_pi_email"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="9">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_irb_number"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="IRB Number"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="10">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="creation_time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Creation Time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="11">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Last Logged Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="12">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event_days"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Days Since Last Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+	<SubjectData SubjectKey="4" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="4"/>
+					<ItemData ItemOID="report_title" Value="Development Projects"/>
+					<ItemData ItemOID="report_icon" Value="wrench"/>
+					<ItemData ItemOID="report_description" Value="List of all projects currently in Development status."/>
+					<ItemData ItemOID="report_id_custom" Value="developmentProjects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select
+    projects.project_id,                            -- &#039;project_id&#039;
+    projects.app_title,                             -- &#039;app_title&#039;
+    IF(record_count is null, 0, record_count)       as &#039;record_count&#039;,
+    projects.purpose                                as &#039;purpose&#039;,
+    projects.creation_time                          as &#039;creation_time&#039;,
+    projects.last_logged_event                      as &#039;last_logged_event&#039;,
+    datediff(now(), projects.last_logged_event)     as &#039;last_logged_event_diff&#039;,
+    projects.date_deleted                           as &#039;date_deleted#hidden&#039;
+from redcap_projects as projects
+    left join redcap_record_counts as rcounts
+        on rcounts.project_id = projects.project_id
+where projects.status = 0
+order by projects.project_id desc"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;project_id&quot;,
+  &quot;app_title&quot;,
+  &quot;record_count&quot;,
+  &quot;purpose&quot;,
+  &quot;creation_time&quot;,
+  &quot;last_logged_event&quot;,
+  &quot;last_logged_event_diff&quot;,
+  &quot;date_deleted#hidden&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="8"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PID"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="5"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="record_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Record Count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="2"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="5">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="creation_time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Creation Time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="6">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Last Logged Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="7">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event_diff"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Days Since Last Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="8">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="date_deleted#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+	<SubjectData SubjectKey="5" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="5"/>
+					<ItemData ItemOID="report_title" Value="All Projects"/>
+					<ItemData ItemOID="report_icon" Value="folder-open"/>
+					<ItemData ItemOID="report_description" Value="List of all projects."/>
+					<ItemData ItemOID="report_id_custom" Value="allProjects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select
+    projects.project_id,                            -- &#039;project_id&#039;
+    projects.app_title,                             -- &#039;app_title&#039;
+    if(rcounts.record_count is null,
+        0, rcounts.record_count)                    as &#039;record_count&#039;,
+    projects.status,                                -- &#039;status&#039;
+    projects.purpose,                               -- &#039;purpose&#039;
+    projects.creation_time,                         -- &#039;creation_time&#039;
+    projects.last_logged_event                      as &#039;last_logged_event&#039;,
+    cast(datediff(
+        now(), projects.last_logged_event)
+        as char(50))                                as &#039;last_logged_event_days&#039;,
+    projects.date_deleted                           as &#039;date_deleted#hidden&#039;
+from redcap_projects as projects
+    left join redcap_record_counts as rcounts
+        on rcounts.project_id = projects.project_id
+order by projects.project_id desc"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;project_id&quot;,
+  &quot;app_title&quot;,
+  &quot;record_count&quot;,
+  &quot;status&quot;,
+  &quot;purpose&quot;,
+  &quot;creation_time&quot;,
+  &quot;last_logged_event&quot;,
+  &quot;last_logged_event_days&quot;,
+  &quot;date_deleted#hidden&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="9"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PID"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="5"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="record_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Record Count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="status"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Status"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="1"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="5">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Purpose"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="2"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="6">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="creation_time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Creation Time"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="7">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Last Logged Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="8">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_logged_event_days"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Days Since Last Event"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="9">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="date_deleted#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+	<SubjectData SubjectKey="6" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="6"/>
+					<ItemData ItemOID="report_title" Value="Projects with External Modules"/>
+					<ItemData ItemOID="report_icon" Value="plug"/>
+					<ItemData ItemOID="report_description" Value="List of External Modules and the projects they are enabled in."/>
+					<ItemData ItemOID="report_id_custom" Value="modulesInProjects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select
+    modules.directory_prefix,               -- &#039;directory_prefix&#039;
+    group_concat(
+        distinct
+        projects.app_title
+        order by projects.app_title asc
+        separator &#039;@@@&#039;)                    as &#039;app_title#group&#039;,
+    group_concat(
+        distinct
+        users.user_email
+        order by users.user_email asc
+        separator &#039;@@@&#039;)                    as &#039;user_email#group&#039;,
+    count(
+        distinct
+        projects.project_id)                as &#039;project_id_count&#039;,
+    group_concat(
+        distinct
+        projects.project_id
+        order by projects.app_title asc
+        separator &#039;@@@&#039;)                    as &#039;project_id#group#hidden&#039;,
+    group_concat(
+        distinct
+        projects.status
+        order by app_title asc
+        separator &#039;@@@&#039;)                    as &#039;status#group#hidden&#039;,
+    group_concat(
+        if(projects.date_deleted is null,
+            &#039;&#039;, projects.date_deleted)
+        order by projects.app_title asc
+        separator &#039;@@@&#039;)                    as &#039;date_deleted#group#hidden&#039;
+from redcap_external_module_settings as settings
+    left join redcap_external_modules as modules
+        on modules.external_module_id = settings.external_module_id
+    left join redcap_projects as projects
+        on projects.project_id = settings.project_id
+    left join redcap_user_rights as rights
+        on rights.project_id = projects.project_id
+    left join redcap_user_information as users
+        on users.username = rights.username
+where settings.key = &#039;enabled&#039;
+    and (settings.value = &#039;true&#039; or settings.value = &#039;enabled&#039;)
+    and settings.project_id is not null
+group by settings.external_module_id
+order by directory_prefix"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;directory_prefix&quot;,
+  &quot;app_title#group&quot;,
+  &quot;user_email#group&quot;,
+  &quot;project_id_count&quot;,
+  &quot;project_id#group#hidden&quot;,
+  &quot;status#group#hidden&quot;,
+  &quot;date_deleted#group#hidden&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="7"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="directory_prefix"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Module Name"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title#group"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Titles"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id#group#hidden"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="user_email#group"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="User Emails (from enabled projects)"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="9"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="user_email#group"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id_count"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Total Projects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="5">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="6">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="status#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="7">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="date_deleted#group#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="group_concat_separator" Value="@@@"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+	<SubjectData SubjectKey="7" redcap:RecordIdField="report_id">
+		<StudyEventData StudyEventOID="Event.report_config_arm_1" StudyEventRepeatKey="1" redcap:UniqueEventName="report_config_arm_1">
+			<FormData FormOID="Form.report_details" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="report_details.report_id" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_id" Value="7"/>
+					<ItemData ItemOID="report_title" Value="My Recent Projects"/>
+					<ItemData ItemOID="report_icon" Value="user-clock"/>
+					<ItemData ItemOID="report_description" Value="List of projects recently accessed by the currently logged in user."/>
+					<ItemData ItemOID="report_id_custom" Value="recentProjects"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_visibility" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_visibility" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.folder_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="folder_name" Value="Smart Reports"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="report_details.report_details_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_details_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.sql_query" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="sql_query.report_sql" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="report_sql" Value="select distinct
+    projects.project_id,        -- &#039;project_id&#039;
+    projects.app_title,         -- &#039;app_title&#039;
+    max(ts)                     as &quot;last_access_timestamp&quot;,
+    projects.status             as &quot;status#hidden&quot;
+from redcap_log_view as logs
+    left join redcap_projects as projects on logs.project_id = projects.project_id
+where projects.project_id is not null and
+    logs.event = &#039;PAGE_VIEW&#039; and
+    logs.user = &#039;[user-name]&#039;
+group by logs.project_id
+order by last_access_timestamp desc
+limit 50"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.test_query_success" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_success" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="test_query_column_list" Value="[
+  &quot;project_id&quot;,
+  &quot;app_title&quot;,
+  &quot;last_access_timestamp&quot;,
+  &quot;status#hidden&quot;
+]"/>
+					<ItemData ItemOID="test_query_columns" Value="4"/>
+					<ItemData ItemOID="generate_column_formatting___1" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="sql_query.sql_query_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="sql_query_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="1">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="project_id"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="PID"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="5"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="2">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="app_title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Title"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_type" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_type" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.link_source_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="link_source_column" Value="project_id"/>
+					<ItemData ItemOID="export_urls" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="3">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="last_access_timestamp"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Last Access Timestamp"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="1"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+			<FormData FormOID="Form.column_formatting" FormRepeatKey="4">
+				<ItemGroupData ItemGroupOID="column_formatting.column_name" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_name" Value="status#hidden"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="dashboard_show_filter" Value="2"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="export_show_column" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="code_type" Value="1"/>
+					<ItemData ItemOID="export_codes" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.hint_icons___1" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="hint_icons___1" Value="0"/>
+					<ItemData ItemOID="hint_icons___2" Value="0"/>
+				</ItemGroupData>
+				<ItemGroupData ItemGroupOID="column_formatting.column_formatting_complete" ItemGroupRepeatKey="1">
+					<ItemData ItemOID="column_formatting_complete" Value="2"/>
+				</ItemGroupData>
+			</FormData>
+		</StudyEventData>
+	</SubjectData>
+</ClinicalData>
+</ODM>
