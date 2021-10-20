@@ -19,7 +19,7 @@ class AdminDash extends AbstractExternalModule
     }
 
     function redcap_module_system_change_version($version, $old_version) {
-        $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'');
+        $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'', []);
         $authMethod = db_fetch_assoc($result)['value'];
 
         if ($authMethod == 'shibboleth') {
