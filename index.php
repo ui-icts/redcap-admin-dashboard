@@ -13,7 +13,7 @@ if (isset($_GET['report'])) {
     $report_id = $customReportIdLookup[$_GET['report']] + 1;
 }
 else {
-    $report_id = isset($_GET['id']) ? $_GET['id'] : -1;
+    $report_id = isset($_GET['id']) ? intval$_GET['id'] : -1;
 }
 
 // clean bookmark url if no record context piped in
