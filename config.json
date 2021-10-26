@@ -8,10 +8,20 @@
 
   "authors": [
     {
-      "name": "Izzy Neuhaus",
-      "email": "isabelle-neuhaus@uiowa.edu",
+      "name": "Joe Spring",
+      "email": "redcap@icts.uiowa.edu",
       "institution": "University of Iowa Institute for Clinical and Translational Science"
-    }
+    },
+    {
+      "name": "Heath Davis",
+      "email": "redcap@icts.uiowa.edu",
+      "institution": "University of Iowa Institute for Clinical and Translational Science"
+    },
+    {
+      "name": "Chris Ortman",
+      "email": "redcap@icts.uiowa.edu",
+      "institution": "University of Iowa Institute for Clinical and Translational Science"
+    },
   ],
 
   "links": {
