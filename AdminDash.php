@@ -39,12 +39,13 @@ class AdminDash extends AbstractExternalModule
                 'project_id' => $this->configPID,
                 'fields' => array('report_id'),
                 'return_format' => 'json',
-                'filterLogic' => '[user_access_arm_1][sync_project_id] = ' . $project_id
+                'events' => ['user_access_arm_1', 'user_access_arm_2'],
+                'filterLogic' => '[sync_project_id] = ' . $project_id
             )), true)[$link_id]['report_id'];
 
             $reportInfo = json_decode(\REDCap::getData(array(
                 'project_id' => $this->configPID,
-                'events' => 'report_config_arm_1',
+                'events' => ['report_config_arm_1', 'report_config_arm_2'],
                 'records' => $reportId,
                 'fields' => ['report_id', 'report_title', 'report_icon'],
                 'return_format' => 'json'
