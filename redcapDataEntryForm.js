@@ -49,7 +49,7 @@ $(document).ready(function() {
                 enableLiveAutocompletion: true
             });
 
-            editor.setValue($fieldTr.find('.data > textarea').val());
+            editor.setValue($fieldTr.find('.data textarea').val());
 
             editor.session.on('change', function() {
                 $("#report_sql").val(editor.getValue()).change();
