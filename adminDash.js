@@ -1,4 +1,29 @@
 $.extend(UIOWA_AdminDash, {
+
+    purposeLabels: [
+        "Practice",
+        "Other",
+        "Research",
+        "Quality Improvement",
+        "Operational Support"
+    ],
+
+    
+
+    purposeOtherLabels: [
+        "Basic", 
+        "Clinical", 
+        "Translational 1", 
+        "Translational 2", 
+        "Behavioral", 
+        "Epidemiology", 
+        "Repository", 
+        "Other"
+    ],
+
+    projectStatusLabels: ["Development", "Production", "Analysis"],
+
+
     initDatatable: function () {
         let self = this;
 
@@ -208,23 +233,92 @@ $.extend(UIOWA_AdminDash, {
                     );
 
                     column
-                        .search( val ? '^'+val+'$' : '', true, false )
-                        .draw();
+                        // .search( val ? '^'+val+'$' : '', true, false ).draw()
+                        .search(val).draw();                        
                 } );
 
             // get unique values and add to dropdown list
-            column.data().unique().sort().each( function ( value ) {
+          
+            
+            const columnzPurpose = column.data().unique()            
+            const columnzPurp2 = columnzPurpose[0]
+            const columnzPurp3 = columnzPurp2.split(",")
+            console.log(columnzPurp3)
+            let multiPurpose = []
+            $.each(columnzPurp3, function ( idx, value ) {
                 // todo filtering for null values
-                if (value == null) {
+
+
+               
+
+                if (value === null) {
                     $select.prepend( '<option value="null">[null]</option>' )
                 }
-                // else {
-                let formattedValue = self.adFormat_code(value, columnDetails.code_type)
+                else {
 
-                if (formattedValue) {
-                    $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' );
+                    if(value.length >= 2 && !multiPurpose.includes(value)) {
+                        multiPurpose = [...multiPurpose,value]
+                    }
+
+                    if(columnDetails.code_type === "1") {
+
+                        $.each(self.projectStatusLabels, function(idx, value) {
+                            
+                            $select.append( '<option value="'+value+'">'+value+'</option>' );
+                        })
+                        
+                    }
+                    else if(columnDetails.code_type === "2") {
+                        
+
+                        $.each(self.purposeLabels, function(idx2, value) {
+                            
+                            $select.append( '<option value="'+value+'">'+value+'</option>' );
+                        })
+                    }
+                    else if(columnDetails.code_type === "3" || columnDetails.code_type === "4" || columnDetails.code_type === 3 || columnDetails.code_type === 4 ) {
+                        // $select.append( '<option value="'+self.purposeOtherLabels[value]+'">'+"hi"+'</option>' );
+                        // $select.append( '<option value="'+self.purposeOtherLabels[value]+'">'+self.purposeOtherLabels[value]+'</option>' );
+
+                        if(idx < columnzPurp3.length - 1) {
+                            $.each(self.purposeOtherLabels, function(idx2, value2) {
+                                $select.append( '<option value="'+value2+'">'+value2+'</option>' );
+                            })
+                        }
+                    }
+                    else {
+                        if(columnDetails.column_name === "status") {
+                            $.each(self.projectStatusLabels, function(idx, value) {
+                            
+                                $select.append( '<option value="'+idx+'">'+idx+'</option>' );
+                            })
+                        }
+                        else if(columnDetails.column_name === "purpose") {
+                            $.each(self.purposeLabels, function(idx, value) {
+                            
+                                $select.append( '<option value="'+idx+'">'+idx+'</option>' );
+                            })
+                        }
+                        else {
+                            $select.append( '<option value="'+value+'">'+value+'</option>' );
+                        }
+                    }
+                    
+                    // $.each(multiPurpose, function(idx, value) {
+                    //     $select.append( '<option value="'+value+'">'+value+'</option>' );
+                    // })
                 }
+           
+                // else {
+                // let formattedValue = self.adFormat_code(value, columnDetails.code_type)
 
+                // if (formattedValue) {
+                    
+                //     $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' );
+                //     // $select.append( '<option value="1">1</option>' );
+                //     // $select.append( '<option value="2">2</option>' );
+                // }
+               
                 // }
                 // if ($(d).has('<a>')) {
                 //     d = $(d).text();
@@ -322,23 +416,61 @@ $.extend(UIOWA_AdminDash, {
             //     value = 2;
             // }
 
+            function sanitizeCellData(cellData) {
+                // TODO https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
+                return cellData.replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+
+            }
+
+            
+
             let formattedVal = item;
             let rawUrl = '';
             let iconsHtml = '';
 
             // Replace coded value with label
             if (columnDetails.code_type !== '') {
+                // console.log(columnDetails)
                 try {
                     // if export, check if labels are preferred
                     if (type === 'export' && columnDetails.export_codes === '0') {
                         formattedVal = item
                     }
                     else {
-                        formattedVal = self.adFormat_code(item, columnDetails.code_type);
+                        // console.log("ERROR HERE?")
+                        // formattedVal = self.adFormat_code(item, columnDetails.code_type);
+                        if(columnDetails.code_type === "1") {
+                            formattedVal = self.adFormat_code(item, columnDetails.code_type)
+                        }
+                        if(columnDetails.code_type === "2") {
+                            formattedVal = self.adFormat_code(item, columnDetails.code_type)
+                        }
+                        else if(columnDetails.code_type === "3" || columnDetails.code_type === "4") {
+                            // console.log("reaching here")
+                            const arrayOfFormattedVals = formattedVal.split(",")
+                            let codesAsLabels = ""
+                            $.each(arrayOfFormattedVals, function(idx, value) {
+                                if(idx === arrayOfFormattedVals.length - 1) {
+                                    codesAsLabels += self.adFormat_code(self.purposeOtherLabels[value], columnDetails.code_type)
+                                }
+                                else {
+                                    codesAsLabels += self.adFormat_code(self.purposeOtherLabels[value], columnDetails.code_type) + ", " 
+                                }
+                                
+                            })
+
+                            formattedVal = codesAsLabels
+                        }
+                        else {
+                            // console.log("reazh here")
+                            formattedVal = self.adFormat_code(item, columnDetails.code_type)
+                        }
                     }
 
                     if (type === 'filter') {
+                        // console.log("column multi")
                         return formattedVal; //todo broken
+                        
                     }
                 }
                 catch(e) {
@@ -368,7 +500,7 @@ $.extend(UIOWA_AdminDash, {
                     } else if (type === 'filter') {
                         formattedVal = item;
                     } else {
-                        formattedVal = `<a href="${rawUrl}" target="_blank">${formattedVal}</a>`;
+                        formattedVal = `<a href="${rawUrl}" target="_blank">${sanitizeCellData(formattedVal)}</a>`;  //$.fn.dataTable.render.text()
                     }
                 }
                 catch(e) {
