@@ -1,27 +1,27 @@
 $.extend(UIOWA_AdminDash, {
 
-    purposeLabels: [
-        "Practice",
+    columnLabelMap: ["status", "purpose", "purpose_other"],
+
+    codeTypeLabelMap: {
+        "2": [
+        "Practice / Just for fun",
         "Other",
         "Research",
         "Quality Improvement",
         "Operational Support"
     ],
-
-    
-
-    purposeOtherLabels: [
-        "Basic", 
-        "Clinical", 
-        "Translational 1", 
-        "Translational 2", 
-        "Behavioral", 
+        "3": [
+        "Basic or Bench Research", 
+        "Clinical research study or trial", 
+        "Translational Research 1", 
+        "Translational Research 2", 
+        "Behavioral or psychosocial research study", 
         "Epidemiology", 
         "Repository", 
         "Other"
     ],
-
-    projectStatusLabels: ["Development", "Production", "Analysis"],
+        "1": ["Development", "Production", "Analysis"],
+    },
 
 
     initDatatable: function () {
@@ -154,9 +154,7 @@ $.extend(UIOWA_AdminDash, {
 
         // sync filter visibility with column
         table.on( 'column-visibility.dt', function ( e, settings, column, state ) {
-            console.log(
-                'Column '+ column +' has changed to '+ (state ? 'visible' : 'hidden')
-            );
+       
 
             let $filterTd = $('.filter-row > td').eq(column);
 
@@ -233,97 +231,66 @@ $.extend(UIOWA_AdminDash, {
                     );
 
                     column
-                        // .search( val ? '^'+val+'$' : '', true, false ).draw()
-                        .search(val).draw();                        
+                        // .search( val ? '^'+val+'$' : '', true, false || val ).draw()
+                        .search(val, true, false).draw();                        
                 } );
 
-            // get unique values and add to dropdown list
-          
-            
-            const columnzPurpose = column.data().unique()            
-            const columnzPurp2 = columnzPurpose[0]
-            const columnzPurp3 = columnzPurp2.split(",")
-            console.log(columnzPurp3)
+            const columnData = column.data()
+                 console.log("column unique")  
+            let uniqueNames = [];
+            $.each(columnData, function(i, el){
+                if($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
+            });
+
+   
+
             let multiPurpose = []
-            $.each(columnzPurp3, function ( idx, value ) {
+            $.each(uniqueNames, function ( idx, value ) {
                 // todo filtering for null values
-
-
-               
-
-                if (value === null) {
-                    $select.prepend( '<option value="null">[null]</option>' )
-                }
-                else {
+                if (value !== null) { 
 
                     if(value.length >= 2 && !multiPurpose.includes(value)) {
                         multiPurpose = [...multiPurpose,value]
                     }
 
-                    if(columnDetails.code_type === "1") {
+                    let labels = []
 
-                        $.each(self.projectStatusLabels, function(idx, value) {
-                            
-                            $select.append( '<option value="'+value+'">'+value+'</option>' );
-                        })
-                        
-                    }
-                    else if(columnDetails.code_type === "2") {
-                        
+                    if(columnDetails.code_type !== "") {
+                        labels = self.codeTypeLabelMap[columnDetails.code_type]    
+                    } else if(columnDetails.code_type === "" && columnDetails.column_name == "purpose_other") {
+                        labels = self.codeTypeLabelMap[3]    
+                    }                    
 
-                        $.each(self.purposeLabels, function(idx2, value) {
-                            
-                            $select.append( '<option value="'+value+'">'+value+'</option>' );
-                        })
-                    }
-                    else if(columnDetails.code_type === "3" || columnDetails.code_type === "4" || columnDetails.code_type === 3 || columnDetails.code_type === 4 ) {
-                        // $select.append( '<option value="'+self.purposeOtherLabels[value]+'">'+"hi"+'</option>' );
-                        // $select.append( '<option value="'+self.purposeOtherLabels[value]+'">'+self.purposeOtherLabels[value]+'</option>' );
+                    if(columnDetails.code_type !== "" && self.columnLabelMap.includes(columnDetails.column_name)) {
 
-                        if(idx < columnzPurp3.length - 1) {
-                            $.each(self.purposeOtherLabels, function(idx2, value2) {
-                                $select.append( '<option value="'+value2+'">'+value2+'</option>' );
+                        if(idx === 0) {
+
+                            $.each(labels, function ( idx2, option ) {
+                                $select.append( '<option value="'+option+'">'+option+'</option>' );
                             })
-                        }
-                    }
-                    else {
-                        if(columnDetails.column_name === "status") {
-                            $.each(self.projectStatusLabels, function(idx, value) {
                             
-                                $select.append( '<option value="'+idx+'">'+idx+'</option>' );
-                            })
                         }
-                        else if(columnDetails.column_name === "purpose") {
-                            $.each(self.purposeLabels, function(idx, value) {
-                            
-                                $select.append( '<option value="'+idx+'">'+idx+'</option>' );
-                            })
-                        }
-                        else {
-                            $select.append( '<option value="'+value+'">'+value+'</option>' );
-                        }
-                    }
+                     } 
+                     else if(columnDetails.code_type === "" && self.columnLabelMap.includes(columnDetails.column_name)) {
+                     if(idx === 0) {
+                         console.log("LABELS")
+                               console.log(self.codeTypeLabelMap)
+                               console.log(labels)
+                             $.each(labels, function ( idx2, option ) {
+                                    $select.append( '<option value="'+idx2+'">'+idx2+'</option>' );
+                                })
+                               
+                        }                      
                     
-                    // $.each(multiPurpose, function(idx, value) {
-                    //     $select.append( '<option value="'+value+'">'+value+'</option>' );
-                    // })
-                }
+                    } 
+                     else {
+                        $select.append( '<option value="'+value+'">'+value+'</option>' );
+                    }
            
-                // else {
-                // let formattedValue = self.adFormat_code(value, columnDetails.code_type)
-
-                // if (formattedValue) {
-                    
-                //     $select.append( '<option value="'+formattedValue+'">'+formattedValue+'</option>' );
-                //     // $select.append( '<option value="1">1</option>' );
-                //     // $select.append( '<option value="2">2</option>' );
-                // }
-               
-                // }
-                // if ($(d).has('<a>')) {
-                //     d = $(d).text();
-                // }
-                // console.log(j)
+                } else {
+                       
+                    $select.append( '<option value="null">[null]</option>' )
+                }
 
             } );
         }
@@ -430,7 +397,6 @@ $.extend(UIOWA_AdminDash, {
 
             // Replace coded value with label
             if (columnDetails.code_type !== '') {
-                // console.log(columnDetails)
                 try {
                     // if export, check if labels are preferred
                     if (type === 'export' && columnDetails.export_codes === '0') {
@@ -446,20 +412,26 @@ $.extend(UIOWA_AdminDash, {
                             formattedVal = self.adFormat_code(item, columnDetails.code_type)
                         }
                         else if(columnDetails.code_type === "3" || columnDetails.code_type === "4") {
+                            // formattedVal = self.adFormat_code(item, columnDetails.code_type)
                             // console.log("reaching here")
-                            const arrayOfFormattedVals = formattedVal.split(",")
+                            const arrayOfFormattedVals = item.split(",")
                             let codesAsLabels = ""
                             $.each(arrayOfFormattedVals, function(idx, value) {
+                                console.log(self.codeTypeLabelMap[3])
+                                        const index = self.codeTypeLabelMap[3].indexOf(value)
                                 if(idx === arrayOfFormattedVals.length - 1) {
-                                    codesAsLabels += self.adFormat_code(self.purposeOtherLabels[value], columnDetails.code_type)
+                            
+                                    codesAsLabels += self.codeTypeLabelMap[3][value]
+                                    // codesAsLabels += self.adFormat_code(item, columnDetails.code_type)
                                 }
                                 else {
-                                    codesAsLabels += self.adFormat_code(self.purposeOtherLabels[value], columnDetails.code_type) + ", " 
+                                    codesAsLabels += self.codeTypeLabelMap[3][value] + ", " 
                                 }
                                 
                             })
 
                             formattedVal = codesAsLabels
+                            // formattedVal = "hi"
                         }
                         else {
                             // console.log("reazh here")
@@ -574,9 +546,14 @@ $.extend(UIOWA_AdminDash, {
         else if (codeIndex === '2') { // Project Purpose
             return this.formattingReference.purpose[value];
         }
-        else if (codeIndex === '3') { // Research/Other Purpose
-            let self = this;
+        // else if (codeIndex === '3') { // Research/Other Purpose single
+        //     return this.formattingReference.purpose_other[value];
+        // }
+        else if (codeIndex === '3') { // Research/Other Purpose multiple
+            // let self = this;
             let valueArray = value.split(',');
+                console.log("value array")
+            console.log(valueArray)
 
             if (Array.isArray(valueArray) && !valueArray.some(isNaN)) {
                 valueArray = $.map(value, function (code) {
