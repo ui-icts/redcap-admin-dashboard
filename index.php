@@ -88,6 +88,23 @@ else {
         padding-right: 2px;
     }
 
+    .btn-admindash-edit-report {
+        background-color: rgb(16, 108, 214) !important;
+        border-radius: 10px;
+        border: 0;
+        color:white;
+    }
+
+    table thead tr th {
+        background-color: #aed8ff;
+
+    }
+
+    table thead tr td  {
+        background-color: #aed8ff;
+        
+    }
+
     /*table.dataTable thead tr {*/
     /*    background-color: darkgrey;*/
     /*}*/
@@ -97,7 +114,6 @@ else {
     [v-cloak] { display: none; }
 
 </style>
-
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/b-1.6.5/b-colvis-1.6.5/b-html5-1.6.5/b-print-1.6.5/cr-1.5.3/fh-3.1.7/r-2.2.7/rg-1.1.2/rr-1.2.7/sb-1.0.1/datatables.min.css"/>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
@@ -174,7 +190,7 @@ else {
             <h3 id="reportTitle">
                 <span class="report-icon" :class="getReportIcon(loadedReport.meta.config.report_icon)">&nbsp;</span>{{ loadedReport.meta.config.report_title ? loadedReport.meta.config.report_title : 'Untitled Report' }}
                 <?php if(!$executiveView): ?>
-                <button v-if="showAdminControls === '1'" class="btn-sm btn-primary edit-report" style="margin: 5px; vertical-align: text-top">
+                <button v-if="showAdminControls === '1'" class="btn-sm edit-report btn-admindash-edit-report" style="margin: 5px; vertical-align: text-top">
                     <span class="fas fa-edit"></span>
                 </button>
                 <?php endif; ?>

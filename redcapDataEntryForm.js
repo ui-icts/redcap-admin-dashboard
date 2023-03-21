@@ -25,7 +25,7 @@ $(document).ready(function() {
                     <pre id="report_sql-editor"></pre>
                     <div id="testQueryResult" style="float:left; padding-left: 10px; padding-top: 10px; max-width:80%;"></div>
                     <div style="text-align:right; float:right; padding-bottom: 10px; padding-right: 10px">
-                        <button type="button" class="btn btn-info test-query">Test Query</button>
+                        <button type="button" class="btn btn-admindash-default test-query">Test Query</button>
                     </div>
                 </td>
             </tr>
@@ -53,7 +53,7 @@ $(document).ready(function() {
 
             editor.session.on('change', function() {
                 $("#report_sql").val(editor.getValue()).change();
-                $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-info');
+                $('.test-query').html('Test Query').prop('disabled', false).removeClass('btn-danger btn-success').addClass('btn-admindash-default');
             });
 
             $('.ace_editor').css('height', '400px');
@@ -65,7 +65,7 @@ $(document).ready(function() {
                 $this.html('<i class="fas fa-spinner fa-spin test-progress"></i>');
 
                 let startTime = performance.now();
-
+                console.log(UIOWA_AdminDash.urlLookup.post)
                 $.ajax({
                     method: 'POST',
                     url: UIOWA_AdminDash.urlLookup.post,
@@ -81,7 +81,7 @@ $(document).ready(function() {
 
                         console.log(data);
 
-                        $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-info').addClass('btn-success');
+                        $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-admindash-default').addClass('btn-success');
 
                         $('[name="test_query_error"]').val('');
                         $('[name="test_query_columns"]').val(data.columns.length);
@@ -95,6 +95,7 @@ $(document).ready(function() {
                         $resultDiv.html('<span style="color:green;">Query returned ' + data.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
                     },
                     error: function(err) {
+                        console.log(err);
                         let errorMsg = err.responseText;
 
                         errorMsg = errorMsg.substring(
@@ -108,7 +109,7 @@ $(document).ready(function() {
                             .click()
                             .prop('disabled', 'disabled');
 
-                        $this.html('<i class="fas fa-times"></i> Error').removeClass('btn-info').addClass('btn-danger');
+                        $this.html('<i class="fas fa-times"></i> Error').removeClass('btn-admindash-default').addClass('btn-danger');
                         $resultDiv.html('<span style="color:red;">Query failed! ' + errorMsg + '</span>');
                     }
                 })

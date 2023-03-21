@@ -208,7 +208,8 @@ $.extend(UIOWA_AdminDash, {
         let self = this;
         let $filterTd = $('<td data-column-index="' + column.index() + '"></td>');
         let column_name = self.loadedReport.columns[column.index()];
-        let columnDetails = self.loadedReport.meta.column_formatting[column_name];
+        
+        let columnDetails = self.loadedReport.meta.column_formatting !== undefined ? self.loadedReport.meta.column_formatting[column_name] : undefined;
 
         // todo
         if (column_name === undefined) {
@@ -216,13 +217,13 @@ $.extend(UIOWA_AdminDash, {
         }
 
         // hide column
-        if (columnDetails.dashboard_show_column === '0') {
+        if (columnDetails !== undefined && columnDetails.dashboard_show_column === '0' ) {
             column.visible(false);
             return;
         }
 
         // add dropdown filter
-        if (columnDetails.dashboard_show_filter === '2') {
+        if (columnDetails !== undefined && columnDetails.dashboard_show_filter === '2') {
             $filterTd.append('<select style="width: 100%"><option value=""></option></select>');
             let $select = $filterTd.find('select')
                 .on( 'change', function () {
@@ -236,16 +237,14 @@ $.extend(UIOWA_AdminDash, {
                 } );
 
             const columnData = column.data()
-                 console.log("column unique")  
             let uniqueNames = [];
             $.each(columnData, function(i, el){
                 if($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
             });
 
-   
-
             let multiPurpose = []
             $.each(uniqueNames, function ( idx, value ) {
+                console.log("hi")
                 // todo filtering for null values
                 if (value !== null) { 
 
@@ -255,38 +254,33 @@ $.extend(UIOWA_AdminDash, {
 
                     let labels = []
 
-                    if(columnDetails.code_type !== "") {
-                        labels = self.codeTypeLabelMap[columnDetails.code_type]    
-                    } else if(columnDetails.code_type === "" && columnDetails.column_name == "purpose_other") {
-                        labels = self.codeTypeLabelMap[3]    
-                    }                    
-
-                    if(columnDetails.code_type !== "" && self.columnLabelMap.includes(columnDetails.column_name)) {
-
-                        if(idx === 0) {
-
-                            $.each(labels, function ( idx2, option ) {
-                                $select.append( '<option value="'+option+'">'+option+'</option>' );
-                            })
+                        if(columnDetails !== undefined && columnDetails.code_type !== "") {
+                            labels = self.codeTypeLabelMap[columnDetails.code_type]    
+                        } else if(columnDetails !== undefined && columnDetails.code_type === "" && columnDetails.column_name == "purpose_other") {
+                            labels = self.codeTypeLabelMap[3]    
+                        }                    
+    
+                        if(columnDetails !== undefined && columnDetails.code_type !== "" && self.columnLabelMap.includes(columnDetails.column_name)) {
+    
+                            if(idx === 0) {
+    
+                                $.each(labels, function ( idx2, option ) {
+                                    $select.append( '<option value="'+option+'">'+option+'</option>' );
+                                })
+                                
+                            }
+                         } else if(columnDetails !== undefined && columnDetails.code_type === "" && self.columnLabelMap.includes(columnDetails.column_name)) {
+                            if(idx === 0) {
                             
-                        }
-                     } 
-                     else if(columnDetails.code_type === "" && self.columnLabelMap.includes(columnDetails.column_name)) {
-                     if(idx === 0) {
-                         console.log("LABELS")
-                               console.log(self.codeTypeLabelMap)
-                               console.log(labels)
-                             $.each(labels, function ( idx2, option ) {
+                                $.each(labels, function ( idx2, option ) {
                                     $select.append( '<option value="'+idx2+'">'+idx2+'</option>' );
                                 })
-                               
-                        }                      
-                    
-                    } 
-                     else {
-                        $select.append( '<option value="'+value+'">'+value+'</option>' );
-                    }
-           
+                                    
+                            }                      
+                        } else {
+                            $select.append( '<option value="'+value+'">'+value+'</option>' );
+                        }
+
                 } else {
                        
                     $select.append( '<option value="null">[null]</option>' )
@@ -295,7 +289,7 @@ $.extend(UIOWA_AdminDash, {
             } );
         }
         // add free text filter
-        else if (columnDetails.dashboard_show_filter === '1') {
+        else if (columnDetails === undefined || columnDetails.dashboard_show_filter === '1') {
             $filterTd.append('<input style="width: 100%"/>');
 
             $( 'input', $filterTd ).on( 'keyup change clear', function () {
@@ -403,8 +397,7 @@ $.extend(UIOWA_AdminDash, {
                         formattedVal = item
                     }
                     else {
-                        // console.log("ERROR HERE?")
-                        // formattedVal = self.adFormat_code(item, columnDetails.code_type);
+                     
                         if(columnDetails.code_type === "1") {
                             formattedVal = self.adFormat_code(item, columnDetails.code_type)
                         }
@@ -412,17 +405,15 @@ $.extend(UIOWA_AdminDash, {
                             formattedVal = self.adFormat_code(item, columnDetails.code_type)
                         }
                         else if(columnDetails.code_type === "3" || columnDetails.code_type === "4") {
-                            // formattedVal = self.adFormat_code(item, columnDetails.code_type)
-                            // console.log("reaching here")
+                   
                             const arrayOfFormattedVals = item.split(",")
                             let codesAsLabels = ""
                             $.each(arrayOfFormattedVals, function(idx, value) {
-                                console.log(self.codeTypeLabelMap[3])
-                                        const index = self.codeTypeLabelMap[3].indexOf(value)
+                                
+                                const index = self.codeTypeLabelMap[3].indexOf(value)
                                 if(idx === arrayOfFormattedVals.length - 1) {
                             
                                     codesAsLabels += self.codeTypeLabelMap[3][value]
-                                    // codesAsLabels += self.adFormat_code(item, columnDetails.code_type)
                                 }
                                 else {
                                     codesAsLabels += self.codeTypeLabelMap[3][value] + ", " 
@@ -431,16 +422,15 @@ $.extend(UIOWA_AdminDash, {
                             })
 
                             formattedVal = codesAsLabels
-                            // formattedVal = "hi"
                         }
                         else {
-                            // console.log("reazh here")
+                        
                             formattedVal = self.adFormat_code(item, columnDetails.code_type)
                         }
                     }
 
                     if (type === 'filter') {
-                        // console.log("column multi")
+                   
                         return formattedVal; //todo broken
                         
                     }
@@ -546,14 +536,10 @@ $.extend(UIOWA_AdminDash, {
         else if (codeIndex === '2') { // Project Purpose
             return this.formattingReference.purpose[value];
         }
-        // else if (codeIndex === '3') { // Research/Other Purpose single
-        //     return this.formattingReference.purpose_other[value];
-        // }
+
         else if (codeIndex === '3') { // Research/Other Purpose multiple
-            // let self = this;
+
             let valueArray = value.split(',');
-                console.log("value array")
-            console.log(valueArray)
 
             if (Array.isArray(valueArray) && !valueArray.some(isNaN)) {
                 valueArray = $.map(value, function (code) {
@@ -565,9 +551,7 @@ $.extend(UIOWA_AdminDash, {
 
             return value;
         }
-        // else if (userConfig.specify_code_lookup === '4') { // todo Research Purpose split
-        //     codeReference = this.formattingReference.research_code_lookup;
-        // }
+
     },
     adFormat_icons: function (value, index, row, columnReference, columnDetails) {
         let returnHtml = '';
@@ -576,8 +560,8 @@ $.extend(UIOWA_AdminDash, {
         if (columnDetails.hint_icons___1 === '1' && columnReference.tagless.includes('user_suspended_time')) {
             let suspendedColumnName = columnReference.withTags[columnReference.tagless.indexOf('user_suspended_time')];
             let suspendedValue = row[suspendedColumnName] !== null ? this.splitData(row[suspendedColumnName], suspendedColumnName)[index] : null;
-
-            if (suspendedValue.length > 8) {
+            console.log(suspendedValue)
+            if (suspendedValue !== null && suspendedValue.length > 8) {
                 returnHtml +=
                     `<span class="user-detail" title="User suspended" data-toggle="tooltip" data-placement="left">
                     <i class="fas fa-ban fa-fw" style="color: red;"></i>
@@ -753,6 +737,7 @@ $(document).ready(function() {
             },
             timeout: UIOWA_AdminDash.queryTimeout,
             success: function(result) {
+                console.log(result)
                 if (result.length > 0) {
                     let columns = [];
 
@@ -785,7 +770,8 @@ $(document).ready(function() {
             ,
             error: function(err) {
                 let errorMsg = err.responseText;
-
+                // console.log(result)
+                console.log(err)
                 self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
                     errorMsg.lastIndexOf("The error from the database was:"),
                     errorMsg.lastIndexOf("See the server error log for more details")

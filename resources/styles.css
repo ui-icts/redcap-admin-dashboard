@@ -43,7 +43,7 @@ div#outer
 #pagecontainer
 {
    max-width: 80%;
-   cursor: progress;
+   /* cursor: progress; */
 }
 
 #deleted, .error
@@ -56,3 +56,10 @@ div#outer
 {
    color: #969696;
 }
+
+
+.btn-admindash-default {
+   background-color: rgb(16, 108, 214) !important;
+   color: white;
+}
+

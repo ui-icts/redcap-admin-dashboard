@@ -108,19 +108,29 @@ order by instance asc'
         }
     }
 
+    function replaceSanitizedString($text) {
+        return str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $text);
+    }
+
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
+        
+        $sanitizedJsObject = htmlentities(strip_tags($this->getJavascriptObject($record, true)), ENT_QUOTES, 'UTF-8');
         if ($project_id == $this->configPID) {
             ?>
             <script>
-                let UIOWA_AdminDash = <?= $this->getJavascriptObject($record, true) ?>;
+                // let UIOWA_AdminDash = <?= $this->getJavascriptObject($record, true); ?>;
+                let UIOWA_AdminDash = <?= $this->replaceSanitizedString($sanitizedJsObject);  ?>;
             </script>
+            <link rel="stylesheet" type="text/css" href="<?= $this->getUrl("/resources/styles.css") ?>"/>
             <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("/resources/ace/ext-language_tools.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("redcapDataEntryForm.js") ?>" type="text/javascript" charset="utf-8"></script>
             <?php
         }
     }
+
+
 
     function redcap_save_record($project_id, $record) {
         // generate column formatting instances
@@ -132,6 +142,7 @@ order by instance asc'
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
+        
         $jsObject = array(
             'urlLookup' => array(
                 'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
@@ -168,7 +179,7 @@ order by instance asc'
                 )
             ));
 
-            return json_encode($jsObject);
+            return json_encode($jsObject,true);
         }
 
         // get list of reports
@@ -209,14 +220,18 @@ order by instance asc'
             }
 
             $formattedMeta = array();
-
+            // error_log(json_encode($loadedReportMetadata));
             foreach($loadedReportMetadata as $index => $row) {
+                error_log(json_encode($row['join_project_id']));
                 if ($row['redcap_repeat_instrument'] !== '') {
+                    error_log("here1");
                     if ($row['column_name'] !== '') {
+                        error_log("here2");
                         $instrument = $row['redcap_repeat_instrument'];
                         $instanceKey = $row['column_name'];
                     }
                     else if ($row['join_project_id'] !== '') {
+                        error_log("here3");
                         $instrument = $row['redcap_repeat_instrument'];
                         $instanceKey = $row['join_project_id'];
                     }
@@ -224,9 +239,12 @@ order by instance asc'
                     $formattedMeta[$instrument][$instanceKey] = $row;
                 }
                 else {
+                    error_log("here4");
                     $formattedMeta['config'] = $row;
                 }
             }
+
+            // error_log(json_encode($formattedMeta));
 
             $jsObject = array_merge($jsObject, array(
                 'loadedReport' => array(
@@ -250,7 +268,6 @@ order by instance asc'
         $sql = $params['sql']; // test query from data entry form
         $username = isset($params['username']) ? $params['username'] : USERID;
         $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-
         // get sql query from REDCap record
         if (!isset($sql)) {
             $data = \REDCap::getData(array(
@@ -264,7 +281,6 @@ order by instance asc'
         }
 
         $returnData = array();
-
         // supports [user-name] and [project-id]
         if (!isset($params['token'])) {
             $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
@@ -279,7 +295,8 @@ order by instance asc'
         }
         else {
             // fix for group_concat limit
-            $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+            // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+            
 
             $result = $this->query($sql, []);
 
@@ -302,6 +319,7 @@ order by instance asc'
             }
         }
 
+        // echo htmlentities(strip_tags(json_encode($returnData)), ENT_QUOTES, 'UTF-8');
         echo json_encode($returnData);
     }
 
@@ -538,7 +556,7 @@ order by instance asc'
             ),
             'filterLogic' => '[join_project_id] <> ""'
         )), true);
-
+        error_log(json_encode($joinConfig));
         $joinedData = array();
         $firstProject = true;
         $primaryFieldP1 = '';
@@ -572,12 +590,16 @@ order by instance asc'
                 'fields' => $fields
             )), true);
 
+            error_log("new data");
+            error_log(json_encode($newData));
+
             if ($firstProject) {
                 $joinedData = $newData;
                 $firstProject = false;
                 $primaryFieldP1 = $join['join_primary_field'];
             }
             else {
+                error_log("here5");
                 foreach ($newData as $index => $record) {
                     $primaryKeyP1 = $joinedData[$index][$primaryFieldP1];
 
@@ -586,12 +608,15 @@ order by instance asc'
 
                     // match to joined project
                     if (isset($primaryKeyP2) && $primaryKeyP1 === $primaryKeyP2) {
+                        error_log("here6");
                         $recordDataP1 = $joinedData[$index];
                         $recordDataP2 = $newData[$index];
 
                         unset($recordDataP2[$primaryFieldP2]);
-
-                        $joinedData[$index] = array_merge($recordDataP1, $recordDataP2);
+                        array_push($joinedData, array_merge($recordDataP1, $recordDataP2));
+                        // $joinedData[$index] = array_merge($recordDataP1, $recordDataP2);
+                    } else {
+                        error_log("is else");
                     }
 //                    else if ($params['matchesOnly']) {
 //                        unset($data_p1[$index]);
@@ -601,7 +626,7 @@ order by instance asc'
         }
 
 //        $eventId_p2 = $this->getFirstEventId($pid2);
-
+        error_log(json_encode($joinedData));
         echo json_encode($joinedData);
     }
 
