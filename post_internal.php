@@ -8,5 +8,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 if (!isset($_POST['id'])) {
     $_POST['id'] = $_GET['id'];
 }
-
-call_user_func(array($module, $_POST['adMethod']), $_POST);
+error_log($_POST['adMethod']);
+if(isset($_POST['adMethod'])) {
+    if($_POST['adMethod'] == 'runReport') {
+        call_user_func(array($module, 'runReport'), $_POST);
+    } elseif($_POST['adMethod'] == 'joinProjectData') {
+        call_user_func(array($module, 'joinProjectData'), $_POST);
+    } elseif($_POST['adMethod'] == 'getAdditionalInfo') {
+        call_user_func(array($module, 'getAdditionalInfo'), $_POST);
+    }
+     else {
+        die('Something went wrong');
+    }
+    
+}

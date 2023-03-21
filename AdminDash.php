@@ -108,19 +108,19 @@ order by instance asc'
         }
     }
 
-    function replaceSanitizedString($text) {
-        return str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $text);
-    }
+    // function replaceSanitizedString($text) {
+    //     return str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $text);
+    // }
 
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
         
-        $sanitizedJsObject = htmlentities(strip_tags($this->getJavascriptObject($record, true)), ENT_QUOTES, 'UTF-8');
+        $sanitizedJavascriptObject = htmlentities($this->getJavascriptObject($record, true), ENT_QUOTES, 'UTF-8');
         if ($project_id == $this->configPID) {
             ?>
             <script>
-                // let UIOWA_AdminDash = <?= $this->getJavascriptObject($record, true); ?>;
-                let UIOWA_AdminDash = <?= $this->replaceSanitizedString($sanitizedJsObject);  ?>;
+            
+               let UIOWA_AdminDash = <?= str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $sanitizedJavascriptObject); ?>;
             </script>
             <link rel="stylesheet" type="text/css" href="<?= $this->getUrl("/resources/styles.css") ?>"/>
             <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
@@ -319,8 +319,8 @@ order by instance asc'
             }
         }
 
-        // echo htmlentities(strip_tags(json_encode($returnData)), ENT_QUOTES, 'UTF-8');
-        echo json_encode($returnData);
+        echo htmlentities(strip_tags(json_encode($returnData)), ENT_QUOTES, 'UTF-8');
+        // echo json_encode($returnData);
     }
 
     public function saveReportColumns($project_id, $record, $columns)
@@ -626,8 +626,9 @@ order by instance asc'
         }
 
 //        $eventId_p2 = $this->getFirstEventId($pid2);
-        error_log(json_encode($joinedData));
-        echo json_encode($joinedData);
+        // error_log(json_encode($joinedData));
+        echo htmlentities(json_encode($joinedData, true), ENT_QUOTES, 'UTF-8');
+        // echo json_encode($joinedData);
     }
 
     public function getAdditionalInfo($params) { // params - type, whereVal
@@ -654,7 +655,7 @@ order by instance asc'
 
         $result = $this->query($queries[$params['type']], $params['whereVal']);
 
-        echo json_encode(db_fetch_assoc($result));
+        echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
     }
 
     public function apiCall($url, $data) {

@@ -65,34 +65,33 @@ $(document).ready(function() {
                 $this.html('<i class="fas fa-spinner fa-spin test-progress"></i>');
 
                 let startTime = performance.now();
-                console.log(UIOWA_AdminDash.urlLookup.post)
                 $.ajax({
                     method: 'POST',
                     url: UIOWA_AdminDash.urlLookup.post,
-                    dataType: 'json',
+                    dataType: 'text',
                     data: {
                         adMethod: 'runReport',
                         sql: editor.getValue(),
-                        test: true
+                        test: true,
+                        redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
                     },
                     timeout: UIOWA_AdminDash.queryTimeout,
                     success: function(data) {
                         let endTime = performance.now();
-
-                        console.log(data);
+                        const parsedData = JSON.parse(data.replaceAll("&quot;", '"'))
 
                         $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-admindash-default').addClass('btn-success');
 
                         $('[name="test_query_error"]').val('');
-                        $('[name="test_query_columns"]').val(data.columns.length);
-                        $('[name="test_query_column_list"]').val(JSON.stringify(data.columns, null, 2));
+                        $('[name="test_query_columns"]').val(parsedData.columns.length);
+                        $('[name="test_query_column_list"]').val(JSON.stringify(parsedData.columns, null, 2));
                         $('[name="test_query_success___radio"][value="1"]')
                             .prop('disabled', '')
                             .prop("checked", true)
                             .click()
                             .prop('disabled', 'disabled');
 
-                        $resultDiv.html('<span style="color:green;">Query returned ' + data.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
+                        $resultDiv.html('<span style="color:green;">Query returned ' + parsedData.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
                     },
                     error: function(err) {
                         console.log(err);
@@ -283,6 +282,7 @@ $(document).ready(function() {
         $.ajax({
             url: UIOWA_AdminDash.urlLookup.post,
             method: 'POST',
+            dataType: 'text',
             data: {
                 adMethod: 'getAdditionalInfo',
                 type: type,
@@ -290,9 +290,8 @@ $(document).ready(function() {
                 redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
             },
             success: function(json) {
-                console.log(json)
-                json = JSON.parse(json);
-
+                json = JSON.parse(json.replaceAll("&quot;", '"'))
+                
                 $.each(json, function(key, value) {
                     $('#' + fieldSuffix + '_' + key + '-tr input').val(value).blur();
                 })

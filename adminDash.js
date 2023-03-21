@@ -244,7 +244,6 @@ $.extend(UIOWA_AdminDash, {
 
             let multiPurpose = []
             $.each(uniqueNames, function ( idx, value ) {
-                console.log("hi")
                 // todo filtering for null values
                 if (value !== null) { 
 
@@ -560,7 +559,6 @@ $.extend(UIOWA_AdminDash, {
         if (columnDetails.hint_icons___1 === '1' && columnReference.tagless.includes('user_suspended_time')) {
             let suspendedColumnName = columnReference.withTags[columnReference.tagless.indexOf('user_suspended_time')];
             let suspendedValue = row[suspendedColumnName] !== null ? this.splitData(row[suspendedColumnName], suspendedColumnName)[index] : null;
-            console.log(suspendedValue)
             if (suspendedValue !== null && suspendedValue.length > 8) {
                 returnHtml +=
                     `<span class="user-detail" title="User suspended" data-toggle="tooltip" data-placement="left">
@@ -730,19 +728,20 @@ $(document).ready(function() {
         $.ajax({
             method: 'POST',
             url: UIOWA_AdminDash.urlLookup.post,
-            dataType: 'json',
+            dataType: 'text',
             data: {
                 adMethod: requestType,
                 id: reportId,
+                redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
             },
             timeout: UIOWA_AdminDash.queryTimeout,
             success: function(result) {
-                console.log(result)
-                if (result.length > 0) {
+                const parsedResult = JSON.parse(result.replaceAll("&quot;", '"'))
+                if (parsedResult.length > 0) {
                     let columns = [];
 
                     if (requestType === 'joinProjectData') {
-                        columns = Object.keys(result[0]);
+                        columns = Object.keys(parsedResult[0]);
                     }
                     else {
                         let columnFormatting = self.loadedReport.meta.column_formatting;
@@ -758,7 +757,7 @@ $(document).ready(function() {
 
                     $.extend(self.loadedReport, {
                         columns: columns,
-                        data: result,
+                        data: parsedResult,
                         ready: true
                     });
                 }
@@ -770,8 +769,6 @@ $(document).ready(function() {
             ,
             error: function(err) {
                 let errorMsg = err.responseText;
-                // console.log(result)
-                console.log(err)
                 self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
                     errorMsg.lastIndexOf("The error from the database was:"),
                     errorMsg.lastIndexOf("See the server error log for more details")

@@ -57,6 +57,8 @@ else {
     include APP_PATH_VIEWS . 'HomeTabs.php';
 }
 
+$sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_id, false, $_GET['asUser']), ENT_QUOTES, 'UTF-8');
+
 ?>
 <style>
     /* make the display the full width */
@@ -123,7 +125,7 @@ else {
 <script src="<?= $module->getUrl("/resources/vue.min.js") ?>"></script>
 
 <script>
-    let UIOWA_AdminDash = <?= $module->getJavascriptObject($report_id, false, $_GET['asUser']) ?>;
+    let UIOWA_AdminDash = <?= str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $sanitizedJavascriptObject); ?>;
 </script>
 
 <script src="<?= $module->getUrl("/adminDash.js") ?>"></script>
