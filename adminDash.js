@@ -23,6 +23,7 @@ $.extend(UIOWA_AdminDash, {
         "1": ["Development", "Production", "Analysis"],
     },
 
+    
 
     initDatatable: function () {
         let self = this;
@@ -720,60 +721,298 @@ $(document).ready(function() {
         }
     })
 
-    // run report SQL query on server
-    if (!self.loadedReport.ready) {
+    // const data = new URLSearchParams()
+    // data.append('query', "select * from redcap_custom_queries")
+
+    // fetch('/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?export=1'), {
+    //     method: 'POST',
+    //     body: data
+    // }
+    // .then(response => response.text())
+    // .then(data => console.log(data))
+
+
+//     $.ajax({
+//         method: 'POST',
+//         url: '/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?' + $.param({ export: 1 }),
+//         dataType: 'text',
+        
+//         data: {
+            
+//             query: "select * from redcap_custom_queries",
+//             redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
+//         },
+//         success: function(result) {
+//             console.log("hi")
+//             console.log(result)
+//         }
+//         ,
+//         error: function(err) {
+//             let errorMsg = err.responseText;
+//            console.log("error:  " + errorMsg)
+//         }
+// })
+
+
+// fetch('/http://localhost/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?export=1'), {
+//     method: 'POST',
+//     body: {query: "select * from redcap_custom_queries",
+//     redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
+// }
+// .then(response => response.text())
+// .then(data => console.log(data))
+// }
+
+
+    // document.querySelector('button.query').addEventListener('click', () => {
+        // const sql = "select * from redcap_custom_queries"
         let reportId = self.loadedReport.meta.config.report_id;
-        let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
+        const getQueryData = new URLSearchParams()
+        // data.append('query', sql)
+        getQueryData.append('redcap_csrf_token', UIOWA_AdminDash.redcap_csrf_token)
+        getQueryData.append('adMethod', "getQuery")
+        getQueryData.append('id', reportId)        
 
-        $.ajax({
+        fetch(UIOWA_AdminDash.urlLookup.post, {
             method: 'POST',
-            url: UIOWA_AdminDash.urlLookup.post,
-            dataType: 'text',
-            data: {
-                adMethod: requestType,
-                id: reportId,
-                redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-            },
-            timeout: UIOWA_AdminDash.queryTimeout,
-            success: function(result) {
-                const parsedResult = JSON.parse(result.replaceAll("&quot;", '"'))
-                if (parsedResult.length > 0) {
-                    let columns = [];
-
-                    if (requestType === 'joinProjectData') {
-                        columns = Object.keys(parsedResult[0]);
-                    }
-                    else {
-                        let columnFormatting = self.loadedReport.meta.column_formatting;
-
-                        if (columnFormatting) {
-                            columns = Object.keys(columnFormatting)
-
-                            // columns = $.map(columnFormatting, function (columnMeta, column_name) {
-                            //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
-                            // });
-                        }
-                    }
-
-                    $.extend(self.loadedReport, {
-                        columns: columns,
-                        data: parsedResult,
-                        ready: true
-                    });
-                }
-                else {
-                    // self.loadedReport.error = "Zero rows returned."
-                    self.loadedReport.ready = true;
-                }
-            }
-            ,
-            error: function(err) {
-                let errorMsg = err.responseText;
-                self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
-                    errorMsg.lastIndexOf("The error from the database was:"),
-                    errorMsg.lastIndexOf("See the server error log for more details")
-                );
-            }
+            body: getQueryData
         })
-    }
+        .then(response => response.text())
+        .then(data => {
+            const dbQueryToolUrl = 'http://localhost/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?export=1'
+            const getData = new URLSearchParams()
+            getData.append('redcap_csrf_token', UIOWA_AdminDash.redcap_csrf_token)
+            getData.append('query', data)
+
+            fetch(dbQueryToolUrl, {
+                method: 'POST',
+                body: getData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log(data)
+
+
+                // const replaceEmpty = result.replaceAll('"', "")
+                // console.log(replaceEmpty)
+                // const resultArray = data.split("\n")
+
+                // console.log(resultArray)
+
+                const splitFinder = /,|\r?\n|"(\\"|[^"])*?"/g;
+
+                function csvTo2dArray(parseMe) {
+                  let currentRow = [];
+                  const rowsOut = [currentRow];
+                  let lastIndex = splitFinder.lastIndex = 0;
+                  
+                  // add text from lastIndex to before a found newline or comma
+                  const pushCell = (endIndex) => {
+                    endIndex = endIndex || parseMe.length;
+                    const addMe = parseMe.substring(lastIndex, endIndex);
+                    // remove quotes around the item
+                    currentRow.push(addMe.replace(/^"|"$/g, ""));
+                    lastIndex = splitFinder.lastIndex;
+                  }
+                
+                
+                  let regexResp;
+                  // for each regexp match (either comma, newline, or quoted item)
+                  while (regexResp = splitFinder.exec(parseMe)) {
+                    const split = regexResp[0];
+                
+                    // if it's not a quote capture, add an item to the current row
+                    // (quote captures will be pushed by the newline or comma following)
+                    if (split.startsWith(`"`) === false) {
+                      const splitStartIndex = splitFinder.lastIndex - split.length;
+                      pushCell(splitStartIndex);
+                
+                      // then start a new row if newline
+                      const isNewLine = /^\r?\n$/.test(split);
+                      if (isNewLine) { rowsOut.push(currentRow = []); }
+                    }
+                  }
+                  // make sure to add the trailing text (no commas or newlines after)
+                  pushCell();
+                  return rowsOut;
+                }
+                console.log("Test")
+
+                const dataArrayized = csvTo2dArray(data)
+                console.log(dataArrayized)
+
+                let newJson = []
+                const headers = dataArrayized[0]
+
+                for (let i = 1; i < dataArrayized.length; i++) {
+                    // const rowArrayized = resultArray[i].split(",")
+                    // console.log(rowArrayized)
+                    // if(i >= 1) {
+                        let rowObject = {}
+                        // if(rowArrayized[i] !== undefined) {
+                            for (let i2 = 0; i2 < dataArrayized[i].length; i2++) {
+                                // if(rowArrayized[i2] !== undefined) {
+                                    rowObject[headers[i2]] = dataArrayized[i][i2]
+                                    // newJson[resultArray[0][i2]] = resultArray[i2]
+                                // }
+                                
+                            }
+                            newJson = [...newJson, rowObject]
+                        // }
+                        
+                    // }
+                    
+                }
+                console.log("new json")
+                console.log(newJson)
+
+                if (data !== "") {
+                    // if (parsedResult.length > 0) {
+                let columns = [];
+
+                // if (requestType === 'joinProjectData') {
+                //     columns = Object.keys(parsedResult[0]);
+                // }
+                // else {
+                    let columnFormatting = self.loadedReport.meta.column_formatting;
+                    console.log(columnFormatting)
+
+                    if (columnFormatting) {
+                        columns = Object.keys(columnFormatting)
+
+                        columns = $.map(columnFormatting, function (columnMeta, column_name) {
+                            return columnMeta.dashboard_show_column === '0' ? null : column_name;
+                        });
+                    }
+                // }
+
+                $.extend(self.loadedReport, {
+                    columns: columns,
+                    data: newJson,
+                    ready: true
+                });
+            }
+            else {
+                // self.loadedReport.error = "Zero rows returned."
+                self.loadedReport.ready = true;
+            }
+        
+      
+
+
+
+            // let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
+            //       $.ajax({
+            // method: 'POST',
+            // url: UIOWA_AdminDash.urlLookup.post,
+            // dataType: 'text',
+            // data: {
+            //     adMethod: requestType,
+            //     id: reportId,
+            //     redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
+            // },
+            // timeout: UIOWA_AdminDash.queryTimeout,
+            // success: function(result) {
+            //     console.log(result)
+            // }})
+            })
+        })
+
+
+
+    
+  
+
+
+// console.log(fetchedData)
+
+
+    // run report SQL query on server
+    // if (!self.loadedReport.ready) {
+    //     let reportId = self.loadedReport.meta.config.report_id;
+    //     let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
+
+    //     $.ajax({
+    //         method: 'POST',
+    //         url: UIOWA_AdminDash.urlLookup.post,
+    //         dataType: 'text',
+    //         data: {
+    //             adMethod: requestType,
+    //             id: reportId,
+    //             redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
+    //         },
+    //         timeout: UIOWA_AdminDash.queryTimeout,
+    //         success: function(result) {
+    //             // console.log(result)
+    //             const replaceEmpty = result.replaceAll('"', "")
+    //             console.log(replaceEmpty)
+    //             const resultArray = replaceEmpty.split("\n")
+    //             // console.log(resultArray)
+
+    //             let newJson = []
+    //             const headers = resultArray[0].split(",")
+
+    //             for (let i = 1; i < resultArray.length; i++) {
+    //                 const rowArrayized = resultArray[i].split(",")
+    //                 console.log(rowArrayized)
+    //                 // if(i >= 1) {
+    //                     let rowObject = {}
+    //                     if(rowArrayized[i] !== undefined) {
+    //                         for (let i2 = 0; i2 < rowArrayized[i].length; i2++) {
+    //                             if(rowArrayized[i2] !== undefined) {
+    //                                 rowObject[headers[i2]] = rowArrayized[i2]
+    //                                 // newJson[resultArray[0][i2]] = resultArray[i2]
+    //                             }
+                              
+    //                         }
+    //                         newJson = [...newJson, rowObject]
+    //                     }
+                       
+    //                 // }
+                   
+    //             }
+
+    //             console.log(newJson)
+
+    //             const parsedResult = newJson
+    //             // const parsedResult = JSON.parse(newJson.replaceAll("&quot;", '"'))
+    //             if (parsedResult.length > 0) {
+    //                 let columns = [];
+
+    //                 if (requestType === 'joinProjectData') {
+    //                     columns = Object.keys(parsedResult[0]);
+    //                 }
+    //                 else {
+    //                     let columnFormatting = self.loadedReport.meta.column_formatting;
+
+    //                     if (columnFormatting) {
+    //                         columns = Object.keys(columnFormatting)
+
+    //                         // columns = $.map(columnFormatting, function (columnMeta, column_name) {
+    //                         //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
+    //                         // });
+    //                     }
+    //                 }
+
+    //                 $.extend(self.loadedReport, {
+    //                     columns: columns,
+    //                     data: parsedResult,
+    //                     ready: true
+    //                 });
+    //             }
+    //             else {
+    //                 // self.loadedReport.error = "Zero rows returned."
+    //                 self.loadedReport.ready = true;
+    //             }
+    //         }
+    //         ,
+    //         error: function(err) {
+    //             let errorMsg = err.responseText;
+    //             self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
+    //                 errorMsg.lastIndexOf("The error from the database was:"),
+    //                 errorMsg.lastIndexOf("See the server error log for more details")
+    //             );
+    //         }
+    //     })
+    // }
 });

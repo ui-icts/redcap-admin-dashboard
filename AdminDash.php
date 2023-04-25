@@ -3,6 +3,7 @@ namespace UIOWA\AdminDash;
 
 use ExternalModules\ExternalModules;
 use ExternalModules\AbstractExternalModule;
+use PHPSQLParser\PHPSQLParser;
 
 class AdminDash extends AbstractExternalModule
 {
@@ -16,7 +17,8 @@ class AdminDash extends AbstractExternalModule
 
         $this->configPID = $this->getSystemSetting('config-pid');
         $this->currentPID = isset($_GET['pid']) ? $_GET['pid'] : $this->configPID;
-    }
+    
+    }  
 
     function redcap_module_system_change_version($version, $old_version) {
         $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'', []);
@@ -81,11 +83,11 @@ class AdminDash extends AbstractExternalModule
                 $this->query(
                     "
                         update redcap_metadata set element_enum =
-'select value, value from redcap_data
-where project_id = [project-id] and
-field_name = \"column_name\" and
-record = [record-name]
-order by instance asc'
+                        'select value, value from redcap_data
+                        where project_id = [project-id] and
+                        field_name = \"column_name\" and
+                        record = [record-name]
+                        order by instance asc'
                         where field_name = 'link_source_column' and project_id = ?
                     ",
                     [$project_id]
@@ -123,6 +125,7 @@ order by instance asc'
                let UIOWA_AdminDash = <?= str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $sanitizedJavascriptObject); ?>;
             </script>
             <link rel="stylesheet" type="text/css" href="<?= $this->getUrl("/resources/styles.css") ?>"/>
+
             <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("/resources/ace/ext-language_tools.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("redcapDataEntryForm.js") ?>" type="text/javascript" charset="utf-8"></script>
@@ -263,13 +266,42 @@ order by instance asc'
         return json_encode($jsObject);
     }
 
-    public function runReport($params) { // id, sql
+    public function queryViaDBQueryTool($sql){
+        global $database_query_tool_enabled;
+        $database_query_tool_enabled = '1';
+
+        $originalRequestMethod = $_SERVER['REQUEST_METHOD'];
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST['query'] = $sql;
+        $_GET['export'] = 1;
+
+        // ob_start();
+        // include(APP_PATH_DOCROOT . '/ControlCenter/database_query_tool.php');
+    
+    }
+
+    // public function parseDbQueryToolResults($csvInput) {
+    //     error_log("hi2");
+    //     error_log($csvInput);
+    //     $rows   = array_map('str_getcsv', $csvInput);
+    //     $header = array_shift($rows);
+    //     $json    = array();
+    //     foreach($rows as $row) {
+    //         $json[] = array_combine($header, $row);
+    //     }
+    //     error_log(json_encode($csv));
+    //     return $json;
+    // }
+
+
+    public function getQuery($params) {
         $report_id = $params['id']; // user-facing call - lookup query by record id
-        $sql = $params['sql']; // test query from data entry form
+        // $sql = $params['sql']; // test query from data entry form
         $username = isset($params['username']) ? $params['username'] : USERID;
         $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
         // get sql query from REDCap record
-        if (!isset($sql)) {
+        // if (!isset($sql)) {
             $data = \REDCap::getData(array(
                 'project_id' => $this->configPID,
                 'return_format' => 'json',
@@ -278,50 +310,78 @@ order by instance asc'
             ));
 
             $sql = json_decode($data, true)[0]['report_sql'];
-        }
-
-        $returnData = array();
-        // supports [user-name] and [project-id]
-        if (!isset($params['token'])) {
-            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-        }
-
-        // error out if no query
-        if ($sql == '') {
-            $returnData['error'] = 'No SQL query defined.';
-        }
-        elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
-            $returnData['error'] = 'SQL query is not a SELECT query.';
-        }
-        else {
-            // fix for group_concat limit
-            // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
-            
-
-            $result = $this->query($sql, []);
-
-            if (is_string($result)) {
-                echo $result;
-                return;
-            }
-
-            // prepare data for table
-            while ($row = db_fetch_assoc($result)) {
-                $returnData[] = $row;
-            }
-
-            // only return column/row info if test query
-            if (isset($params['test'])) {
-                $returnData = array(
-                    'columns' => array_keys($returnData[0]),
-                    'row_count' => sizeof($returnData)
-                );
-            }
-        }
-
-        echo htmlentities(strip_tags(json_encode($returnData)), ENT_QUOTES, 'UTF-8');
-        // echo json_encode($returnData);
+        // }
+        echo $sql;
     }
+
+    // public function runReport($params) { // id, sql
+    //     $report_id = $params['id']; // user-facing call - lookup query by record id
+    //     $sql = $params['sql']; // test query from data entry form
+    //     $username = isset($params['username']) ? $params['username'] : USERID;
+    //     $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+    //     // get sql query from REDCap record
+    //     if (!isset($sql)) {
+    //         $data = \REDCap::getData(array(
+    //             'project_id' => $this->configPID,
+    //             'return_format' => 'json',
+    //             'records' => $report_id,
+    //             'fields' => 'report_sql'
+    //         ));
+
+    //         $sql = json_decode($data, true)[0]['report_sql'];
+    //     }
+
+    //     $returnData = array();
+    //     // supports [user-name] and [project-id]
+    //     if (!isset($params['token'])) {
+    //         $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+    //     }
+
+    //     // error out if no query
+    //     // if ($sql == '') {
+    //     //     $returnData['error'] = 'No SQL query defined.';
+    //     // }
+    //     // elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+    //     //     $returnData['error'] = 'SQL query is not a SELECT query.';
+    //     // }
+    //     // else {
+    //         // fix for group_concat limit
+    //         // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+            
+            
+    //         // $result = $this->query($sql, []);
+    //         // error_log("db query api");
+    //         // $result = $this->queryViaDBQueryTool($sql);
+
+    //         // error_log(json_encode($result));
+    //         // $returnData = $this->parseDbQueryToolResults($result);
+    //         // $parsedResult = $this->parseDbQueryToolResults($result);
+            
+    //         // error_log(json_encode($returnData));
+
+    //         // if (is_string($returnData)) {
+    //         //     echo $returnData;
+    //         //     return;
+    //         // }
+
+    //         // prepare data for table
+    //         // while ($row = db_fetch_assoc($result)) {
+    //         //     $returnData[] = $row;
+    //         // }
+
+    //         // only return column/row info if test query
+    //         // if (isset($params['test'])) {
+    //         //     $returnData = array(
+    //         //         'columns' => array_keys($returnData[0]),
+    //         //         'row_count' => sizeof($returnData)
+    //         //     );
+    //         // }
+    //     // }
+
+    //     // echo htmlentities(strip_tags(json_encode($returnData)), ENT_QUOTES, 'UTF-8');
+    //     // echo json_encode($returnData);
+    //     echo "hello1";
+    // }
 
     public function saveReportColumns($project_id, $record, $columns)
     {

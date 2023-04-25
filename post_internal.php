@@ -10,12 +10,15 @@ if (!isset($_POST['id'])) {
 }
 error_log($_POST['adMethod']);
 if(isset($_POST['adMethod'])) {
-    if($_POST['adMethod'] == 'runReport') {
-        call_user_func(array($module, 'runReport'), $_POST);
-    } elseif($_POST['adMethod'] == 'joinProjectData') {
+    // if($_POST['adMethod'] == 'runReport') {
+    //     call_user_func(array($module, 'runReport'), $_POST);
+    // } 
+    if($_POST['adMethod'] == 'joinProjectData') {
         call_user_func(array($module, 'joinProjectData'), $_POST);
     } elseif($_POST['adMethod'] == 'getAdditionalInfo') {
         call_user_func(array($module, 'getAdditionalInfo'), $_POST);
+    } elseif($_POST['adMethod'] == 'getQuery') {
+        call_user_func(array($module, 'getQuery'), $_POST);
     }
      else {
         die('Something went wrong');

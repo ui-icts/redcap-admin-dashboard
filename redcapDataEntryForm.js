@@ -59,48 +59,86 @@ $(document).ready(function() {
             $('.ace_editor').css('height', '400px');
 
             $('.test-query').click(function() {
-                let $this = $(this);
 
-                $this.prop('disabled', true);
-                $this.html('<i class="fas fa-spinner fa-spin test-progress"></i>');
+                try {
+                    let $this = $(this);
 
-                let startTime = performance.now();
-                $.ajax({
-                    method: 'POST',
-                    url: UIOWA_AdminDash.urlLookup.post,
-                    dataType: 'text',
-                    data: {
-                        adMethod: 'runReport',
-                        sql: editor.getValue(),
-                        test: true,
-                        redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-                    },
-                    timeout: UIOWA_AdminDash.queryTimeout,
-                    success: function(data) {
-                        let endTime = performance.now();
-                        const parsedData = JSON.parse(data.replaceAll("&quot;", '"'))
+                    $this.prop('disabled', true);
+                    $this.html('<i class="fas fa-spinner fa-spin test-progress"></i>');
+    
+                    let startTime = performance.now();
+    
+                    
+            
+                    let headers = []
+    
+              
+                        const dbQueryToolUrl = 'http://localhost/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?export=1'
+                        const getData = new URLSearchParams()
+                        getData.append('redcap_csrf_token', UIOWA_AdminDash.redcap_csrf_token)
+                        getData.append('query', editor.getValue())
+            
+                        fetch(dbQueryToolUrl, {
+                            method: 'POST',
+                            body: getData
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            let endTime = performance.now();
+                            const resultArray = data.split("\n")
+                            const stringifyData = JSON.stringify(data)
+                            console.log(stringifyData)
+                            // console.log(resultArray.split(","))
+                            // console.log(resultArray[0])
+                            if(resultArray.length >= 2 && !stringifyData.startsWith(String.raw`"\r`) && !stringifyData.startsWith(String.raw`"\n`)) {
+                                // console.log(data)
+            
+            
+                                let newJson = []
+                                const headers = resultArray[0].split(",")
+                
+                                for (let i = 1; i < resultArray.length; i++) {
+                                    const rowArrayized = resultArray[i].split(",")
+                                    // console.log(rowArrayized)
+                                    // if(i >= 1) {
+                                        let rowObject = {}
+                                        // if(rowArrayized[i] !== undefined) {
+                                            for (let i2 = 0; i2 < rowArrayized.length; i2++) {
+                                                // if(rowArrayized[i2] !== undefined) {
+                                                    rowObject[headers[i2]] = rowArrayized[i2]
+                                                    // newJson[resultArray[0][i2]] = resultArray[i2]
+                                                // }
+                                                
+                                            }
+                                            newJson = [...newJson, rowObject]
+                                        // }
+                                        
+                                    // }
+                                    
+                                }
+                
+                                // console.log(headers)
+        
+                                $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-admindash-default').addClass('btn-success');
+        
+                                $('[name="test_query_error"]').val('');
+                                $('[name="test_query_columns"]').val(headers.length);
+                                $('[name="test_query_column_list"]').val(JSON.stringify(headers, null, 2));
+                                $('[name="test_query_success___radio"][value="1"]')
+                                    .prop('disabled', '')
+                                    .prop("checked", true)
+                                    .click()
+                                    .prop('disabled', 'disabled');
+        
+                                $resultDiv.html('<span style="color:green;">Query returned ' + newJson.length + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
+                             
+                            } else {
+                        //         let errorMsg = err.responseText;
 
-                        $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-admindash-default').addClass('btn-success');
-
-                        $('[name="test_query_error"]').val('');
-                        $('[name="test_query_columns"]').val(parsedData.columns.length);
-                        $('[name="test_query_column_list"]').val(JSON.stringify(parsedData.columns, null, 2));
-                        $('[name="test_query_success___radio"][value="1"]')
-                            .prop('disabled', '')
-                            .prop("checked", true)
-                            .click()
-                            .prop('disabled', 'disabled');
-
-                        $resultDiv.html('<span style="color:green;">Query returned ' + parsedData.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
-                    },
-                    error: function(err) {
-                        console.log(err);
-                        let errorMsg = err.responseText;
-
-                        errorMsg = errorMsg.substring(
-                            errorMsg.lastIndexOf("The error from the database was:"),
-                            errorMsg.lastIndexOf("See the server error log for more details")
-                        );
+                        // errorMsg = errorMsg.substring(
+                        //     errorMsg.lastIndexOf("The error from the database was:"),
+                        //     errorMsg.lastIndexOf("See the server error log for more details")
+                        // );
 
                         $('[name="test_query_column_list"], [name="test_query_columns"]').val('');
                         $('[name="test_query_success___radio"][value="0"]')
@@ -109,9 +147,67 @@ $(document).ready(function() {
                             .prop('disabled', 'disabled');
 
                         $this.html('<i class="fas fa-times"></i> Error').removeClass('btn-admindash-default').addClass('btn-danger');
-                        $resultDiv.html('<span style="color:red;">Query failed! ' + errorMsg + '</span>');
-                    }
-                })
+                        $resultDiv.html('<span style="color:red;">Query failed! ' + "PUT ERROR HERE " + '</span>');
+                            }
+                      
+                      
+                    
+                             })
+                } catch(e) {
+                    console.log("Fetch error:  " + e)
+                }
+             
+                       
+
+
+
+                // $.ajax({
+                //     method: 'POST',
+                //     url: UIOWA_AdminDash.urlLookup.post,
+                //     dataType: 'text',
+                //     data: {
+                //         adMethod: 'runReport',
+                //         sql: editor.getValue(),
+                //         test: true,
+                //         redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
+                //     },
+                //     timeout: UIOWA_AdminDash.queryTimeout,
+                //     success: function(data) {
+                //         let endTime = performance.now();
+                //         const parsedData = JSON.parse(data.replaceAll("&quot;", '"'))
+
+                //         $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-admindash-default').addClass('btn-success');
+
+                //         $('[name="test_query_error"]').val('');
+                //         $('[name="test_query_columns"]').val(parsedData.columns.length);
+                //         $('[name="test_query_column_list"]').val(JSON.stringify(parsedData.columns, null, 2));
+                //         $('[name="test_query_success___radio"][value="1"]')
+                //             .prop('disabled', '')
+                //             .prop("checked", true)
+                //             .click()
+                //             .prop('disabled', 'disabled');
+
+                //         $resultDiv.html('<span style="color:green;">Query returned ' + parsedData.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
+                //     },
+                //     error: function(err) {
+                //         console.log(err);
+                //         let errorMsg = err.responseText;
+
+                //         errorMsg = errorMsg.substring(
+                //             errorMsg.lastIndexOf("The error from the database was:"),
+                //             errorMsg.lastIndexOf("See the server error log for more details")
+                //         );
+
+                //         $('[name="test_query_column_list"], [name="test_query_columns"]').val('');
+                //         $('[name="test_query_success___radio"][value="0"]')
+                //             .prop('disabled', '')
+                //             .click()
+                //             .prop('disabled', 'disabled');
+
+                //         $this.html('<i class="fas fa-times"></i> Error').removeClass('btn-admindash-default').addClass('btn-danger');
+                //         $resultDiv.html('<span style="color:red;">Query failed! ' + errorMsg + '</span>');
+                //     }
+                // })
             });
         },
         link_type: function() {
