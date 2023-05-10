@@ -19,6 +19,8 @@ if(isset($_POST['adMethod'])) {
         call_user_func(array($module, 'getAdditionalInfo'), $_POST);
     } elseif($_POST['adMethod'] == 'getQuery') {
         call_user_func(array($module, 'getQuery'), $_POST);
+    } elseif($_POST['adMethod'] == 'runExecutiveReport') {
+        call_user_func(array($module, 'runExecutiveReport'), $_POST);
     }
      else {
         die('Something went wrong');

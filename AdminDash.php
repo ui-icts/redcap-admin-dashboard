@@ -223,7 +223,7 @@ class AdminDash extends AbstractExternalModule
             }
 
             $formattedMeta = array();
-            // error_log(json_encode($loadedReportMetadata));
+
             foreach($loadedReportMetadata as $index => $row) {
                 error_log(json_encode($row['join_project_id']));
                 if ($row['redcap_repeat_instrument'] !== '') {
@@ -247,8 +247,6 @@ class AdminDash extends AbstractExternalModule
                 }
             }
 
-            // error_log(json_encode($formattedMeta));
-
             $jsObject = array_merge($jsObject, array(
                 'loadedReport' => array(
                     'meta' => $formattedMeta,
@@ -259,6 +257,7 @@ class AdminDash extends AbstractExternalModule
                 'configPID' => $this->configPID,
                 'formattingReference' => $formattingReference,
                 'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
+                'executiveExport' => $reportAccess[$report_id]['executive_export'],
                 'redcap_csrf_token' => $this->getCSRFToken()
             ));
         }
@@ -276,32 +275,43 @@ class AdminDash extends AbstractExternalModule
         $_POST['query'] = $sql;
         $_GET['export'] = 1;
 
-        // ob_start();
-        // include(APP_PATH_DOCROOT . '/ControlCenter/database_query_tool.php');
+
     
     }
 
-    // public function parseDbQueryToolResults($csvInput) {
-    //     error_log("hi2");
-    //     error_log($csvInput);
-    //     $rows   = array_map('str_getcsv', $csvInput);
-    //     $header = array_shift($rows);
-    //     $json    = array();
-    //     foreach($rows as $row) {
-    //         $json[] = array_combine($header, $row);
-    //     }
-    //     error_log(json_encode($csv));
-    //     return $json;
-    // }
 
 
-    public function getQuery($params) {
+    public function getReportProps($params) {
         $report_id = $params['id']; // user-facing call - lookup query by record id
-        // $sql = $params['sql']; // test query from data entry form
         $username = isset($params['username']) ? $params['username'] : USERID;
+        
         $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
         // get sql query from REDCap record
-        // if (!isset($sql)) {
+
+        if(!isset($params['query'])) {
+            $data = \REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'return_format' => 'json',
+                'records' => $report_id,
+                'fields' => ['report_sql', 'executive_username', 'executive_view']
+            ));
+
+        } else {
+            error_log($params['query']);
+
+        }
+        return $data;
+    }
+
+
+    public function getQuery($params) {  //  TODO put a superuser check if type = test?
+        $report_id = $params['id']; // user-facing call - lookup query by record id
+        $username = isset($params['username']) ? $params['username'] : USERID;
+        
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+        // get sql query from REDCap record
+
+        if(!isset($params['query'])) {
             $data = \REDCap::getData(array(
                 'project_id' => $this->configPID,
                 'return_format' => 'json',
@@ -309,9 +319,75 @@ class AdminDash extends AbstractExternalModule
                 'fields' => 'report_sql'
             ));
 
+    
             $sql = json_decode($data, true)[0]['report_sql'];
-        // }
-        echo $sql;
+        } else {
+            error_log($params['query']);
+            $sql = $params['query'];
+        }
+
+        if (!isset($params['token'])) {
+            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+        }
+
+        $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
+
+        echo $formattedSql;
+    }
+
+    public function runExecutiveReport($params) {
+   
+        $reportProps = json_decode($this->getReportProps($params),true);
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+        $isExecutive = false;
+        foreach($reportProps AS $instance => $data) {
+            $executiveUsername = $data['executive_username'];
+   
+         
+            if($executiveUsername == USERID && $data['executive_view'] == 1) {
+                $isExecutive = true;
+                break;
+            }
+        }
+
+        if($isExecutive) {
+            $sql = $reportProps[0]['report_sql'];
+            $returnData = array();
+        // supports [user-name] and [project-id]
+        if (!isset($params['token'])) {
+            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+        }
+         
+            // error_log($sql);
+            if ($sql == '') {
+            
+                $returnData['error'] = 'No SQL query defined.';
+            } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+            
+                $returnData['error'] = 'SQL query is not a SELECT query.';
+            } else {
+                //fix for group_concat limit
+                // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+        
+                $result = $this->query($sql, []);
+
+                error_log(json_encode($result));
+                if (is_string($result)) {
+                    echo $result;
+                    return;
+                }
+          
+                //prepare data for table
+                while ($row = db_fetch_assoc($result)) {
+                    $returnData[] = $row;
+                }
+    
+
+              
+            }
+            echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+        }
+      
     }
 
     // public function runReport($params) { // id, sql
@@ -495,6 +571,10 @@ class AdminDash extends AbstractExternalModule
             array_push($json, $instance);
         }
 
+ 
+
+     
+
 //        $reportSql = json_decode(\REDCap::getData(
 //            $project_id,
 //            'json',
@@ -519,6 +599,51 @@ class AdminDash extends AbstractExternalModule
             'overwrite',
             'YMD'
         );
+
+        $numberOfColumns = count($columns);
+
+        error_log($numberOfColumns);
+
+        //  Check existing column formatting instances
+        $getColumnInstances = \REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'events' => ['report_config_arm_1'],
+            'fields' => [
+                'column_name'],
+            'records' => [$record]
+        ));
+
+        error_log(count(json_decode($getColumnInstances)));
+
+        //  If there are more existing column instances than the new query has, delete the extra column instances. 
+        if((count(json_decode($getColumnInstances))-1) > $numberOfColumns) {          //  -1 because getData returns an empty data point as index 0
+            $startDeleteIndex = $numberOfColumns + 1;
+            error_log("hi");
+            for($i = $numberOfColumns+1; $i < count(json_decode($getColumnInstances)); $i++) {
+                //  TODO check if instance number can be an array
+                \REDCap::deleteRecord($this->configPID,
+                    $record,
+                    1,  //  arm
+                    'report_config_arm_1',  //  event name
+                    'column_formatting',  //  instrument name
+                    $i);  //  repeat instance
+            }
+    
+            
+            $getColumnInstances2 = \REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'return_format' => 'json',
+                'events' => ['report_config_arm_1'],
+                'fields' => [
+                    'column_name'
+            ]));
+    
+            error_log(json_encode($getColumnInstances2));
+    
+        }
+
+   
     }
 
     public function getUserAccess($username, $pid)
@@ -561,6 +686,7 @@ class AdminDash extends AbstractExternalModule
 
                         if ($reportRights['executive_export'] == '1') {
                             $userRightsArray[$report_id]['export_access'] = true;
+                            $userRightsArray[$report_id]['executive_export'] = true;  //  TODO check if this or the line above  is necessary
                         }
                     }
                 }
