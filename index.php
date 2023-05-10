@@ -107,9 +107,19 @@ $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_i
         
     }
 
-    /*table.dataTable thead tr {*/
-    /*    background-color: darkgrey;*/
-    /*}*/
+    table.dataTable tbody tr:hover td  {
+        background-color: #b7b7b7 !important;
+    }
+
+    /* Define an animation behavior */
+    @keyframes spinner {
+        to { transform: rotate(360deg); }
+    }
+    /* This is the class name given by the Font Awesome component when icon contains 'spinner' */
+    .fa-sync {
+        /* Apply 'spinner' keyframes looping once every second (1s)  */
+        animation: spinner 1s linear infinite;
+    }
 
     .dt-head-center {text-align: center;}
 
@@ -222,7 +232,8 @@ $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_i
     <div style="text-align: center; padding: 50px" v-cloak>
         <h4 v-if="loadedReport">
             <div v-if="!loadedReport.ready" id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px">
-                <i class="fas fa-spinner fa-pulse"></i>
+                <i class="fas fa-sync fa-pulse"></i>
+                <!-- <font-awesome-icon icon="spinner" class="fa-spin" /> -->
             </div>
         </h4>
         <span v-else>

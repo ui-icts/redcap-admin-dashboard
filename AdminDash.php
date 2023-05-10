@@ -371,7 +371,7 @@ class AdminDash extends AbstractExternalModule
         
                 $result = $this->query($sql, []);
 
-                error_log(json_encode($result));
+                // error_log(json_encode($result));
                 if (is_string($result)) {
                     echo $result;
                     return;

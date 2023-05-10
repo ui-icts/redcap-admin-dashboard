@@ -58,11 +58,3 @@ div#outer {
   background-color: rgb(16, 108, 214) !important;
   color: white;
 }
-
-/* table.dataTable tbody tr.even td {
-  background-color: "white !important";
-} */
-
-table.dataTable tbody tr td {
-  background-color: red !important;
-}
