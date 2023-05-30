@@ -132,10 +132,12 @@ $.extend(UIOWA_AdminDash, {
         let columnDetails =
           self.loadedReport.meta.column_formatting[column_name];
         let column = {
-          title: column_name, //  TODO get proper column name
-          // columnDetails.displayHeader !== ""
-          //   ? columnDetails.displayHeader
-          //   : column_name,
+          //  TODO get proper column name
+          //  This is the value that will display as the column header.
+          title:
+            columnDetails.dashboard_display_header !== ""
+              ? columnDetails.dashboard_display_header
+              : column_name,
           data: column_name,
           className: "",
           // className: columnDetails.dashboard_show_column === "0" ? "noVis" : "",
@@ -1260,6 +1262,8 @@ $(document).ready(function () {
                         ["column_name"]: self.codeTypeLabelMap["3"][j],
                         ["link_source_column"]: "purpose_other",
                         ["code_type"]: "0",
+                        ["dashboard_display_header"]:
+                          self.codeTypeLabelMap["3"][j],
                       };
 
                       newColumns = {
