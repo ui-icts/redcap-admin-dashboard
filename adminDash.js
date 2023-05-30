@@ -67,11 +67,17 @@ $.extend(UIOWA_AdminDash, {
           console.log("j");
           console.log(j);
 
-          const tempColumnConfig = { ...columnConfig, column_name: columnName };
+          const tempColumnConfig = {
+            ...columnConfig,
+            ["column_name"]: self.codeTypeLabelMap["3"][j],
+            // ["link_source_column"]: "purpose_other",
+            ["code_type"]: "",
+            ["dashboard_display_header"]: self.codeTypeLabelMap["3"][j],
+          };
 
           newColumns = {
             ...newColumns,
-            [self.codeTypeLabelMap["3"][j]]: tempColumnConfig,
+            [JSON.stringify(self.codeTypeLabelMap["3"][j])]: tempColumnConfig,
           };
           // self.loadedReport.meta.column_formatting[self.codeTypeLabelMap["3"][j]] = newColumns;
           console.log(newColumns);
@@ -86,7 +92,7 @@ $.extend(UIOWA_AdminDash, {
           ...newColumns,
         };
         console.log(self.loadedReport.meta.column_formatting);
-        console.log("column formatz");
+        console.log("column formatz1");
         console.log(newColumns);
         self.loadedReport.meta.column_formatting[columnName] = newColumns;
         delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
@@ -476,6 +482,7 @@ $.extend(UIOWA_AdminDash, {
   },
   adFormat: function (column_name, data, type, row) {
     console.log("ad format");
+    console.log(column_name);
     if (data === null) {
       return type === "display"
         ? '<span class="text-muted">null</span>'
@@ -1207,7 +1214,7 @@ $(document).ready(function () {
                       ) {
                         newData = {
                           ...newData,
-                          [self.codeTypeLabelMap["3"][idx10]]:
+                          [JSON.stringify(self.codeTypeLabelMap["3"][idx10])]:
                             purposeOtherValues.includes(JSON.stringify(idx10))
                               ? "TRUE"
                               : "FALSE",
@@ -1266,14 +1273,15 @@ $(document).ready(function () {
                         ...columnConfig,
                         ["column_name"]: self.codeTypeLabelMap["3"][j],
                         // ["link_source_column"]: "purpose_other",
-                        ["code_type"]: "0",
+                        ["code_type"]: "",
                         ["dashboard_display_header"]:
                           self.codeTypeLabelMap["3"][j],
                       };
 
                       newColumns = {
                         ...newColumns,
-                        [self.codeTypeLabelMap["3"][j]]: tempColConfig,
+                        [JSON.stringify(self.codeTypeLabelMap["3"][j])]:
+                          tempColConfig,
                       };
                       // newColumns = {
                       //   ...newColumns,
@@ -1283,7 +1291,7 @@ $(document).ready(function () {
                       console.log(newColumns);
                       finalColumns = [
                         ...finalColumns,
-                        self.codeTypeLabelMap["3"][j],
+                        JSON.stringify(self.codeTypeLabelMap["3"][j]),
                       ];
                     }
                     console.log("gggggggggggg");
@@ -1302,9 +1310,12 @@ $(document).ready(function () {
                     console.log(self.loadedReport.meta.column_formatting);
                     self.loadedReport.meta.column_formatting = tempFormatting;
                     console.log(self.loadedReport.meta.column_formatting);
-                    console.log("column formatz");
+                    console.log("column formatz2");
                     console.log(newColumns);
                     console.log(tempFormatting);
+                    // delete self.loadedReport.meta.column_formatting[
+                    //   "purpose_other"
+                    // ];
                   } else {
                     finalColumns = [...finalColumns, columnName];
                     console.log("else format");
@@ -1315,6 +1326,7 @@ $(document).ready(function () {
                 columns = finalColumns;
                 console.log("col format 2");
                 console.log(tempFormatting);
+
                 // self.loadedReport.meta.column_formatting = tempFormatting;
 
                 $.extend(self.loadedReport, {
