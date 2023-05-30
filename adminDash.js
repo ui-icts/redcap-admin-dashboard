@@ -31,42 +31,28 @@ $.extend(UIOWA_AdminDash, {
 
   initDatatable: function () {
     let self = this;
-    console.log("init loadedReport");
-    console.log(self.loadedReport.meta);
-    // let purposeOtherConfig = {};
 
     let tempFormatting = self.loadedReport.meta.column_formatting;
-    // console.log("test meta");
-    // self.loadedReport.meta.column_formatting = { hi: "hi" };
-    // console.log(UIOWA_AdminDash.loadedReport.meta.column_formatting);
 
     const columnConfigArray = Object.entries(
       self.loadedReport.meta.column_formatting
     );
 
-    console.log("column config array");
-    console.log(columnConfigArray);
     let researchPurposeIndex = "";
 
     for (let i = 0; i < columnConfigArray.length; i++) {
       const column = columnConfigArray[i];
       const columnName = column[0];
       const columnConfig = column[1];
-      console.log(columnName);
+
       // purposeOtherConfig =
 
       let newColumns = {};
 
       if (columnConfig.code_type === "4") {
         researchPurposeIndex = columnName;
-        console.log("col name");
-        console.log(columnName);
-        console.log(self.codeTypeLabelMap["3"]);
 
         for (let j = 0; j < self.codeTypeLabelMap["3"].length; j++) {
-          console.log("j");
-          console.log(j);
-
           const tempColumnConfig = {
             ...columnConfig,
             ["column_name"]: self.codeTypeLabelMap["3"][j],
@@ -79,10 +65,8 @@ $.extend(UIOWA_AdminDash, {
             ...newColumns,
             [JSON.stringify(self.codeTypeLabelMap["3"][j])]: tempColumnConfig,
           };
-          // self.loadedReport.meta.column_formatting[self.codeTypeLabelMap["3"][j]] = newColumns;
-          console.log(newColumns);
         }
-        console.log("gggggggggggg");
+
         // row = { ...row, ...newData };
 
         // row.splice(purposeOtherIndex, 0, { ...newData });
@@ -91,12 +75,9 @@ $.extend(UIOWA_AdminDash, {
           ...tempFormatting,
           ...newColumns,
         };
-        console.log(self.loadedReport.meta.column_formatting);
-        console.log("column formatz1");
-        console.log(newColumns);
+
         self.loadedReport.meta.column_formatting[columnName] = newColumns;
         delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
-        console.log(tempFormatting);
       }
     }
 
@@ -481,8 +462,6 @@ $.extend(UIOWA_AdminDash, {
     }
   },
   adFormat: function (column_name, data, type, row) {
-    console.log("ad format");
-    console.log(column_name);
     if (data === null) {
       return type === "display"
         ? '<span class="text-muted">null</span>'
@@ -490,16 +469,14 @@ $.extend(UIOWA_AdminDash, {
     }
 
     let self = this;
-    console.log(column_name);
-    console.log(self.loadedReport.meta.column_formatting);
+
     let columnDetails = self.loadedReport.meta.column_formatting[column_name];
-    console.log("source column");
-    console.log(columnDetails.link_source_column);
+
     let sourceColumn =
       columnDetails.link_source_column !== ""
         ? columnDetails.link_source_column
         : column_name;
-    console.log(data);
+
     data = self.splitData(data, sourceColumn);
     let sourceData = data;
     let formattedSeparator = type === "export" ? ";" : "<br />";
@@ -567,17 +544,16 @@ $.extend(UIOWA_AdminDash, {
           console.groupCollapsed(
             "Failed to replace codes with labels for " + column_name
           );
-          console.log(columnDetails.code_type, item);
-          console.log(e);
+
           console.groupEnd();
         }
       }
-      console.log("is ad format");
+
       // generate url for linking
       if (columnDetails.link_type !== "" && !self.executiveView) {
         try {
           // formattedVal = "hi";
-          console.log("is link");
+
           rawUrl = self.adFormat_url(
             item,
             sourceData[index],
@@ -594,7 +570,6 @@ $.extend(UIOWA_AdminDash, {
           } else if (type === "filter") {
             formattedVal = self.sanitizeCellData(item);
           } else {
-            console.log("should be link");
             formattedVal = `<a href="${rawUrl}" target="_blank">${self.sanitizeCellData(
               formattedVal
             )}</a>`; //$.fn.dataTable.render.text()
@@ -603,7 +578,7 @@ $.extend(UIOWA_AdminDash, {
           console.groupCollapsed(
             "Failed to generate url(s) for " + column_name
           );
-          console.log(e);
+
           console.groupEnd();
         }
       }
@@ -635,8 +610,7 @@ $.extend(UIOWA_AdminDash, {
           console.groupCollapsed(
             "Failed to process hint icon(s) for " + column_name
           );
-          console.log(item);
-          console.log(e);
+
           console.groupEnd();
         }
       }
@@ -665,9 +639,6 @@ $.extend(UIOWA_AdminDash, {
           this.urlLookup.redcapBase +
           this.formattingReference.links[linkIndex - 1].trim() +
           sourceValue;
-        console.log(sourceValue);
-        console.log("URL");
-        console.log(url);
       } catch (error) {
         // invalid link index
         console.error(error);
@@ -902,51 +873,6 @@ $(document).ready(function () {
     },
   });
 
-  // const data = new URLSearchParams()
-  // data.append('query', "select * from redcap_custom_queries")
-
-  // fetch('/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?export=1'), {
-  //     method: 'POST',
-  //     body: data
-  // }
-  // .then(response => response.text())
-  // .then(data => console.log(data))
-
-  //     $.ajax({
-  //         method: 'POST',
-  //         url: '/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?' + $.param({ export: 1 }),
-  //         dataType: 'text',
-
-  //         data: {
-
-  //             query: "select * from redcap_custom_queries",
-  //             redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-  //         },
-  //         success: function(result) {
-  //             console.log("hi")
-  //             console.log(result)
-  //         }
-  //         ,
-  //         error: function(err) {
-  //             let errorMsg = err.responseText;
-  //            console.log("error:  " + errorMsg)
-  //         }
-  // })
-
-  // fetch('/http://localhost/redcap/redcap_v13.4.0/ControlCenter/database_query_tool.php?export=1'), {
-  //     method: 'POST',
-  //     body: {query: "select * from redcap_custom_queries",
-  //     redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-  // }
-  // .then(response => response.text())
-  // .then(data => console.log(data))
-  // }
-
-  // document.querySelector('button.query').addEventListener('click', () => {
-  // const sql = "select * from redcap_custom_queries"
-
-  console.log(UIOWA_AdminDash);
-
   let reportId = self.loadedReport.meta.config.report_id;
   const getQueryData = new URLSearchParams();
   // data.append('query', sql)
@@ -964,7 +890,6 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
-        console.log(data);
         if (data !== "") {
           data = data.replaceAll("&quot;", '"');
           // if (parsedResult.length > 0) {
@@ -975,7 +900,6 @@ $(document).ready(function () {
           // }
           // else {
           let columnFormatting = self.loadedReport.meta.column_formatting;
-          console.log(columnFormatting);
 
           if (columnFormatting) {
             columns = Object.keys(columnFormatting);
@@ -1011,7 +935,6 @@ $(document).ready(function () {
       })
         .then((response) => response.text())
         .then((data) => {
-          console.log(data);
           const dbQueryToolUrl =
             "http://localhost/redcap/redcap_v13.5.4/ControlCenter/database_query_tool.php?export=1"; //  TODO make redcap version dynamic
           const getData = new URLSearchParams();
@@ -1027,14 +950,6 @@ $(document).ready(function () {
           })
             .then((response) => response.text())
             .then((data) => {
-              console.log(data);
-
-              // const replaceEmpty = result.replaceAll('"', "")
-              // console.log(replaceEmpty)
-              // const resultArray = data.split("\n")
-
-              // console.log(resultArray)
-
               const splitFinder = /,|\r?\n|"(\\"|[^"])*?"/g;
 
               function csvTo2dArray(parseMe) {
@@ -1074,44 +989,26 @@ $(document).ready(function () {
                 pushCell();
                 return rowsOut;
               }
-              console.log("Test");
 
               const dataArrayized = csvTo2dArray(data);
-              console.log(dataArrayized);
 
               let newJson = [];
               const headers = dataArrayized[0];
 
               for (let i = 1; i < dataArrayized.length; i++) {
-                // const rowArrayized = resultArray[i].split(",")
-                // console.log(rowArrayized)
-                // if(i >= 1) {
                 let rowObject = {};
-                // if(rowArrayized[i] !== undefined) {
+
                 for (let i2 = 0; i2 < dataArrayized[i].length; i2++) {
-                  // if(rowArrayized[i2] !== undefined) {
                   rowObject[headers[i2]] = dataArrayized[i][i2];
-                  // newJson[resultArray[0][i2]] = resultArray[i2]
-                  // }
                 }
                 newJson = [...newJson, rowObject];
-                // }
-
-                // }
               }
-              console.log("new json");
-              console.log(newJson);
 
               if (data !== "") {
-                // if (parsedResult.length > 0) {
                 let columns = [];
 
-                // if (requestType === 'joinProjectData') {
-                //     columns = Object.keys(parsedResult[0]);
-                // }
-                // else {
                 let columnFormatting = self.loadedReport.meta.column_formatting;
-                // console.log(columnFormatting);
+
                 let purposeOtherIndex = -1;
                 let purposeOtherName = "";
                 if (columnFormatting) {
@@ -1119,18 +1016,16 @@ $(document).ready(function () {
 
                   const parseColumnFormatting =
                     Object.entries(columnFormatting);
-                  console.log(parseColumnFormatting);
+
                   for (const [idx, column] of parseColumnFormatting) {
-                    console.log(idx);
-                    console.log(column);
                     const codeType = column.code_type;
                     if (codeType === "4") {
                       const removeIndex = columns.indexOf(idx);
                       purposeOtherIndex = removeIndex;
                       purposeOtherName = idx;
-                      console.log(removeIndex);
+
                       const newArray = columns.toSpliced(removeIndex, 1);
-                      console.log(newArray);
+
                       newArray.splice(
                         removeIndex,
                         0,
@@ -1138,38 +1033,16 @@ $(document).ready(function () {
                       );
                       // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
                       columns = newArray;
-                      console.log(newArray);
                     }
                   }
-
-                  // console.log(self.codeTypeLabelMap[3]);
-                  console.log("final columns");
-                  console.log(columns);
 
                   columns = $.map(
                     columnFormatting,
                     function (columnMeta, column_name) {
-                      console.log(columnMeta);
                       if (
                         columnMeta.code_type === "4" &&
                         column_name === purposeOtherName
                       ) {
-                        // newJson.splice(
-                        //   removeIndex,
-                        //   0,
-                        //   ...self.codeTypeLabelMap[3]
-                        // );
-
-                        // for (let j = 0; j < rowArray.length; j++) {
-                        //   const column = rowArray[j];
-                        //   const columnName = column[0];
-                        //   const columnValue = column[1];
-
-                        //   if (columnName === purposeOtherName) {
-
-                        //   }
-                        // }
-
                         return columnMeta.dashboard_show_column === "0"
                           ? null
                           : [...self.codeTypeLabelMap[3]];
@@ -1181,32 +1054,21 @@ $(document).ready(function () {
                     }
                   );
                 }
-                // }
-                console.log("col formz");
-                console.log(columnFormatting);
+
                 tempFormatting = self.loadedReport.meta.column_formatting;
                 for (let i7 = 0; i7 < newJson.length; i7++) {
                   let row = newJson[i7];
-                  // const rowArray = Object.entries(row);
-                  console.log(row);
 
                   let newData = {};
                   const rowProps = Object.entries(columnFormatting);
 
                   for (let i8 = 0; i8 < rowProps.length; i8++) {
-                    // console.log(self.codeTypeLabelMap[3]);
                     const propName = rowProps[i8][0];
                     const propConfig = rowProps[i8][1];
-                    // const parseColumnFormatting = Object.entries(propConfig);
-                    // console.log(parseColumnFormatting);
 
-                    console.log("HERE AAA");
-                    console.log(propName);
-                    console.log(propConfig);
                     if (propConfig.code_type === "4") {
                       const purposeOtherValues = row.purpose_other.split(",");
-                      console.log("valz");
-                      console.log(purposeOtherValues);
+
                       for (
                         let idx10 = 0;
                         idx10 < self.codeTypeLabelMap["3"].length;
@@ -1220,28 +1082,19 @@ $(document).ready(function () {
                               : "FALSE",
                         };
                       }
-                      console.log(newData);
-                      row = { ...row, ...newData };
-                      console.log(row);
 
-                      // row.splice(purposeOtherIndex, 0, { ...newData });
+                      row = { ...row, ...newData };
+
                       delete row["purpose_other"];
                       newJson[i7] = row;
                     }
                   }
                 }
 
-                console.log("final data");
-                console.log(newJson);
-                console.log(columns);
-                // console.log(columnFormatting);
-
                 const columnConfigArray = Object.entries(
                   self.loadedReport.meta.column_formatting
                 );
 
-                console.log("column config array");
-                console.log(columnConfigArray);
                 let researchPurposeIndex = "";
 
                 let finalColumns = [];
@@ -1250,25 +1103,17 @@ $(document).ready(function () {
                   const column = columnConfigArray[i];
                   const columnName = column[0];
                   const columnConfig = column[1];
-                  console.log(columnName);
-                  // purposeOtherConfig =
 
                   let newColumns = self.loadedReport.meta.column_formatting;
 
                   if (columnConfig.code_type === "4") {
                     researchPurposeIndex = columnName;
-                    console.log("col name");
-                    console.log(columnName);
-                    console.log(self.codeTypeLabelMap["3"]);
 
                     for (
                       let j = 0;
                       j < self.codeTypeLabelMap["3"].length;
                       j++
                     ) {
-                      console.log("j");
-                      console.log(j);
-
                       const tempColConfig = {
                         ...columnConfig,
                         ["column_name"]: self.codeTypeLabelMap["3"][j],
@@ -1283,51 +1128,25 @@ $(document).ready(function () {
                         [JSON.stringify(self.codeTypeLabelMap["3"][j])]:
                           tempColConfig,
                       };
-                      // newColumns = {
-                      //   ...newColumns,
-                      //   [self.codeTypeLabelMap["3"][j]["column_name"]]:
-                      //     self.codeTypeLabelMap["3"][j],
-                      // };
-                      console.log(newColumns);
+
                       finalColumns = [
                         ...finalColumns,
                         JSON.stringify(self.codeTypeLabelMap["3"][j]),
                       ];
                     }
-                    console.log("gggggggggggg");
-                    // row = { ...row, ...newData };
 
-                    // row.splice(purposeOtherIndex, 0, { ...newData });
-                    // const purposeOtherConfig =
-                    //   self.loadedReport.meta.column_formatting[
-                    //     researchPurposeIndex
-                    //   ];
-                    // delete tempFormatting[researchPurposeIndex];
                     tempFormatting = {
                       ...tempFormatting,
                       ...newColumns,
                     };
-                    console.log(self.loadedReport.meta.column_formatting);
+
                     self.loadedReport.meta.column_formatting = tempFormatting;
-                    console.log(self.loadedReport.meta.column_formatting);
-                    console.log("column formatz2");
-                    console.log(newColumns);
-                    console.log(tempFormatting);
-                    // delete self.loadedReport.meta.column_formatting[
-                    //   "purpose_other"
-                    // ];
                   } else {
                     finalColumns = [...finalColumns, columnName];
-                    console.log("else format");
-                    console.log(tempFormatting);
                   }
                 }
 
                 columns = finalColumns;
-                console.log("col format 2");
-                console.log(tempFormatting);
-
-                // self.loadedReport.meta.column_formatting = tempFormatting;
 
                 $.extend(self.loadedReport, {
                   columns: columns,
@@ -1338,21 +1157,6 @@ $(document).ready(function () {
                 // self.loadedReport.error = "Zero rows returned."
                 self.loadedReport.ready = true;
               }
-
-              // let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
-              //       $.ajax({
-              // method: 'POST',
-              // url: UIOWA_AdminDash.urlLookup.post,
-              // dataType: 'text',
-              // data: {
-              //     adMethod: requestType,
-              //     id: reportId,
-              //     redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-              // },
-              // timeout: UIOWA_AdminDash.queryTimeout,
-              // success: function(result) {
-              //     console.log(result)
-              // }})
             });
         });
     } else if (requestType === "joinProjectData") {
@@ -1365,8 +1169,6 @@ $(document).ready(function () {
           if (data !== "") {
             data = data.replaceAll("&quot;", '"');
             data = JSON.parse(data);
-
-            console.log(data);
 
             let columns = [];
 
@@ -1384,95 +1186,4 @@ $(document).ready(function () {
         });
     }
   }
-
-  // console.log(fetchedData)
-
-  // run report SQL query on server
-  // if (!self.loadedReport.ready) {
-  //     let reportId = self.loadedReport.meta.config.report_id;
-  //     let requestType = self.loadedReport.meta.project_join_info ? 'joinProjectData' : 'runReport';
-
-  //     $.ajax({
-  //         method: 'POST',
-  //         url: UIOWA_AdminDash.urlLookup.post,
-  //         dataType: 'text',
-  //         data: {
-  //             adMethod: requestType,
-  //             id: reportId,
-  //             redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-  //         },
-  //         timeout: UIOWA_AdminDash.queryTimeout,
-  //         success: function(result) {
-  //             // console.log(result)
-  //             const replaceEmpty = result.replaceAll('"', "")
-  //             console.log(replaceEmpty)
-  //             const resultArray = replaceEmpty.split("\n")
-  //             // console.log(resultArray)
-
-  //             let newJson = []
-  //             const headers = resultArray[0].split(",")
-
-  //             for (let i = 1; i < resultArray.length; i++) {
-  //                 const rowArrayized = resultArray[i].split(",")
-  //                 console.log(rowArrayized)
-  //                 // if(i >= 1) {
-  //                     let rowObject = {}
-  //                     if(rowArrayized[i] !== undefined) {
-  //                         for (let i2 = 0; i2 < rowArrayized[i].length; i2++) {
-  //                             if(rowArrayized[i2] !== undefined) {
-  //                                 rowObject[headers[i2]] = rowArrayized[i2]
-  //                                 // newJson[resultArray[0][i2]] = resultArray[i2]
-  //                             }
-
-  //                         }
-  //                         newJson = [...newJson, rowObject]
-  //                     }
-
-  //                 // }
-
-  //             }
-
-  //             console.log(newJson)
-
-  //             const parsedResult = newJson
-  //             // const parsedResult = JSON.parse(newJson.replaceAll("&quot;", '"'))
-  //             if (parsedResult.length > 0) {
-  //                 let columns = [];
-
-  //                 if (requestType === 'joinProjectData') {
-  //                     columns = Object.keys(parsedResult[0]);
-  //                 }
-  //                 else {
-  //                     let columnFormatting = self.loadedReport.meta.column_formatting;
-
-  //                     if (columnFormatting) {
-  //                         columns = Object.keys(columnFormatting)
-
-  //                         // columns = $.map(columnFormatting, function (columnMeta, column_name) {
-  //                         //     return columnMeta.dashboard_show_column === '0' ? null : column_name;
-  //                         // });
-  //                     }
-  //                 }
-
-  //                 $.extend(self.loadedReport, {
-  //                     columns: columns,
-  //                     data: parsedResult,
-  //                     ready: true
-  //                 });
-  //             }
-  //             else {
-  //                 // self.loadedReport.error = "Zero rows returned."
-  //                 self.loadedReport.ready = true;
-  //             }
-  //         }
-  //         ,
-  //         error: function(err) {
-  //             let errorMsg = err.responseText;
-  //             self.loadedReport.error = "Failed to run report. " + errorMsg.substring(
-  //                 errorMsg.lastIndexOf("The error from the database was:"),
-  //                 errorMsg.lastIndexOf("See the server error log for more details")
-  //             );
-  //         }
-  //     })
-  // }
 });
