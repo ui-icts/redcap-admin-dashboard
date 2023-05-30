@@ -91,7 +91,7 @@ $(document).ready(function () {
             .then((response) => response.text())
             .then((data) => {
               const dbQueryToolUrl =
-                "http://localhost/redcap/redcap_v13.4.12/ControlCenter/database_query_tool.php?export=1"; //  TODO make redcap version dynamic
+                "http://localhost/redcap/redcap_v13.5.4/ControlCenter/database_query_tool.php?export=1"; //  TODO make redcap version dynamic
               const getData = new URLSearchParams();
               getData.append(
                 "redcap_csrf_token",
@@ -115,6 +115,7 @@ $(document).ready(function () {
                     resultArray.length >= 2 &&
                     !stringifyData.startsWith(String.raw`"\r`) &&
                     !stringifyData.startsWith(String.raw`"\n`) &&
+                    !stringifyData.startsWith(String.raw`"\t`) &&
                     !stringifyData.startsWith(String.raw`"<`)
                   ) {
                     // console.log(data)

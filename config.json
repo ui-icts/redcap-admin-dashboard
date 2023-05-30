@@ -7,7 +7,7 @@
   "framework-version": 9,
 
   "versions": {
-    "4.1.0": "Fixed several Psalm vulnerabilities.  Refactored how queries are executed for Psalm compliance.  Fixed filter labels not generating/working correctly.  Fixed executive user being able to see and use export buttons without permission.  Extra columns in a report now deleted properly when entering a new query with fewer columns than the previous query.  Fixed Bootstrap 5 styling.  Added csrf token to post requests.  Updated to EM framework version 9.  Set minimum REDCap version to 12.0.4."
+    "4.1.0": "Fixed several Psalm vulnerabilities.  Refactored how queries are executed for Psalm compliance.  Fixed filter labels not generating/working correctly.  Fixed executive user being able to see and use export buttons without permission.  Extra columns in a report now deleted properly when entering a new query with fewer columns than the previous query.  Fixed Bootstrap 5 styling.  Fixed report loading animation.  Fixed row hover color.  Added csrf token to post requests.  Updated to EM framework version 9.  Set minimum REDCap version to 12.0.4."
   },
 
   "authors": [
