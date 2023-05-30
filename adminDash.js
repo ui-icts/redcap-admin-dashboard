@@ -486,18 +486,20 @@ $.extend(UIOWA_AdminDash, {
     console.log(column_name);
     console.log(self.loadedReport.meta.column_formatting);
     let columnDetails = self.loadedReport.meta.column_formatting[column_name];
-    let sourceColumn = column_name;
-    // columnDetails.link_source_column !== ""
-    //   ? columnDetails.link_source_column
-    // : column_name;
+    console.log("source column");
+    console.log(columnDetails.link_source_column);
+    let sourceColumn =
+      columnDetails.link_source_column !== ""
+        ? columnDetails.link_source_column
+        : column_name;
     console.log(data);
-    data = self.splitData(data, column_name);
+    data = self.splitData(data, sourceColumn);
     let sourceData = data;
     let formattedSeparator = type === "export" ? ";" : "<br />";
 
-    // if (sourceColumn !== column_name) {
-    //   sourceData = self.splitData(row[sourceColumn], sourceColumn);
-    // }
+    if (sourceColumn !== column_name) {
+      sourceData = self.splitData(row[sourceColumn], sourceColumn);
+    }
 
     // for each item (in case data is grouped)
     data = $.map(data, function (item, index) {
@@ -656,6 +658,9 @@ $.extend(UIOWA_AdminDash, {
           this.urlLookup.redcapBase +
           this.formattingReference.links[linkIndex - 1].trim() +
           sourceValue;
+        console.log(sourceValue);
+        console.log("URL");
+        console.log(url);
       } catch (error) {
         // invalid link index
         console.error(error);
@@ -1260,7 +1265,7 @@ $(document).ready(function () {
                       const tempColConfig = {
                         ...columnConfig,
                         ["column_name"]: self.codeTypeLabelMap["3"][j],
-                        ["link_source_column"]: "purpose_other",
+                        // ["link_source_column"]: "purpose_other",
                         ["code_type"]: "0",
                         ["dashboard_display_header"]:
                           self.codeTypeLabelMap["3"][j],
