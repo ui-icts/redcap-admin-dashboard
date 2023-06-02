@@ -67,10 +67,6 @@ $.extend(UIOWA_AdminDash, {
           };
         }
 
-        // row = { ...row, ...newData };
-
-        // row.splice(purposeOtherIndex, 0, { ...newData });
-
         tempFormatting = {
           ...tempFormatting,
           ...newColumns,
@@ -80,8 +76,6 @@ $.extend(UIOWA_AdminDash, {
         delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
       }
     }
-
-    // self.loadedReport.meta.column_formatting = tempFormatting;
 
     // report edit shortcut (admins only)
     $(".edit-report").click(function () {
@@ -126,8 +120,8 @@ $.extend(UIOWA_AdminDash, {
               ? columnDetails.dashboard_display_header
               : column_name,
           data: column_name,
-          className: "",
-          // className: columnDetails.dashboard_show_column === "0" ? "noVis" : "",
+          // className: "",
+          className: columnDetails.dashboard_show_column === "0" ? "noVis" : "",
           contentPadding: "mmm",
           createdCell: function (td, cellData, rowData, row, col) {
             $(td).css("text-align", "center");
@@ -774,6 +768,145 @@ $.extend(UIOWA_AdminDash, {
 
     return returnHtml;
   },
+  csvTo2dArray: function (parseMe) {
+    const splitFinder = /,|\r?\n|"(\\"|[^"])*?"/g;
+    let currentRow = [];
+    const rowsOut = [currentRow];
+    let lastIndex = (splitFinder.lastIndex = 0);
+
+    // add text from lastIndex to before a found newline or comma
+    const pushCell = (endIndex) => {
+      endIndex = endIndex || parseMe.length;
+      const addMe = parseMe.substring(lastIndex, endIndex);
+      // remove quotes around the item
+      currentRow.push(addMe.replace(/^"|"$/g, ""));
+      lastIndex = splitFinder.lastIndex;
+    };
+
+    let regexResp;
+    // for each regexp match (either comma, newline, or quoted item)
+    while ((regexResp = splitFinder.exec(parseMe))) {
+      const split = regexResp[0];
+
+      // if it's not a quote capture, add an item to the current row
+      // (quote captures will be pushed by the newline or comma following)
+      if (split.startsWith(`"`) === false) {
+        const splitStartIndex = splitFinder.lastIndex - split.length;
+        pushCell(splitStartIndex);
+
+        // then start a new row if newline
+        const isNewLine = /^\r?\n$/.test(split);
+        if (isNewLine) {
+          rowsOut.push((currentRow = []));
+        }
+      }
+    }
+    // make sure to add the trailing text (no commas or newlines after)
+    pushCell();
+    return rowsOut;
+  },
+  generateMultiColumnResearchPurpose: function () {
+    const columnConfigArray = Object.entries(
+      UIOWA_AdminDash.loadedReport.meta.column_formatting
+    );
+
+    // let researchPurposeIndex = "";
+
+    let finalColumns = [];
+
+    for (let i = 0; i < columnConfigArray.length; i++) {
+      const column = columnConfigArray[i];
+      const columnName = column[0];
+      const columnConfig = column[1];
+
+      let newColumns = UIOWA_AdminDash.loadedReport.meta.column_formatting;
+
+      if (columnConfig.code_type === "4") {
+        researchPurposeIndex = columnName;
+
+        for (let j = 0; j < UIOWA_AdminDash.codeTypeLabelMap["3"].length; j++) {
+          const tempColConfig = {
+            ...columnConfig,
+            ["column_name"]: UIOWA_AdminDash.codeTypeLabelMap["3"][j],
+            // ["link_source_column"]: "purpose_other",
+            ["code_type"]: "",
+            ["dashboard_display_header"]:
+              UIOWA_AdminDash.codeTypeLabelMap["3"][j],
+          };
+
+          newColumns = {
+            ...newColumns,
+            [JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][j])]:
+              tempColConfig,
+          };
+
+          finalColumns = [
+            ...finalColumns,
+            JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][j]),
+          ];
+        }
+
+        tempFormatting = {
+          ...tempFormatting,
+          ...newColumns,
+        };
+
+        UIOWA_AdminDash.loadedReport.meta.column_formatting = tempFormatting;
+      } else {
+        finalColumns = [...finalColumns, columnName];
+      }
+    }
+    return finalColumns;
+  },
+
+  generateMultiColumnResearchPurposeColumns: function (idx, columns) {
+    const removeIndex = columns.indexOf(idx);
+    purposeOtherIndex = removeIndex;
+    purposeOtherName = idx;
+
+    const newArray = columns.toSpliced(removeIndex, 1);
+
+    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.codeTypeLabelMap[3]);
+    return newArray;
+  },
+  generateMultiColumnResearchPurposeData: function (newJson, columnFormatting) {
+    tempFormatting = UIOWA_AdminDash.loadedReport.meta.column_formatting;
+    for (let i7 = 0; i7 < newJson.length; i7++) {
+      let row = newJson[i7];
+
+      let newData = {};
+      const rowProps = Object.entries(columnFormatting);
+
+      for (let i8 = 0; i8 < rowProps.length; i8++) {
+        // const propName = rowProps[i8][0];
+        const propConfig = rowProps[i8][1];
+
+        if (propConfig.code_type === "4") {
+          const purposeOtherValues = row.purpose_other.split(",");
+
+          for (
+            let idx10 = 0;
+            idx10 < UIOWA_AdminDash.codeTypeLabelMap["3"].length;
+            idx10++
+          ) {
+            newData = {
+              ...newData,
+              [JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][idx10])]:
+                purposeOtherValues.includes(JSON.stringify(idx10))
+                  ? "TRUE"
+                  : "FALSE",
+            };
+          }
+
+          row = { ...row, ...newData };
+
+          delete row["purpose_other"];
+          newJson[i7] = row;
+        }
+      }
+    }
+    return newJson;
+  },
 });
 
 $(document).ready(function () {
@@ -891,7 +1024,8 @@ $(document).ready(function () {
       .then((response) => response.text())
       .then((data) => {
         if (data !== "") {
-          data = data.replaceAll("&quot;", '"');
+          let newJson = data.replaceAll("&quot;", '"');
+          newJson = JSON.parse(newJson);
           // if (parsedResult.length > 0) {
           let columns = [];
 
@@ -900,24 +1034,55 @@ $(document).ready(function () {
           // }
           // else {
           let columnFormatting = self.loadedReport.meta.column_formatting;
-
+          let purposeOtherName = "";
+          let hasMultiColumnResearchPurpose = false;
           if (columnFormatting) {
             columns = Object.keys(columnFormatting);
+
+            const parseColumnFormatting = Object.entries(columnFormatting);
+
+            for (const [idx, column] of parseColumnFormatting) {
+              const codeType = column.code_type;
+              if (codeType === "4") {
+                hasMultiColumnResearchPurpose = true;
+                // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
+                columns = self.generateMultiColumnResearchPurposeColumns(
+                  idx,
+                  columns
+                );
+              }
+            }
 
             columns = $.map(
               columnFormatting,
               function (columnMeta, column_name) {
-                return columnMeta.dashboard_show_column === "0"
-                  ? null
-                  : column_name;
+                if (
+                  columnMeta.code_type === "4" &&
+                  column_name === purposeOtherName
+                ) {
+                  return columnMeta.dashboard_show_column === "0"
+                    ? null
+                    : [...self.codeTypeLabelMap[3]];
+                } else {
+                  return columnMeta.dashboard_show_column === "0"
+                    ? null
+                    : column_name;
+                }
               }
             );
           }
-          // }
 
+          if (hasMultiColumnResearchPurpose) {
+            newJson = self.generateMultiColumnResearchPurposeData(
+              newJson,
+              columnFormatting
+            );
+          }
+
+          columns = self.generateMultiColumnResearchPurpose();
           $.extend(self.loadedReport, {
             columns: columns,
-            data: JSON.parse(data),
+            data: newJson,
             ready: true,
           });
         } else {
@@ -950,47 +1115,7 @@ $(document).ready(function () {
           })
             .then((response) => response.text())
             .then((data) => {
-              const splitFinder = /,|\r?\n|"(\\"|[^"])*?"/g;
-
-              function csvTo2dArray(parseMe) {
-                let currentRow = [];
-                const rowsOut = [currentRow];
-                let lastIndex = (splitFinder.lastIndex = 0);
-
-                // add text from lastIndex to before a found newline or comma
-                const pushCell = (endIndex) => {
-                  endIndex = endIndex || parseMe.length;
-                  const addMe = parseMe.substring(lastIndex, endIndex);
-                  // remove quotes around the item
-                  currentRow.push(addMe.replace(/^"|"$/g, ""));
-                  lastIndex = splitFinder.lastIndex;
-                };
-
-                let regexResp;
-                // for each regexp match (either comma, newline, or quoted item)
-                while ((regexResp = splitFinder.exec(parseMe))) {
-                  const split = regexResp[0];
-
-                  // if it's not a quote capture, add an item to the current row
-                  // (quote captures will be pushed by the newline or comma following)
-                  if (split.startsWith(`"`) === false) {
-                    const splitStartIndex =
-                      splitFinder.lastIndex - split.length;
-                    pushCell(splitStartIndex);
-
-                    // then start a new row if newline
-                    const isNewLine = /^\r?\n$/.test(split);
-                    if (isNewLine) {
-                      rowsOut.push((currentRow = []));
-                    }
-                  }
-                }
-                // make sure to add the trailing text (no commas or newlines after)
-                pushCell();
-                return rowsOut;
-              }
-
-              const dataArrayized = csvTo2dArray(data);
+              const dataArrayized = self.csvTo2dArray(data);
 
               let newJson = [];
               const headers = dataArrayized[0];
@@ -1009,8 +1134,9 @@ $(document).ready(function () {
 
                 let columnFormatting = self.loadedReport.meta.column_formatting;
 
-                let purposeOtherIndex = -1;
+                // let purposeOtherIndex = -1;
                 let purposeOtherName = "";
+                let hasMultiColumnResearchPurpose = false;
                 if (columnFormatting) {
                   columns = Object.keys(columnFormatting);
 
@@ -1020,19 +1146,12 @@ $(document).ready(function () {
                   for (const [idx, column] of parseColumnFormatting) {
                     const codeType = column.code_type;
                     if (codeType === "4") {
-                      const removeIndex = columns.indexOf(idx);
-                      purposeOtherIndex = removeIndex;
-                      purposeOtherName = idx;
-
-                      const newArray = columns.toSpliced(removeIndex, 1);
-
-                      newArray.splice(
-                        removeIndex,
-                        0,
-                        ...self.codeTypeLabelMap[3]
-                      );
+                      hasMultiColumnResearchPurpose = true;
                       // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
-                      columns = newArray;
+                      columns = self.generateMultiColumnResearchPurposeColumns(
+                        idx,
+                        columns
+                      );
                     }
                   }
 
@@ -1055,98 +1174,14 @@ $(document).ready(function () {
                   );
                 }
 
-                tempFormatting = self.loadedReport.meta.column_formatting;
-                for (let i7 = 0; i7 < newJson.length; i7++) {
-                  let row = newJson[i7];
-
-                  let newData = {};
-                  const rowProps = Object.entries(columnFormatting);
-
-                  for (let i8 = 0; i8 < rowProps.length; i8++) {
-                    const propName = rowProps[i8][0];
-                    const propConfig = rowProps[i8][1];
-
-                    if (propConfig.code_type === "4") {
-                      const purposeOtherValues = row.purpose_other.split(",");
-
-                      for (
-                        let idx10 = 0;
-                        idx10 < self.codeTypeLabelMap["3"].length;
-                        idx10++
-                      ) {
-                        newData = {
-                          ...newData,
-                          [JSON.stringify(self.codeTypeLabelMap["3"][idx10])]:
-                            purposeOtherValues.includes(JSON.stringify(idx10))
-                              ? "TRUE"
-                              : "FALSE",
-                        };
-                      }
-
-                      row = { ...row, ...newData };
-
-                      delete row["purpose_other"];
-                      newJson[i7] = row;
-                    }
-                  }
+                if (hasMultiColumnResearchPurpose) {
+                  newJson = self.generateMultiColumnResearchPurposeData(
+                    newJson,
+                    columnFormatting
+                  );
                 }
 
-                const columnConfigArray = Object.entries(
-                  self.loadedReport.meta.column_formatting
-                );
-
-                let researchPurposeIndex = "";
-
-                let finalColumns = [];
-
-                for (let i = 0; i < columnConfigArray.length; i++) {
-                  const column = columnConfigArray[i];
-                  const columnName = column[0];
-                  const columnConfig = column[1];
-
-                  let newColumns = self.loadedReport.meta.column_formatting;
-
-                  if (columnConfig.code_type === "4") {
-                    researchPurposeIndex = columnName;
-
-                    for (
-                      let j = 0;
-                      j < self.codeTypeLabelMap["3"].length;
-                      j++
-                    ) {
-                      const tempColConfig = {
-                        ...columnConfig,
-                        ["column_name"]: self.codeTypeLabelMap["3"][j],
-                        // ["link_source_column"]: "purpose_other",
-                        ["code_type"]: "",
-                        ["dashboard_display_header"]:
-                          self.codeTypeLabelMap["3"][j],
-                      };
-
-                      newColumns = {
-                        ...newColumns,
-                        [JSON.stringify(self.codeTypeLabelMap["3"][j])]:
-                          tempColConfig,
-                      };
-
-                      finalColumns = [
-                        ...finalColumns,
-                        JSON.stringify(self.codeTypeLabelMap["3"][j]),
-                      ];
-                    }
-
-                    tempFormatting = {
-                      ...tempFormatting,
-                      ...newColumns,
-                    };
-
-                    self.loadedReport.meta.column_formatting = tempFormatting;
-                  } else {
-                    finalColumns = [...finalColumns, columnName];
-                  }
-                }
-
-                columns = finalColumns;
+                columns = self.generateMultiColumnResearchPurpose();
 
                 $.extend(self.loadedReport, {
                   columns: columns,

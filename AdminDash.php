@@ -335,6 +335,44 @@ class AdminDash extends AbstractExternalModule
         echo $formattedSql;
     }
 
+    public function runApiReport($params) {
+        $reportProps = json_decode($this->getReportProps($params),true);
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+
+        $sql = $reportProps[0]['report_sql'];
+        $returnData = array();
+
+          // error_log($sql);
+          if ($sql == '') {
+            
+            $returnData['error'] = 'No SQL query defined.';
+        } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+        
+            $returnData['error'] = 'SQL query is not a SELECT query.';
+        } else {
+            //fix for group_concat limit
+            // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+    
+            $result = $this->query($sql, []);
+
+   
+            if (is_string($result)) {
+                echo $result;
+                return;
+            }
+      
+            //prepare data for table
+            while ($row = db_fetch_assoc($result)) {
+                $returnData[] = $row;
+            }
+
+
+          
+        }
+        echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+
+    }
+
     public function runExecutiveReport($params) {
    
         $reportProps = json_decode($this->getReportProps($params),true);

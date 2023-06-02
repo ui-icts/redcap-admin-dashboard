@@ -9,7 +9,7 @@ if (isset($_POST['token'])) { // from API endpoint
         'records' => $_GET['id']
     )), true)[0];
 
-    $_POST['adMethod'] = $reportType['redcap_event_name'] == 'report_config_arm_2' ? 'joinProjectData' : 'runReport';
+    $_POST['adMethod'] = $reportType['redcap_event_name'] == 'report_config_arm_2' ? 'joinProjectData' : 'runApiReport';
 
     $query = $module->query('
         select * from redcap_user_rights
