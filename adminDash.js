@@ -34,46 +34,48 @@ $.extend(UIOWA_AdminDash, {
 
     let tempFormatting = self.loadedReport.meta.column_formatting;
 
-    const columnConfigArray = Object.entries(
-      self.loadedReport.meta.column_formatting
-    );
+    if (tempFormatting !== undefined) {
+      const columnConfigArray = Object.entries(
+        self.loadedReport.meta.column_formatting
+      );
 
-    let researchPurposeIndex = "";
+      let researchPurposeIndex = "";
 
-    for (let i = 0; i < columnConfigArray.length; i++) {
-      const column = columnConfigArray[i];
-      const columnName = column[0];
-      const columnConfig = column[1];
+      for (let i = 0; i < columnConfigArray.length; i++) {
+        const column = columnConfigArray[i];
+        const columnName = column[0];
+        const columnConfig = column[1];
 
-      // purposeOtherConfig =
+        // purposeOtherConfig =
 
-      let newColumns = {};
+        let newColumns = {};
 
-      if (columnConfig.code_type === "4") {
-        researchPurposeIndex = columnName;
+        if (columnConfig.code_type === "4") {
+          researchPurposeIndex = columnName;
 
-        for (let j = 0; j < self.codeTypeLabelMap["3"].length; j++) {
-          const tempColumnConfig = {
-            ...columnConfig,
-            ["column_name"]: self.codeTypeLabelMap["3"][j],
-            // ["link_source_column"]: "purpose_other",
-            ["code_type"]: "",
-            ["dashboard_display_header"]: self.codeTypeLabelMap["3"][j],
-          };
+          for (let j = 0; j < self.codeTypeLabelMap["3"].length; j++) {
+            const tempColumnConfig = {
+              ...columnConfig,
+              ["column_name"]: self.codeTypeLabelMap["3"][j],
+              // ["link_source_column"]: "purpose_other",
+              ["code_type"]: "",
+              ["dashboard_display_header"]: self.codeTypeLabelMap["3"][j],
+            };
 
-          newColumns = {
+            newColumns = {
+              ...newColumns,
+              [JSON.stringify(self.codeTypeLabelMap["3"][j])]: tempColumnConfig,
+            };
+          }
+
+          tempFormatting = {
+            ...tempFormatting,
             ...newColumns,
-            [JSON.stringify(self.codeTypeLabelMap["3"][j])]: tempColumnConfig,
           };
+
+          self.loadedReport.meta.column_formatting[columnName] = newColumns;
+          delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
         }
-
-        tempFormatting = {
-          ...tempFormatting,
-          ...newColumns,
-        };
-
-        self.loadedReport.meta.column_formatting[columnName] = newColumns;
-        delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
       }
     }
 

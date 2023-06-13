@@ -225,16 +225,16 @@ class AdminDash extends AbstractExternalModule
             $formattedMeta = array();
 
             foreach($loadedReportMetadata as $index => $row) {
-                error_log(json_encode($row['join_project_id']));
+                
                 if ($row['redcap_repeat_instrument'] !== '') {
-                    error_log("here1");
+                    
                     if ($row['column_name'] !== '') {
-                        error_log("here2");
+                        
                         $instrument = $row['redcap_repeat_instrument'];
                         $instanceKey = $row['column_name'];
                     }
                     else if ($row['join_project_id'] !== '') {
-                        error_log("here3");
+                        
                         $instrument = $row['redcap_repeat_instrument'];
                         $instanceKey = $row['join_project_id'];
                     }
@@ -242,7 +242,7 @@ class AdminDash extends AbstractExternalModule
                     $formattedMeta[$instrument][$instanceKey] = $row;
                 }
                 else {
-                    error_log("here4");
+                    
                     $formattedMeta['config'] = $row;
                 }
             }
@@ -297,7 +297,7 @@ class AdminDash extends AbstractExternalModule
             ));
 
         } else {
-            error_log($params['query']);
+            
 
         }
         return $data;
@@ -322,7 +322,7 @@ class AdminDash extends AbstractExternalModule
     
             $sql = json_decode($data, true)[0]['report_sql'];
         } else {
-            error_log($params['query']);
+            
             $sql = $params['query'];
         }
 
@@ -342,8 +342,7 @@ class AdminDash extends AbstractExternalModule
         $sql = $reportProps[0]['report_sql'];
         $returnData = array();
 
-          // error_log($sql);
-          if ($sql == '') {
+        if ($sql == '') {
             
             $returnData['error'] = 'No SQL query defined.';
         } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
@@ -355,7 +354,6 @@ class AdminDash extends AbstractExternalModule
     
             $result = $this->query($sql, []);
 
-   
             if (is_string($result)) {
                 echo $result;
                 return;
@@ -366,8 +364,6 @@ class AdminDash extends AbstractExternalModule
                 $returnData[] = $row;
             }
 
-
-          
         }
         echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
 
@@ -396,7 +392,7 @@ class AdminDash extends AbstractExternalModule
             $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
         }
          
-            // error_log($sql);
+            
             if ($sql == '') {
             
                 $returnData['error'] = 'No SQL query defined.';
@@ -409,7 +405,7 @@ class AdminDash extends AbstractExternalModule
         
                 $result = $this->query($sql, []);
 
-                // error_log(json_encode($result));
+                
                 if (is_string($result)) {
                     echo $result;
                     return;
@@ -428,74 +424,7 @@ class AdminDash extends AbstractExternalModule
       
     }
 
-    // public function runReport($params) { // id, sql
-    //     $report_id = $params['id']; // user-facing call - lookup query by record id
-    //     $sql = $params['sql']; // test query from data entry form
-    //     $username = isset($params['username']) ? $params['username'] : USERID;
-    //     $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-    //     // get sql query from REDCap record
-    //     if (!isset($sql)) {
-    //         $data = \REDCap::getData(array(
-    //             'project_id' => $this->configPID,
-    //             'return_format' => 'json',
-    //             'records' => $report_id,
-    //             'fields' => 'report_sql'
-    //         ));
-
-    //         $sql = json_decode($data, true)[0]['report_sql'];
-    //     }
-
-    //     $returnData = array();
-    //     // supports [user-name] and [project-id]
-    //     if (!isset($params['token'])) {
-    //         $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-    //     }
-
-    //     // error out if no query
-    //     // if ($sql == '') {
-    //     //     $returnData['error'] = 'No SQL query defined.';
-    //     // }
-    //     // elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
-    //     //     $returnData['error'] = 'SQL query is not a SELECT query.';
-    //     // }
-    //     // else {
-    //         // fix for group_concat limit
-    //         // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
-            
-            
-    //         // $result = $this->query($sql, []);
-    //         // error_log("db query api");
-    //         // $result = $this->queryViaDBQueryTool($sql);
-
-    //         // error_log(json_encode($result));
-    //         // $returnData = $this->parseDbQueryToolResults($result);
-    //         // $parsedResult = $this->parseDbQueryToolResults($result);
-            
-    //         // error_log(json_encode($returnData));
-
-    //         // if (is_string($returnData)) {
-    //         //     echo $returnData;
-    //         //     return;
-    //         // }
-
-    //         // prepare data for table
-    //         // while ($row = db_fetch_assoc($result)) {
-    //         //     $returnData[] = $row;
-    //         // }
-
-    //         // only return column/row info if test query
-    //         // if (isset($params['test'])) {
-    //         //     $returnData = array(
-    //         //         'columns' => array_keys($returnData[0]),
-    //         //         'row_count' => sizeof($returnData)
-    //         //     );
-    //         // }
-    //     // }
-
-    //     // echo htmlentities(strip_tags(json_encode($returnData)), ENT_QUOTES, 'UTF-8');
-    //     // echo json_encode($returnData);
-    //     echo "hello1";
-    // }
+   
 
     public function saveReportColumns($project_id, $record, $columns)
     {
@@ -640,8 +569,6 @@ class AdminDash extends AbstractExternalModule
 
         $numberOfColumns = count($columns);
 
-        error_log($numberOfColumns);
-
         //  Check existing column formatting instances
         $getColumnInstances = \REDCap::getData(array(
             'project_id' => $this->configPID,
@@ -652,12 +579,12 @@ class AdminDash extends AbstractExternalModule
             'records' => [$record]
         ));
 
-        error_log(count(json_decode($getColumnInstances)));
+        
 
         //  If there are more existing column instances than the new query has, delete the extra column instances. 
         if((count(json_decode($getColumnInstances))-1) > $numberOfColumns) {          //  -1 because getData returns an empty data point as index 0
             $startDeleteIndex = $numberOfColumns + 1;
-            error_log("hi");
+            
             for($i = $numberOfColumns+1; $i < count(json_decode($getColumnInstances)); $i++) {
                 //  TODO check if instance number can be an array
                 \REDCap::deleteRecord($this->configPID,
@@ -677,7 +604,7 @@ class AdminDash extends AbstractExternalModule
                     'column_name'
             ]));
     
-            error_log(json_encode($getColumnInstances2));
+            
     
         }
 
@@ -780,7 +707,7 @@ class AdminDash extends AbstractExternalModule
             ),
             'filterLogic' => '[join_project_id] <> ""'
         )), true);
-        error_log(json_encode($joinConfig));
+        
         $joinedData = array();
         $firstProject = true;
         $primaryFieldP1 = '';
@@ -814,8 +741,8 @@ class AdminDash extends AbstractExternalModule
                 'fields' => $fields
             )), true);
 
-            error_log("new data");
-            error_log(json_encode($newData));
+            
+            
 
             if ($firstProject) {
                 $joinedData = $newData;
@@ -823,7 +750,7 @@ class AdminDash extends AbstractExternalModule
                 $primaryFieldP1 = $join['join_primary_field'];
             }
             else {
-                error_log("here5");
+                
                 foreach ($newData as $index => $record) {
                     $primaryKeyP1 = $joinedData[$index][$primaryFieldP1];
 
@@ -832,7 +759,7 @@ class AdminDash extends AbstractExternalModule
 
                     // match to joined project
                     if (isset($primaryKeyP2) && $primaryKeyP1 === $primaryKeyP2) {
-                        error_log("here6");
+                        
                         $recordDataP1 = $joinedData[$index];
                         $recordDataP2 = $newData[$index];
 
@@ -840,7 +767,7 @@ class AdminDash extends AbstractExternalModule
                         array_push($joinedData, array_merge($recordDataP1, $recordDataP2));
                         // $joinedData[$index] = array_merge($recordDataP1, $recordDataP2);
                     } else {
-                        error_log("is else");
+                        
                     }
 //                    else if ($params['matchesOnly']) {
 //                        unset($data_p1[$index]);
@@ -850,7 +777,7 @@ class AdminDash extends AbstractExternalModule
         }
 
 //        $eventId_p2 = $this->getFirstEventId($pid2);
-        // error_log(json_encode($joinedData));
+        
         echo htmlentities(json_encode($joinedData, true), ENT_QUOTES, 'UTF-8');
         // echo json_encode($joinedData);
     }
