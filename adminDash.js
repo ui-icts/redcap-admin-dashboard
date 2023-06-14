@@ -1103,7 +1103,8 @@ $(document).ready(function () {
         .then((response) => response.text())
         .then((data) => {
           const dbQueryToolUrl =
-            "http://localhost/redcap/redcap_v13.5.4/ControlCenter/database_query_tool.php?export=1"; //  TODO make redcap version dynamic
+            self.redcap_version_url +
+            "ControlCenter/database_query_tool.php?export=1";
           const getData = new URLSearchParams();
           getData.append(
             "redcap_csrf_token",

@@ -90,8 +90,10 @@ $(document).ready(function () {
           })
             .then((response) => response.text())
             .then((data) => {
+              console.log(UIOWA_AdminDash);
               const dbQueryToolUrl =
-                "http://localhost/redcap/redcap_v13.5.4/ControlCenter/database_query_tool.php?export=1"; //  TODO make redcap version dynamic
+                UIOWA_AdminDash.urlLookup.redcapBase +
+                "ControlCenter/database_query_tool.php?export=1";
               const getData = new URLSearchParams();
               getData.append(
                 "redcap_csrf_token",

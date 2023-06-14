@@ -258,7 +258,8 @@ class AdminDash extends AbstractExternalModule
                 'formattingReference' => $formattingReference,
                 'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
                 'executiveExport' => $reportAccess[$report_id]['executive_export'],
-                'redcap_csrf_token' => $this->getCSRFToken()
+                'redcap_csrf_token' => $this->getCSRFToken(),
+                'redcap_version_url' => APP_PATH_WEBROOT
             ));
         }
 
