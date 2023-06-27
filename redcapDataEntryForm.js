@@ -90,7 +90,6 @@ $(document).ready(function () {
           })
             .then((response) => response.text())
             .then((data) => {
-              console.log(UIOWA_AdminDash);
               const dbQueryToolUrl =
                 UIOWA_AdminDash.urlLookup.redcapBase +
                 "ControlCenter/database_query_tool.php?export=1";
@@ -110,41 +109,45 @@ $(document).ready(function () {
                   let endTime = performance.now();
                   const resultArray = data.split("\n");
                   const stringifyData = JSON.stringify(data);
-                  console.log(stringifyData);
-                  // console.log(resultArray.split(","))
-                  // console.log(resultArray[0])
+                  let dbQueryToolEnabled = false;
+                  console.log(resultArray);
+                  let newJson = [];
+                  let headers = [];
                   if (
+                    resultArray.length >= 1 &&
+                    resultArray[0].startsWith('<p class="red">')
+                  ) {
+                  } else if (
+                    resultArray.length === 1 &&
+                    !stringifyData.startsWith(String.raw`"\r`) &&
+                    !stringifyData.startsWith(String.raw`"\n`) &&
+                    !stringifyData.startsWith(String.raw`"\t`) &&
+                    !stringifyData.startsWith(String.raw`"<`)
+                  ) {
+                    dbQueryToolEnabled = true;
+                    headers = resultArray[0].split(",");
+                  } else if (
                     resultArray.length >= 2 &&
                     !stringifyData.startsWith(String.raw`"\r`) &&
                     !stringifyData.startsWith(String.raw`"\n`) &&
                     !stringifyData.startsWith(String.raw`"\t`) &&
                     !stringifyData.startsWith(String.raw`"<`)
                   ) {
-                    // console.log(data)
-
-                    let newJson = [];
-                    const headers = resultArray[0].split(",");
-
+                    headers = resultArray[0].split(",");
+                    dbQueryToolEnabled = true;
                     for (let i = 1; i < resultArray.length; i++) {
                       const rowArrayized = resultArray[i].split(",");
-                      // console.log(rowArrayized)
-                      // if(i >= 1) {
+
                       let rowObject = {};
-                      // if(rowArrayized[i] !== undefined) {
+
                       for (let i2 = 0; i2 < rowArrayized.length; i2++) {
-                        // if(rowArrayized[i2] !== undefined) {
                         rowObject[headers[i2]] = rowArrayized[i2];
-                        // newJson[resultArray[0][i2]] = resultArray[i2]
-                        // }
                       }
                       newJson = [...newJson, rowObject];
-                      // }
-
-                      // }
                     }
+                  }
 
-                    // console.log(headers)
-
+                  if (resultArray.length >= 1 && dbQueryToolEnabled) {
                     $this
                       .html('<i class="fas fa-check"></i> Success')
                       .removeClass("btn-admindash-default")
@@ -169,7 +172,14 @@ $(document).ready(function () {
                         "ms</span>"
                     );
                   } else {
-                    //         let errorMsg = err.responseText;
+                    let errorMessage = "";
+                    if (!dbQueryToolEnabled) {
+                      errorMessage =
+                        "Database Query Tool disabled.  Must be enabled";
+                    } else {
+                      errorMessage = "Something went wrong";
+                    }
+                    // let errorMsg = err.responseText;
 
                     // errorMsg = errorMsg.substring(
                     //     errorMsg.lastIndexOf("The error from the database was:"),
@@ -190,7 +200,7 @@ $(document).ready(function () {
                       .addClass("btn-danger");
                     $resultDiv.html(
                       '<span style="color:red;">Query failed! ' +
-                        "PUT ERROR HERE " +
+                        errorMessage +
                         "</span>"
                     );
                   }

@@ -1079,16 +1079,22 @@ $(document).ready(function () {
               newJson,
               columnFormatting
             );
+            columns = self.generateMultiColumnResearchPurpose();
           }
 
-          columns = self.generateMultiColumnResearchPurpose();
+          // if (newJson.length >= 1) {
+          self.loadedReport.ready = true;
           $.extend(self.loadedReport, {
             columns: columns,
             data: newJson,
             ready: true,
           });
+          // } else {
+          //   self.loadedReport.error = "Zero rows returned.";
+          //   self.loadedReport.ready = true;
+          // }
         } else {
-          // self.loadedReport.error = "Zero rows returned."
+          self.loadedReport.error = "Zero rows returned.";
           self.loadedReport.ready = true;
         }
       });
@@ -1118,83 +1124,98 @@ $(document).ready(function () {
           })
             .then((response) => response.text())
             .then((data) => {
-              const dataArrayized = self.csvTo2dArray(data);
+              console.log(data);
+              if (data.startsWith('<p class="red">')) {
+                // console.log("db query tool not enabled");
+                self.loadedReport.error = "Database Query Tool disabled.";
+                self.loadedReport.ready = true;
+              } else {
+                const dataArrayized = self.csvTo2dArray(data);
 
-              let newJson = [];
-              const headers = dataArrayized[0];
+                let newJson = [];
+                const headers = dataArrayized[0];
 
-              for (let i = 1; i < dataArrayized.length; i++) {
-                let rowObject = {};
+                for (let i = 1; i < dataArrayized.length; i++) {
+                  let rowObject = {};
 
-                for (let i2 = 0; i2 < dataArrayized[i].length; i2++) {
-                  rowObject[headers[i2]] = dataArrayized[i][i2];
-                }
-                newJson = [...newJson, rowObject];
-              }
-
-              if (data !== "") {
-                let columns = [];
-
-                let columnFormatting = self.loadedReport.meta.column_formatting;
-
-                // let purposeOtherIndex = -1;
-                let purposeOtherName = "";
-                let hasMultiColumnResearchPurpose = false;
-                if (columnFormatting) {
-                  columns = Object.keys(columnFormatting);
-
-                  const parseColumnFormatting =
-                    Object.entries(columnFormatting);
-
-                  for (const [idx, column] of parseColumnFormatting) {
-                    const codeType = column.code_type;
-                    if (codeType === "4") {
-                      hasMultiColumnResearchPurpose = true;
-                      // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
-                      columns = self.generateMultiColumnResearchPurposeColumns(
-                        idx,
-                        columns
-                      );
-                    }
+                  for (let i2 = 0; i2 < dataArrayized[i].length; i2++) {
+                    rowObject[headers[i2]] = dataArrayized[i][i2];
                   }
+                  newJson = [...newJson, rowObject];
+                }
 
-                  columns = $.map(
-                    columnFormatting,
-                    function (columnMeta, column_name) {
-                      if (
-                        columnMeta.code_type === "4" &&
-                        column_name === purposeOtherName
-                      ) {
-                        return columnMeta.dashboard_show_column === "0"
-                          ? null
-                          : [...self.codeTypeLabelMap[3]];
-                      } else {
-                        return columnMeta.dashboard_show_column === "0"
-                          ? null
-                          : column_name;
+                if (newJson.length >= 1) {
+                  console.log(data);
+                  let columns = [];
+
+                  let columnFormatting =
+                    self.loadedReport.meta.column_formatting;
+
+                  // let purposeOtherIndex = -1;
+                  let purposeOtherName = "";
+                  let hasMultiColumnResearchPurpose = false;
+                  if (columnFormatting) {
+                    columns = Object.keys(columnFormatting);
+
+                    const parseColumnFormatting =
+                      Object.entries(columnFormatting);
+
+                    for (const [idx, column] of parseColumnFormatting) {
+                      const codeType = column.code_type;
+                      if (codeType === "4") {
+                        hasMultiColumnResearchPurpose = true;
+                        // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
+                        columns =
+                          self.generateMultiColumnResearchPurposeColumns(
+                            idx,
+                            columns
+                          );
                       }
                     }
-                  );
+
+                    columns = $.map(
+                      columnFormatting,
+                      function (columnMeta, column_name) {
+                        if (
+                          columnMeta.code_type === "4" &&
+                          column_name === purposeOtherName
+                        ) {
+                          return columnMeta.dashboard_show_column === "0"
+                            ? null
+                            : [...self.codeTypeLabelMap[3]];
+                        } else {
+                          return columnMeta.dashboard_show_column === "0"
+                            ? null
+                            : column_name;
+                        }
+                      }
+                    );
+                  }
+
+                  if (hasMultiColumnResearchPurpose) {
+                    newJson = self.generateMultiColumnResearchPurposeData(
+                      newJson,
+                      columnFormatting
+                    );
+                  }
+
+                  columns = self.generateMultiColumnResearchPurpose();
+
+                  $.extend(self.loadedReport, {
+                    columns: columns,
+                    data: newJson,
+                    ready: true,
+                  });
+                } else {
+                  self.loadedReport.error = "Zero rows returned.";
+                  self.loadedReport.ready = true;
                 }
-
-                if (hasMultiColumnResearchPurpose) {
-                  newJson = self.generateMultiColumnResearchPurposeData(
-                    newJson,
-                    columnFormatting
-                  );
-                }
-
-                columns = self.generateMultiColumnResearchPurpose();
-
-                $.extend(self.loadedReport, {
-                  columns: columns,
-                  data: newJson,
-                  ready: true,
-                });
-              } else {
-                // self.loadedReport.error = "Zero rows returned."
-                self.loadedReport.ready = true;
               }
+              // if (data.startsWith('<p class="red">')) {
+
+              // } else {
+
+              // }
             });
         });
     } else if (requestType === "joinProjectData") {

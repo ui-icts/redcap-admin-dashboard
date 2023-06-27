@@ -193,8 +193,8 @@ class AdminDash extends AbstractExternalModule
         foreach($reportLookup as $index => $report) {
             $accessDetails = $reportAccess[$report['report_id']];
 
-            if (
-                (SUPER_USER !== '1' || $execPreviewUser) &&
+            if (  
+                (SUPER_USER != '1' || $execPreviewUser) &&
                 !$accessDetails['sync_project_access'] &&
                 !$accessDetails['executive_view']
             ) {
@@ -708,7 +708,7 @@ class AdminDash extends AbstractExternalModule
             ),
             'filterLogic' => '[join_project_id] <> ""'
         )), true);
-        
+
         $joinedData = array();
         $firstProject = true;
         $primaryFieldP1 = '';
@@ -742,16 +742,12 @@ class AdminDash extends AbstractExternalModule
                 'fields' => $fields
             )), true);
 
-            
-            
-
             if ($firstProject) {
                 $joinedData = $newData;
                 $firstProject = false;
                 $primaryFieldP1 = $join['join_primary_field'];
             }
             else {
-                
                 foreach ($newData as $index => $record) {
                     $primaryKeyP1 = $joinedData[$index][$primaryFieldP1];
 
@@ -760,15 +756,12 @@ class AdminDash extends AbstractExternalModule
 
                     // match to joined project
                     if (isset($primaryKeyP2) && $primaryKeyP1 === $primaryKeyP2) {
-                        
                         $recordDataP1 = $joinedData[$index];
                         $recordDataP2 = $newData[$index];
 
                         unset($recordDataP2[$primaryFieldP2]);
-                        array_push($joinedData, array_merge($recordDataP1, $recordDataP2));
-                        // $joinedData[$index] = array_merge($recordDataP1, $recordDataP2);
-                    } else {
-                        
+
+                        $joinedData[$index] = array_merge($recordDataP1, $recordDataP2);
                     }
 //                    else if ($params['matchesOnly']) {
 //                        unset($data_p1[$index]);
@@ -809,6 +802,14 @@ class AdminDash extends AbstractExternalModule
 
         echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
     }
+
+    // public function isDbQueryToolEnabled() {
+
+    //     $sql = "SELECT database_query_tool_enabled FROM redcap_config";
+    //     $result = $this->query($sql);
+    //     error_log(json_encode($result));
+        
+    // }
 
     public function apiCall($url, $data) {
         $ch = curl_init();

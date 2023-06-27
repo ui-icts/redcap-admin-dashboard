@@ -8,6 +8,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 if (!isset($_POST['id'])) {
     $_POST['id'] = $_GET['id'];
 }
+
+// if(isset($_POST['isDbQueryToolEnabled'])) {
+//     call_user_func('isDbQueryToolEnabled');
+// }
+
 error_log($_POST['adMethod']);
 if(isset($_POST['adMethod'])) {
     // if($_POST['adMethod'] == 'runReport') {
