@@ -507,20 +507,35 @@ class AdminDash extends AbstractExternalModule
 
             // add default separator for #group
             if ($group) {
+                error_log("is group " . $column_name);
                 $instance['group_concat_separator'] = '@@@';
                 $groupCheck[$root_column_name] = $column_name;
-                $instance['dashboard_display_header'] = "";
+                $instance['dashboard_display_header'] = $column_name;
+            } else {
+                $instance['group_concat_separator'] = '';
+                $instance['dashboard_display_header'] = $column_name;
+                // $groupCheck[$root_column_name] = $column_name;
+                // $instance['dashboard_display_header'] = $root_column_name;
             }
 
             // set hidden with #hide, otherwise set default filter visible
             if ($hidden) {
                 $instance['dashboard_show_column'] = 0;
+                $instance['dashboard_show_filter'] = "";
                 $instance['export_show_column'] = 0;
-                $instance['column_formatting_complete'] = 2;
+                $instance['export_display_header'] = "";
                 $instance['dashboard_display_header'] = "";
+                $instance['column_formatting_complete'] = 2;
+                $instance['export_urls'] = "";
+                $instance['link_type'] = "";
+                $instance['link_source_column'] = "";
+                // $instance['dashboard_display_header'] = $root_column_name;
             }
             else {
+                $instance['dashboard_show_column'] = 1;
                 $instance['dashboard_show_filter'] = 1;
+                $instance['dashboard_display_header'] = 1;
+                $instance['export_show_column'] = 1;
             }
 
             // skip all formatting rules if column is hidden or tagged as "ignore"
@@ -532,6 +547,7 @@ class AdminDash extends AbstractExternalModule
                     // make sure grouped columns have grouped source column
                     if ($group && array_key_exists($root_column_name, $groupCheck)) {
                         $instance['link_source_column'] = $groupCheck[$instance['link_source_column']];
+                        
                     }
 
                     // set record status to unverified so user can review formatting
@@ -543,7 +559,7 @@ class AdminDash extends AbstractExternalModule
                 } else {
                     error_log("format preset doesn't exist");
                     error_log(json_encode($root_column_name));
-                    $instance = array_merge($instance, ['dashboard_display_header' => ""]);
+                    $instance = array_merge($instance, ['dashboard_display_header' => $root_column_name]);
                 }
 
                 // if no source column specified, default to self
@@ -555,7 +571,12 @@ class AdminDash extends AbstractExternalModule
                 if (isset($instance['code_type'])) {
                     $instance['dashboard_show_filter'] = 2;
                 }
-            }
+             
+            } 
+
+
+
+
 
             array_push($json, $instance);
         }
