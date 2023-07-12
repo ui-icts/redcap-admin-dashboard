@@ -466,12 +466,12 @@ class AdminDash extends AbstractExternalModule
                 'user_firstname' => array(
                  
                     'dashboard_display_header' => "First Name",
-                    'link_type' => 6,
+                    'link_type' => "",
                     'link_source_column' => ""
                 ),
                 'user_lastname' => array(
                     'dashboard_display_header' => "Last Name",
-                    'link_type' => 6,
+                    'link_type' => "",
                     'link_source_column' => ""
                 ),
                 'hash' => array(
