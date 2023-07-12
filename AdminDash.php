@@ -448,16 +448,27 @@ class AdminDash extends AbstractExternalModule
             $formattingPresets = array(
                 'project_id' => array(
                     'link_type' => 5,
-                    'export_urls' => 0
+                    'export_urls' => 0,
+                    'dashboard_display_header' => "PID"
                 ),
                 'app_title' => array(
                     'link_type' => 1,
                     'link_source_column' => 'project_id',
+                    'dashboard_display_header' => "Project Name",
                     'export_urls' => 0
                 ),
                 'username' => array(
                     'link_type' => 6,
-                    'export_urls' => 0
+                    'export_urls' => 0,
+                    'dashboard_display_header' => "Username"
+                ),
+
+                'user_firstname' => array(
+                 
+                    'dashboard_display_header' => "First Name"
+                ),
+                'user_lastname' => array(
+                    'dashboard_display_header' => "Last Name"
                 ),
                 'hash' => array(
                     'link_type' => 8,
@@ -465,19 +476,23 @@ class AdminDash extends AbstractExternalModule
                 ),
                 'email' => array(
                     'link_type' => 9,
-                    'export_urls' => 0
+                    'export_urls' => 0,
+                    'dashboard_display_header' => "Email"
                 ),
                 'status' => array(
                     'code_type' => 1,
-                    'export_codes' => 0
+                    'export_codes' => 0,
+                    'dashboard_display_header' => "Status"
                 ),
                 'purpose' => array(
                     'code_type' => 2,
-                    'export_codes' => 0
+                    'export_codes' => 0,
+                    'dashboard_display_header' => "Status"
                 ),
                 'purpose_other' => array(
                     'code_type' => 3,
-                    'export_codes' => 0
+                    'export_codes' => 0,
+                    'dashboard_display_header' => "Research Purpose"
                 )
             );
 
@@ -494,6 +509,7 @@ class AdminDash extends AbstractExternalModule
             if ($group) {
                 $instance['group_concat_separator'] = '@@@';
                 $groupCheck[$root_column_name] = $column_name;
+                $instance['dashboard_display_header'] = "";
             }
 
             // set hidden with #hide, otherwise set default filter visible
@@ -501,6 +517,7 @@ class AdminDash extends AbstractExternalModule
                 $instance['dashboard_show_column'] = 0;
                 $instance['export_show_column'] = 0;
                 $instance['column_formatting_complete'] = 2;
+                $instance['dashboard_display_header'] = "";
             }
             else {
                 $instance['dashboard_show_filter'] = 1;
@@ -523,6 +540,10 @@ class AdminDash extends AbstractExternalModule
                 // match partial "email" column
                 else if (strpos($root_column_name, 'email') !== false) {
                     $instance = array_merge($instance, $formattingPresets['email']);
+                } else {
+                    error_log("format preset doesn't exist");
+                    error_log(json_encode($root_column_name));
+                    $instance = array_merge($instance, ['dashboard_display_header' => ""]);
                 }
 
                 // if no source column specified, default to self
