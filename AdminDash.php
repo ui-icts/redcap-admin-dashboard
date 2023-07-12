@@ -465,10 +465,14 @@ class AdminDash extends AbstractExternalModule
 
                 'user_firstname' => array(
                  
-                    'dashboard_display_header' => "First Name"
+                    'dashboard_display_header' => "First Name",
+                    'link_type' => 6,
+                    'link_source_column' => ""
                 ),
                 'user_lastname' => array(
-                    'dashboard_display_header' => "Last Name"
+                    'dashboard_display_header' => "Last Name",
+                    'link_type' => 6,
+                    'link_source_column' => ""
                 ),
                 'hash' => array(
                     'link_type' => 8,
