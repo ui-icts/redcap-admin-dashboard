@@ -429,166 +429,178 @@ class AdminDash extends AbstractExternalModule
 
     public function saveReportColumns($project_id, $record, $columns)
     {
+
+        $existingColumns  = json_decode(\REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'events' => ['report_config_arm_1'],
+            'fields' => [
+                'report_id', 'redcap_repeat_instrument', 'redcap_repeat_instance', 'column_name', 'dashboard_show_column', 'dashboard_show_filter', 'dashboard_display_header', 'export_show_column', 'export_display_header', 'link_type', 'link_source_column', 'specify_custom_link', 'export_urls', 'code_type', 'export_codes', 'group_concat_separator'],
+            'records' => [$record]
+        )));
+
+        $existingColumnNames = [];
+
+        foreach($existingColumns AS $inst => $formValues) {
+            array_push($existingColumnNames, $formValues->column_name);
+        }
+      
         $columns = json_decode($columns);
         $json = array();
 //        $validTags = array('#hidden', '#ignore');
         $groupCheck = array();
 
+        $formattingPresets = array(
+            'project_id' => array(
+                'link_type' => 5,
+                'link_source_column' => 'project_id',
+                'export_urls' => 0,
+            ),
+            'app_title' => array(
+                'link_type' => 1,
+                'link_source_column' => 'project_id',
+                'export_urls' => 0
+            ),
+            'username' => array(
+                'link_type' => 6,
+                'export_urls' => 0,
+                'link_source_column' => "username"
+            ),
+            'user_firstname' => array(
+                'link_type' => 6,
+                'link_source_column' => "username"
+            ),
+            'user_lastname' => array(
+                'link_type' => 6,
+                'link_source_column' => "username"
+            ),
+            'hash' => array(
+                'link_type' => 8,
+                'export_urls' => 0
+            ),
+            'email' => array(
+                'link_type' => 9,
+                'export_urls' => 0,
+            ),
+            'status' => array(
+                'code_type' => 1,
+                'export_codes' => 0,
+            ),
+            'purpose' => array(
+                'code_type' => 2,
+                'export_codes' => 0,
+            ),
+            'purpose_other' => array(
+                'code_type' => 3,
+                'export_codes' => 0,
+            )
+        );
+
         foreach ($columns as $index => $column_name) {
-            $instance = array(
-                'report_id' => $record,
-                'redcap_repeat_instrument' => 'column_formatting',
-                'redcap_repeat_instance' => $index + 1,
-                'column_name' => $column_name,
-                'dashboard_show_column' => 1,
-                'export_show_column' => 1,
-                'column_formatting_complete' => 0
-            );
 
-            $formattingPresets = array(
-                'project_id' => array(
-                    'link_type' => 5,
-                    'export_urls' => 0,
-                    'dashboard_display_header' => "PID"
-                ),
-                'app_title' => array(
-                    'link_type' => 1,
-                    'link_source_column' => 'project_id',
-                    'dashboard_display_header' => "Project Name",
-                    'export_urls' => 0
-                ),
-                'username' => array(
-                    'link_type' => 6,
-                    'export_urls' => 0,
-                    'dashboard_display_header' => "Username"
-                ),
-
-                'user_firstname' => array(
-                 
-                    'dashboard_display_header' => "First Name",
-                    'link_type' => "",
-                    'link_source_column' => ""
-                ),
-                'user_lastname' => array(
-                    'dashboard_display_header' => "Last Name",
-                    'link_type' => "",
-                    'link_source_column' => ""
-                ),
-                'hash' => array(
-                    'link_type' => 8,
-                    'export_urls' => 0
-                ),
-                'email' => array(
-                    'link_type' => 9,
-                    'export_urls' => 0,
-                    'dashboard_display_header' => "Email"
-                ),
-                'status' => array(
-                    'code_type' => 1,
-                    'export_codes' => 0,
-                    'dashboard_display_header' => "Status"
-                ),
-                'purpose' => array(
-                    'code_type' => 2,
-                    'export_codes' => 0,
-                    'dashboard_display_header' => "Status"
-                ),
-                'purpose_other' => array(
-                    'code_type' => 3,
-                    'export_codes' => 0,
-                    'dashboard_display_header' => "Research Purpose"
-                )
-            );
-
-            // check for hashtag shorthand
-            $tags = explode('#', $column_name);
-            $root_column_name = array_shift($tags);
-
-            // flags for tracking what formatting can/cannot be applied
-            $hidden = in_array('hidden', $tags);
-            $ignore = in_array('ignore', $tags);
-            $group = in_array('group', $tags);
-
-            // add default separator for #group
-            if ($group) {
-                error_log("is group " . $column_name);
-                $instance['group_concat_separator'] = '@@@';
-                $groupCheck[$root_column_name] = $column_name;
-                $instance['dashboard_display_header'] = $column_name;
-            } else {
-                $instance['group_concat_separator'] = '';
-                $instance['dashboard_display_header'] = $column_name;
-                // $groupCheck[$root_column_name] = $column_name;
-                // $instance['dashboard_display_header'] = $root_column_name;
-            }
-
-            // set hidden with #hide, otherwise set default filter visible
-            if ($hidden) {
-                $instance['dashboard_show_column'] = 0;
-                $instance['dashboard_show_filter'] = "";
-                $instance['export_show_column'] = 0;
-                $instance['export_display_header'] = "";
-                $instance['dashboard_display_header'] = "";
-                $instance['column_formatting_complete'] = 2;
-                $instance['export_urls'] = "";
-                $instance['link_type'] = "";
-                $instance['link_source_column'] = "";
-                // $instance['dashboard_display_header'] = $root_column_name;
-            }
+            if(in_array($column_name, $existingColumnNames)) {
+                $instance = array();
+                $instIndex = array_search($column_name, $existingColumnNames);
+            
+                foreach($existingColumns[$instIndex] AS $field => $fieldVal) {
+                    $instance[$field] = $fieldVal;
+                }
+                
+                $instance['redcap_repeat_instance'] = $index + 1;
+                array_push($json, $instance);
+            
+            }                 
             else {
-                $instance['dashboard_show_column'] = 1;
-                $instance['dashboard_show_filter'] = 1;
-                $instance['dashboard_display_header'] = 1;
-                $instance['export_show_column'] = 1;
-            }
 
-            // skip all formatting rules if column is hidden or tagged as "ignore"
-            if (!$hidden && !$ignore) {
-                // if there are formatting presets, apply them
-                if (array_key_exists($root_column_name, $formattingPresets)) {
-                    $instance = array_merge($instance, $formattingPresets[$root_column_name]);
+                $tags = explode('#', $column_name);
+                $root_column_name = array_shift($tags);
 
-                    // make sure grouped columns have grouped source column
-                    if ($group && array_key_exists($root_column_name, $groupCheck)) {
-                        $instance['link_source_column'] = $groupCheck[$instance['link_source_column']];
-                        
-                    }
+                $instance = array(
+                    'report_id' => $record,
+                    'redcap_repeat_instrument' => 'column_formatting',
+                    'redcap_repeat_instance' => $index + 1,
+                    'column_name' => $column_name,
+                    'dashboard_show_column' => 1,
+                    'export_display_header' => $root_column_name,
+                    'dashboard_display_header' => $root_column_name,
+                    'export_show_column' => 1,
+                    'column_formatting_complete' => 0,
+                    'link_type' => "",
+                    'link_source_column' => ""
+                );
 
-                    // set record status to unverified so user can review formatting
-                    $instance['column_formatting_complete'] = 1;
-                }
-                // match partial "email" column
-                else if (strpos($root_column_name, 'email') !== false) {
-                    $instance = array_merge($instance, $formattingPresets['email']);
+                // check for hashtag shorthand        
+                // flags for tracking what formatting can/cannot be applied
+                $hidden = in_array('hidden', $tags);
+                $ignore = in_array('ignore', $tags);
+                $group = in_array('group', $tags);
+    
+                // add default separator for #group
+                if ($group) {
+                    error_log("is group " . $column_name);
+                    $instance['group_concat_separator'] = '@@@';
+                    $groupCheck[$root_column_name] = $column_name;
                 } else {
-                    error_log("format preset doesn't exist");
-                    error_log(json_encode($root_column_name));
-                    $instance = array_merge($instance, ['dashboard_display_header' => $root_column_name]);
+                    $instance['group_concat_separator'] = '';
                 }
-
-                // if no source column specified, default to self
-                if (isset($instance['link_type']) && !isset($instance['link_source_column'])) {
-                    $instance['link_source_column'] = $instance['column_name'];
+    
+                // set hidden with #hide, otherwise set default filter visible
+                if ($hidden) {
+                    $instance['dashboard_show_column'] = 0;
+                    $instance['dashboard_show_filter'] = "";
+                    $instance['export_show_column'] = 0;
+                    $instance['column_formatting_complete'] = 2;
+                    $instance['export_urls'] = "";
+                    $instance['link_type'] = "";
+                    $instance['link_source_column'] = "";
                 }
-
-                // use select filter for coded data
-                if (isset($instance['code_type'])) {
-                    $instance['dashboard_show_filter'] = 2;
+                else {
+                    $instance['dashboard_show_column'] = 1;
+                    $instance['dashboard_show_filter'] = 1;
+                    $instance['export_show_column'] = 1;
                 }
+    
+                // skip all formatting rules if column is hidden or tagged as "ignore"
+                if (!$hidden && !$ignore) {
+                    // if there are formatting presets, apply them
+                    if (array_key_exists($root_column_name, $formattingPresets)) {
+                        $instance = array_merge($instance, $formattingPresets[$root_column_name]);
+    
+                        // make sure grouped columns have grouped source column
+                        if ($group && array_key_exists($root_column_name, $groupCheck)) {
+                            $instance['link_source_column'] = $groupCheck[$instance['link_source_column']];
+                        }
+    
+                        // set record status to unverified so user can review formatting
+                        $instance['column_formatting_complete'] = 1;
+                    }
+                    // match partial "email" column
+                    else if (strpos($root_column_name, 'email') !== false) {
+                        $instance = array_merge($instance, $formattingPresets['email']);
+                    } else {
+                        error_log("format preset doesn't exist");
+                        error_log(json_encode($root_column_name));
+                        $instance = array_merge($instance, ['dashboard_display_header' => $root_column_name]);
+                    }
+    
+                    // if no source column specified, default to self
+                    if (isset($instance['link_type']) && !isset($instance['link_source_column'])) {
+                        $instance['link_source_column'] = $instance['column_name'];
+                    }
+    
+                    // use select filter for coded data
+                    if (isset($instance['code_type'])) {
+                        $instance['dashboard_show_filter'] = 2;
+                    }
+                    
+                } 
+    
+                array_push($json, $instance);
+    
+            }  
              
-            } 
-
-
-
-
-
-            array_push($json, $instance);
         }
-
- 
-
-     
-
+        
 //        $reportSql = json_decode(\REDCap::getData(
 //            $project_id,
 //            'json',
@@ -626,8 +638,6 @@ class AdminDash extends AbstractExternalModule
             'records' => [$record]
         ));
 
-        
-
         //  If there are more existing column instances than the new query has, delete the extra column instances. 
         if((count(json_decode($getColumnInstances))-1) > $numberOfColumns) {          //  -1 because getData returns an empty data point as index 0
             $startDeleteIndex = $numberOfColumns + 1;
@@ -641,7 +651,6 @@ class AdminDash extends AbstractExternalModule
                     'column_formatting',  //  instrument name
                     $i);  //  repeat instance
             }
-    
             
             $getColumnInstances2 = \REDCap::getData(array(
                 'project_id' => $this->configPID,
@@ -650,8 +659,6 @@ class AdminDash extends AbstractExternalModule
                 'fields' => [
                     'column_name'
             ]));
-    
-            
     
         }
 
