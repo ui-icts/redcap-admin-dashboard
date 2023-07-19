@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-10-19T09:22:03" CreationDateTime="2021-10-19T09:22:03" SourceSystem="REDCap" SourceSystemVersion="11.2.6">
+<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-10-19T09:22:03" CreationDateTime="2021-10-19T09:22:03" SourceSystem="REDCap" SourceSystemVersion="13.5.4">
 <Study OID="Project.AdminDashboardReports">
 <GlobalVariables>
 	<StudyName>Admin Dashboard Reports</StudyName>
@@ -40,6 +40,33 @@
 		<redcap:Reports title="SQL Reports" unique_report_name="R-417CMFAYJR" report_order="1" user_access="ALL" user_edit_access="ALL" description="Does not include User Access data. Ideal for sharing queries with other institutions." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KM9FLWPTYWMFN8DL" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql,column_name,dashboard_show_column,dashboard_show_filter,dashboard_display_header,export_show_column,export_display_header,link_type,link_source_column,specify_custom_link,export_urls,code_type,export_codes,group_concat_separator,hint_icons,column_formatting_complete" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="77de68daecd823babbb58edb1c8e14d7106e83bb"/>
 		<redcap:Reports title="SQL Reports (Queries Only)" unique_report_name="R-624RY48DDK" report_order="2" user_access="ALL" user_edit_access="ALL" description="Does not include Column Formatting or User Access data." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KCM8DTHJCY38D3XF" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="1b6453892473a467d07372d45eb05abc2031647a"/>
 	</redcap:ReportsGroup>
+	<redcap:ProjectDashboardsGroup>
+		<redcap:ProjectDashboards title="How to initialize this project" body="&lt;ol&gt;
+&lt;li&gt;Enable the Admin Dashboard external module on this project&lt;/li&gt;
+&lt;li&gt;Go to the online designer
+&lt;ol&gt;
+&lt;li&gt;Column formatting instrument&lt;/li&gt;
+&lt;li&gt;Edit link_source_column field
+&lt;ol&gt;
+&lt;li&gt;Copy and paste the field note into the sql query box&lt;/li&gt;
+&lt;li&gt;Remove the 2 BRs and everything before it&lt;/li&gt;
+&lt;li&gt;Should end up with: &lt;strong&gt;select value, value from redcap_data where project_id = project-id and field_name = &quot;column_name&quot; and record = record-name order by instance asc&lt;/strong&gt;
+&lt;ol&gt;
+&lt;li&gt;Ensure &quot;project-id&quot; and &quot;record-name&quot; above are wrapped in brackets [ ] to activate the smart variable.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;Go to record 1
+&lt;ol&gt;
+&lt;li&gt;Go to the &quot;&lt;strong&gt;app_title#group&lt;/strong&gt;&quot; instance of the column formatting form. (Should be instance 6 or &quot;Project Titles&quot; by default).&lt;/li&gt;
+&lt;li&gt;Ensure the &quot;&lt;strong&gt;Source column for generating URLs&lt;/strong&gt;&quot; field is generating the choices as expected (and that the correct one is selected).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;" dash_order="1" user_access="ALL" is_public="0" ID="ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4"/>
+	</redcap:ProjectDashboardsGroup>
 </GlobalVariables>
 <MetaDataVersion OID="Metadata.AdminDashboardReports_2021-10-19_0922" Name="Admin Dashboard Reports" redcap:RecordIdField="report_id">
 	<Protocol>
