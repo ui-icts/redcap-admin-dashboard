@@ -43,18 +43,22 @@
 	<redcap:ProjectDashboardsGroup>
 		<redcap:ProjectDashboards title="How to initialize this project" body="&lt;ol&gt;
 &lt;li&gt;Enable the Admin Dashboard external module on this project&lt;/li&gt;
+&lt;li&gt;Ensure the correct project id is set in the Admin Dashboard module configuration here: &lt;a href=&quot;[redcap-version-url]ExternalModules/manager/control_center.php&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;[redcap-version-url]ExternalModules/manager/control_center.php&lt;/a&gt;
+&lt;ol&gt;
+&lt;li&gt;Click the &quot;Configure&#039; button on Admin Dashboard&lt;/li&gt;
+&lt;li&gt;Check that the &quot;Project ID of report configuration project&quot; field value is the correct project id.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
 &lt;li&gt;Go to the online designer
 &lt;ol&gt;
-&lt;li&gt;Column formatting instrument&lt;/li&gt;
-&lt;li&gt;Edit link_source_column field
+&lt;li&gt;Go to the &quot;Column Formatting&quot; instrument&lt;/li&gt;
+&lt;li&gt;Edit link_source_column field&lt;/li&gt;
+&lt;li&gt;If there&#039;s already a query in the sql query box and it matches what&#039;s in the field note, skip the next 4 steps
 &lt;ol&gt;
 &lt;li&gt;Copy and paste the field note into the sql query box&lt;/li&gt;
 &lt;li&gt;Remove the 2 BRs and everything before it&lt;/li&gt;
-&lt;li&gt;Should end up with: &lt;strong&gt;select value, value from redcap_data where project_id = project-id and field_name = &quot;column_name&quot; and record = record-name order by instance asc&lt;/strong&gt;
-&lt;ol&gt;
+&lt;li&gt;Should end up with: &lt;strong&gt;select value, value from redcap_data where project_id = project-id and field_name = &quot;column_name&quot; and record = record-name order by instance asc&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;Ensure &quot;project-id&quot; and &quot;record-name&quot; above are wrapped in brackets [ ] to activate the smart variable.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
@@ -65,7 +69,7 @@
 &lt;li&gt;Ensure the &quot;&lt;strong&gt;Source column for generating URLs&lt;/strong&gt;&quot; field is generating the choices as expected (and that the correct one is selected).&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/li&gt;
-&lt;/ol&gt;" dash_order="1" user_access="ALL" is_public="0" ID="ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4"/>
+&lt;/ol&gt;" dash_order="1" user_access="ALL" is_public="0" ID="b1d5781111d84f7b3fe45a0852e59758cd7a87e5"/>
 	</redcap:ProjectDashboardsGroup>
 </GlobalVariables>
 <MetaDataVersion OID="Metadata.AdminDashboardReports_2021-10-19_0922" Name="Admin Dashboard Reports" redcap:RecordIdField="report_id">
