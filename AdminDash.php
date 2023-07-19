@@ -468,10 +468,12 @@ class AdminDash extends AbstractExternalModule
             ),
             'user_firstname' => array(
                 'link_type' => 6,
+                'export_urls' => 0,
                 'link_source_column' => "username"
             ),
             'user_lastname' => array(
                 'link_type' => 6,
+                'export_urls' => 0,
                 'link_source_column' => "username"
             ),
             'hash' => array(
@@ -537,7 +539,6 @@ class AdminDash extends AbstractExternalModule
     
                 // add default separator for #group
                 if ($group) {
-                    error_log("is group " . $column_name);
                     $instance['group_concat_separator'] = '@@@';
                     $groupCheck[$root_column_name] = $column_name;
                 } else {
@@ -578,8 +579,6 @@ class AdminDash extends AbstractExternalModule
                     else if (strpos($root_column_name, 'email') !== false) {
                         $instance = array_merge($instance, $formattingPresets['email']);
                     } else {
-                        error_log("format preset doesn't exist");
-                        error_log(json_encode($root_column_name));
                         $instance = array_merge($instance, ['dashboard_display_header' => $root_column_name]);
                     }
     
@@ -705,7 +704,7 @@ class AdminDash extends AbstractExternalModule
 
                         if ($reportRights['executive_export'] == '1') {
                             $userRightsArray[$report_id]['export_access'] = true;
-                            $userRightsArray[$report_id]['executive_export'] = true;  //  TODO check if this or the line above  is necessary
+                            $userRightsArray[$report_id]['executive_export'] = true;  //  TODO check if this or the line above is necessary
                         }
                     }
                 }
@@ -855,14 +854,6 @@ class AdminDash extends AbstractExternalModule
 
         echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
     }
-
-    // public function isDbQueryToolEnabled() {
-
-    //     $sql = "SELECT database_query_tool_enabled FROM redcap_config";
-    //     $result = $this->query($sql);
-    //     error_log(json_encode($result));
-        
-    // }
 
     public function apiCall($url, $data) {
         $ch = curl_init();

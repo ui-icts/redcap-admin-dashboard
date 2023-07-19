@@ -110,7 +110,7 @@ $(document).ready(function () {
                   const resultArray = data.split("\n");
                   const stringifyData = JSON.stringify(data);
                   let dbQueryToolEnabled = false;
-                  console.log(resultArray);
+                  // console.log(resultArray);
                   let newJson = [];
                   let headers = [];
                   if (
@@ -209,54 +209,6 @@ $(document).ready(function () {
         } catch (e) {
           console.log("Fetch error:  " + e);
         }
-
-        // $.ajax({
-        //     method: 'POST',
-        //     url: UIOWA_AdminDash.urlLookup.post,
-        //     dataType: 'text',
-        //     data: {
-        //         adMethod: 'runReport',
-        //         sql: editor.getValue(),
-        //         test: true,
-        //         redcap_csrf_token: UIOWA_AdminDash.redcap_csrf_token
-        //     },
-        //     timeout: UIOWA_AdminDash.queryTimeout,
-        //     success: function(data) {
-        //         let endTime = performance.now();
-        //         const parsedData = JSON.parse(data.replaceAll("&quot;", '"'))
-
-        //         $this.html('<i class="fas fa-check"></i> Success').removeClass('btn-admindash-default').addClass('btn-success');
-
-        //         $('[name="test_query_error"]').val('');
-        //         $('[name="test_query_columns"]').val(parsedData.columns.length);
-        //         $('[name="test_query_column_list"]').val(JSON.stringify(parsedData.columns, null, 2));
-        //         $('[name="test_query_success___radio"][value="1"]')
-        //             .prop('disabled', '')
-        //             .prop("checked", true)
-        //             .click()
-        //             .prop('disabled', 'disabled');
-
-        //         $resultDiv.html('<span style="color:green;">Query returned ' + parsedData.row_count + ' row(s) in ' + Math.floor(endTime - startTime) + 'ms</span>');
-        //     },
-        //     error: function(err) {
-        //         console.log(err);
-        //         let errorMsg = err.responseText;
-
-        //         errorMsg = errorMsg.substring(
-        //             errorMsg.lastIndexOf("The error from the database was:"),
-        //             errorMsg.lastIndexOf("See the server error log for more details")
-        //         );
-
-        //         $('[name="test_query_column_list"], [name="test_query_columns"]').val('');
-        //         $('[name="test_query_success___radio"][value="0"]')
-        //             .prop('disabled', '')
-        //             .click()
-        //             .prop('disabled', 'disabled');
-
-        //         $this.html('<i class="fas fa-times"></i> Error').removeClass('btn-admindash-default').addClass('btn-danger');
-        //         $resultDiv.html('<span style="color:red;">Query failed! ' + errorMsg + '</span>');
-        //     }
-        // })
       });
     },
     link_type: function () {

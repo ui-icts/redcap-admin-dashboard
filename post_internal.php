@@ -9,11 +9,6 @@ if (!isset($_POST['id'])) {
     $_POST['id'] = $_GET['id'];
 }
 
-// if(isset($_POST['isDbQueryToolEnabled'])) {
-//     call_user_func('isDbQueryToolEnabled');
-// }
-
-error_log($_POST['adMethod']);
 if(isset($_POST['adMethod'])) {
     // if($_POST['adMethod'] == 'runReport') {
     //     call_user_func(array($module, 'runReport'), $_POST);

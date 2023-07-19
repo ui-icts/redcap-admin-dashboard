@@ -299,7 +299,7 @@
 		<Question><TranslatedText>[report_title] [report_description]</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;h2 style=&quot;text-align: left;&quot;&gt;[report_title]&lt;/h2&gt; &lt;p&gt;[report_description]&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="report_sql" Name="report_sql" DataType="text" Length="999" redcap:Variable="report_sql" redcap:FieldType="textarea">
-		<Question><TranslatedText>Report SQL (SELECT queries only)</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Report SQL &lt;span style=&quot;font-weight: normal;&quot;&gt;&lt;em&gt;(SELECT queries only)&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+		<Question><TranslatedText>SELECT queries only. Admin Dashboard uses Database Query Tool to test and execute queries. Unless a LIMIT is specified in the query, the query results will be limited to 500 rows.</TranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="test_query_success" Name="test_query_success" DataType="boolean" Length="1" redcap:Variable="test_query_success" redcap:FieldType="yesno" redcap:SectionHeader="&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Test Query Results&lt;/p&gt;&lt;/div&gt;" redcap:FieldAnnotation="@READONLY">
 		<Question><TranslatedText>Success?</TranslatedText></Question>
@@ -359,7 +359,7 @@
 		<Question><TranslatedText>Generate URLs (to other REDCap pages, email addresses, etc) for this column?</TranslatedText></Question>
 		<CodeListRef CodeListOID="link_type.choices"/>
 	</ItemDef>
-	<ItemDef OID="link_source_column" Name="link_source_column" DataType="text" Length="1" redcap:Variable="link_source_column" redcap:FieldType="sql" redcap:FieldNote="e.g. select &#039;project_id&#039; column as source for &#039;app_title&#039; to display project titles as links" redcap:BranchingLogic="[link_type] &lt;&gt; &#039;&#039;">
+	<ItemDef OID="link_source_column" Name="link_source_column" DataType="text" Length="1" redcap:Variable="link_source_column" redcap:FieldType="sql" redcap:FieldNote="e.g. select &#039;project_id&#039; column as source for &#039;app_title&#039; to display project titles as links.  &lt;br/&gt;&lt;br/&gt; select value, value from redcap_data where project_id = [project-id] and field_name = &quot;column_name&quot; and record = [record-name] order by instance asc" redcap:BranchingLogic="[link_type] &lt;&gt; &#039;&#039;">
 		<Question><TranslatedText>Source column for generating URLs</TranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="specify_custom_link" Name="specify_custom_link" DataType="text" Length="999" redcap:Variable="specify_custom_link" redcap:FieldType="text" redcap:FieldNote="Use {value} to pipe returned value into URL" redcap:BranchingLogic="[link_type] = &#039;99&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;http://httpbin.org/get?column={value}&quot;">
@@ -915,7 +915,7 @@ order by users.username asc"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
-					<ItemData ItemOID="dashboard_display_header" Value="Project Ttiles"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Titles"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="export_show_column" Value="1"/>

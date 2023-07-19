@@ -1124,7 +1124,7 @@ $(document).ready(function () {
           })
             .then((response) => response.text())
             .then((data) => {
-              console.log(data);
+              // console.log(data);
               if (data.startsWith('<p class="red">')) {
                 // console.log("db query tool not enabled");
                 self.loadedReport.error = "Database Query Tool disabled.";
@@ -1145,7 +1145,7 @@ $(document).ready(function () {
                 }
 
                 if (newJson.length >= 1) {
-                  console.log(data);
+                  // console.log(data);
                   let columns = [];
 
                   let columnFormatting =
