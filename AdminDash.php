@@ -3,6 +3,7 @@ namespace UIOWA\AdminDash;
 
 use ExternalModules\ExternalModules;
 use ExternalModules\AbstractExternalModule;
+use PHPSQLParser\PHPSQLParser;
 
 class AdminDash extends AbstractExternalModule
 {
@@ -16,7 +17,8 @@ class AdminDash extends AbstractExternalModule
 
         $this->configPID = $this->getSystemSetting('config-pid');
         $this->currentPID = isset($_GET['pid']) ? $_GET['pid'] : $this->configPID;
-    }
+    
+    }  
 
     function redcap_module_system_change_version($version, $old_version) {
         $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'', []);
@@ -81,11 +83,11 @@ class AdminDash extends AbstractExternalModule
                 $this->query(
                     "
                         update redcap_metadata set element_enum =
-'select value, value from redcap_data
-where project_id = [project-id] and
-field_name = \"column_name\" and
-record = [record-name]
-order by instance asc'
+                        'select value, value from redcap_data
+                        where project_id = [project-id] and
+                        field_name = \"column_name\" and
+                        record = [record-name]
+                        order by instance asc'
                         where field_name = 'link_source_column' and project_id = ?
                     ",
                     [$project_id]
@@ -108,19 +110,30 @@ order by instance asc'
         }
     }
 
+    // function replaceSanitizedString($text) {
+    //     return str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $text);
+    // }
+
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
+        
+        $sanitizedJavascriptObject = htmlentities($this->getJavascriptObject($record, true), ENT_QUOTES, 'UTF-8');
         if ($project_id == $this->configPID) {
             ?>
             <script>
-                let UIOWA_AdminDash = <?= $this->getJavascriptObject($record, true) ?>;
+            
+               let UIOWA_AdminDash = <?= str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $sanitizedJavascriptObject); ?>;
             </script>
+            <link rel="stylesheet" type="text/css" href="<?= $this->getUrl("/resources/styles.css") ?>"/>
+
             <script src="<?= $this->getUrl("/resources/ace/ace.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("/resources/ace/ext-language_tools.js") ?>" type="text/javascript" charset="utf-8"></script>
             <script src="<?= $this->getUrl("redcapDataEntryForm.js") ?>" type="text/javascript" charset="utf-8"></script>
             <?php
         }
     }
+
+
 
     function redcap_save_record($project_id, $record) {
         // generate column formatting instances
@@ -132,6 +145,7 @@ order by instance asc'
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
+        
         $jsObject = array(
             'urlLookup' => array(
                 'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
@@ -168,7 +182,7 @@ order by instance asc'
                 )
             ));
 
-            return json_encode($jsObject);
+            return json_encode($jsObject,true);
         }
 
         // get list of reports
@@ -179,8 +193,8 @@ order by instance asc'
         foreach($reportLookup as $index => $report) {
             $accessDetails = $reportAccess[$report['report_id']];
 
-            if (
-                (SUPER_USER !== '1' || $execPreviewUser) &&
+            if (  
+                (SUPER_USER != '1' || $execPreviewUser) &&
                 !$accessDetails['sync_project_access'] &&
                 !$accessDetails['executive_view']
             ) {
@@ -211,12 +225,16 @@ order by instance asc'
             $formattedMeta = array();
 
             foreach($loadedReportMetadata as $index => $row) {
+                
                 if ($row['redcap_repeat_instrument'] !== '') {
+                    
                     if ($row['column_name'] !== '') {
+                        
                         $instrument = $row['redcap_repeat_instrument'];
                         $instanceKey = $row['column_name'];
                     }
                     else if ($row['join_project_id'] !== '') {
+                        
                         $instrument = $row['redcap_repeat_instrument'];
                         $instanceKey = $row['join_project_id'];
                     }
@@ -224,6 +242,7 @@ order by instance asc'
                     $formattedMeta[$instrument][$instanceKey] = $row;
                 }
                 else {
+                    
                     $formattedMeta['config'] = $row;
                 }
             }
@@ -238,21 +257,62 @@ order by instance asc'
                 'configPID' => $this->configPID,
                 'formattingReference' => $formattingReference,
                 'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
-                'redcap_csrf_token' => $this->getCSRFToken()
+                'executiveExport' => $reportAccess[$report_id]['executive_export'],
+                'redcap_csrf_token' => $this->getCSRFToken(),
+                'redcap_version_url' => APP_PATH_WEBROOT
             ));
         }
 
         return json_encode($jsObject);
     }
 
-    public function runReport($params) { // id, sql
-        $report_id = $params['id']; // user-facing call - lookup query by record id
-        $sql = $params['sql']; // test query from data entry form
-        $username = isset($params['username']) ? $params['username'] : USERID;
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+    public function queryViaDBQueryTool($sql){
+        global $database_query_tool_enabled;
+        $database_query_tool_enabled = '1';
 
+        $originalRequestMethod = $_SERVER['REQUEST_METHOD'];
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST['query'] = $sql;
+        $_GET['export'] = 1;
+
+
+    
+    }
+
+
+
+    public function getReportProps($params) {
+        $report_id = $params['id']; // user-facing call - lookup query by record id
+        $username = isset($params['username']) ? $params['username'] : USERID;
+        
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
         // get sql query from REDCap record
-        if (!isset($sql)) {
+
+        if(!isset($params['query'])) {
+            $data = \REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'return_format' => 'json',
+                'records' => $report_id,
+                'fields' => ['report_sql', 'executive_username', 'executive_view']
+            ));
+
+        } else {
+            
+
+        }
+        return $data;
+    }
+
+
+    public function getQuery($params) {  //  TODO put a superuser check if type = test?
+        $report_id = $params['id']; // user-facing call - lookup query by record id
+        $username = isset($params['username']) ? $params['username'] : USERID;
+        
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+        // get sql query from REDCap record
+
+        if(!isset($params['query'])) {
             $data = \REDCap::getData(array(
                 'project_id' => $this->configPID,
                 'return_format' => 'json',
@@ -260,163 +320,286 @@ order by instance asc'
                 'fields' => 'report_sql'
             ));
 
+    
             $sql = json_decode($data, true)[0]['report_sql'];
+        } else {
+            
+            $sql = $params['query'];
         }
 
-        $returnData = array();
-
-        // supports [user-name] and [project-id]
         if (!isset($params['token'])) {
             $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
         }
 
-        // error out if no query
-        if ($sql == '') {
-            $returnData['error'] = 'No SQL query defined.';
-        }
-        elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
-            $returnData['error'] = 'SQL query is not a SELECT query.';
-        }
-        else {
-            // fix for group_concat limit
-            $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+        $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
 
+        echo $formattedSql;
+    }
+
+    public function runApiReport($params) {
+        $reportProps = json_decode($this->getReportProps($params),true);
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+
+        $sql = $reportProps[0]['report_sql'];
+        $returnData = array();
+
+        if ($sql == '') {
+            
+            $returnData['error'] = 'No SQL query defined.';
+        } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+        
+            $returnData['error'] = 'SQL query is not a SELECT query.';
+        } else {
+            //fix for group_concat limit
+            // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+    
             $result = $this->query($sql, []);
 
             if (is_string($result)) {
                 echo $result;
                 return;
             }
-
-            // prepare data for table
+      
+            //prepare data for table
             while ($row = db_fetch_assoc($result)) {
                 $returnData[] = $row;
             }
 
-            // only return column/row info if test query
-            if (isset($params['test'])) {
-                $returnData = array(
-                    'columns' => array_keys($returnData[0]),
-                    'row_count' => sizeof($returnData)
-                );
+        }
+        echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+
+    }
+
+    public function runExecutiveReport($params) {
+   
+        $reportProps = json_decode($this->getReportProps($params),true);
+        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+        $isExecutive = false;
+        foreach($reportProps AS $instance => $data) {
+            $executiveUsername = $data['executive_username'];
+   
+         
+            if($executiveUsername == USERID && $data['executive_view'] == 1) {
+                $isExecutive = true;
+                break;
             }
         }
 
-        echo json_encode($returnData);
+        if($isExecutive) {
+            $sql = $reportProps[0]['report_sql'];
+            $returnData = array();
+        // supports [user-name] and [project-id]
+        if (!isset($params['token'])) {
+            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+        }
+         
+            
+            if ($sql == '') {
+            
+                $returnData['error'] = 'No SQL query defined.';
+            } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+            
+                $returnData['error'] = 'SQL query is not a SELECT query.';
+            } else {
+                //fix for group_concat limit
+                // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+        
+                $result = $this->query($sql, []);
+
+                
+                if (is_string($result)) {
+                    echo $result;
+                    return;
+                }
+          
+                //prepare data for table
+                while ($row = db_fetch_assoc($result)) {
+                    $returnData[] = $row;
+                }
+    
+
+              
+            }
+            echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+        }
+      
     }
+
+   
 
     public function saveReportColumns($project_id, $record, $columns)
     {
+
+        $existingColumns  = json_decode(\REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'events' => ['report_config_arm_1'],
+            'fields' => [
+                'report_id', 'redcap_repeat_instrument', 'redcap_repeat_instance', 'column_name', 'dashboard_show_column', 'dashboard_show_filter', 'dashboard_display_header', 'export_show_column', 'export_display_header', 'link_type', 'link_source_column', 'specify_custom_link', 'export_urls', 'code_type', 'export_codes', 'group_concat_separator'],
+            'records' => [$record]
+        )));
+
+        $existingColumnNames = [];
+
+        foreach($existingColumns AS $inst => $formValues) {
+            array_push($existingColumnNames, $formValues->column_name);
+        }
+      
         $columns = json_decode($columns);
         $json = array();
 //        $validTags = array('#hidden', '#ignore');
         $groupCheck = array();
 
+        $formattingPresets = array(
+            'project_id' => array(
+                'link_type' => 5,
+                'link_source_column' => 'project_id',
+                'export_urls' => 0,
+            ),
+            'app_title' => array(
+                'link_type' => 1,
+                'link_source_column' => 'project_id',
+                'export_urls' => 0
+            ),
+            'username' => array(
+                'link_type' => 6,
+                'export_urls' => 0,
+                'link_source_column' => "username"
+            ),
+            'user_firstname' => array(
+                'link_type' => 6,
+                'export_urls' => 0,
+                'link_source_column' => "username"
+            ),
+            'user_lastname' => array(
+                'link_type' => 6,
+                'export_urls' => 0,
+                'link_source_column' => "username"
+            ),
+            'hash' => array(
+                'link_type' => 8,
+                'export_urls' => 0
+            ),
+            'email' => array(
+                'link_type' => 9,
+                'export_urls' => 0,
+            ),
+            'status' => array(
+                'code_type' => 1,
+                'export_codes' => 0,
+            ),
+            'purpose' => array(
+                'code_type' => 2,
+                'export_codes' => 0,
+            ),
+            'purpose_other' => array(
+                'code_type' => 3,
+                'export_codes' => 0,
+            )
+        );
+
         foreach ($columns as $index => $column_name) {
-            $instance = array(
-                'report_id' => $record,
-                'redcap_repeat_instrument' => 'column_formatting',
-                'redcap_repeat_instance' => $index + 1,
-                'column_name' => $column_name,
-                'dashboard_show_column' => 1,
-                'export_show_column' => 1,
-                'column_formatting_complete' => 0
-            );
 
-            $formattingPresets = array(
-                'project_id' => array(
-                    'link_type' => 5,
-                    'export_urls' => 0
-                ),
-                'app_title' => array(
-                    'link_type' => 1,
-                    'link_source_column' => 'project_id',
-                    'export_urls' => 0
-                ),
-                'username' => array(
-                    'link_type' => 6,
-                    'export_urls' => 0
-                ),
-                'hash' => array(
-                    'link_type' => 8,
-                    'export_urls' => 0
-                ),
-                'email' => array(
-                    'link_type' => 9,
-                    'export_urls' => 0
-                ),
-                'status' => array(
-                    'code_type' => 1,
-                    'export_codes' => 0
-                ),
-                'purpose' => array(
-                    'code_type' => 2,
-                    'export_codes' => 0
-                ),
-                'purpose_other' => array(
-                    'code_type' => 3,
-                    'export_codes' => 0
-                )
-            );
-
-            // check for hashtag shorthand
-            $tags = explode('#', $column_name);
-            $root_column_name = array_shift($tags);
-
-            // flags for tracking what formatting can/cannot be applied
-            $hidden = in_array('hidden', $tags);
-            $ignore = in_array('ignore', $tags);
-            $group = in_array('group', $tags);
-
-            // add default separator for #group
-            if ($group) {
-                $instance['group_concat_separator'] = '@@@';
-                $groupCheck[$root_column_name] = $column_name;
-            }
-
-            // set hidden with #hide, otherwise set default filter visible
-            if ($hidden) {
-                $instance['dashboard_show_column'] = 0;
-                $instance['export_show_column'] = 0;
-                $instance['column_formatting_complete'] = 2;
-            }
+            if(in_array($column_name, $existingColumnNames)) {
+                $instance = array();
+                $instIndex = array_search($column_name, $existingColumnNames);
+            
+                foreach($existingColumns[$instIndex] AS $field => $fieldVal) {
+                    $instance[$field] = $fieldVal;
+                }
+                
+                $instance['redcap_repeat_instance'] = $index + 1;
+                array_push($json, $instance);
+            
+            }                 
             else {
-                $instance['dashboard_show_filter'] = 1;
-            }
 
-            // skip all formatting rules if column is hidden or tagged as "ignore"
-            if (!$hidden && !$ignore) {
-                // if there are formatting presets, apply them
-                if (array_key_exists($root_column_name, $formattingPresets)) {
-                    $instance = array_merge($instance, $formattingPresets[$root_column_name]);
+                $tags = explode('#', $column_name);
+                $root_column_name = array_shift($tags);
 
-                    // make sure grouped columns have grouped source column
-                    if ($group && array_key_exists($root_column_name, $groupCheck)) {
-                        $instance['link_source_column'] = $groupCheck[$instance['link_source_column']];
+                $instance = array(
+                    'report_id' => $record,
+                    'redcap_repeat_instrument' => 'column_formatting',
+                    'redcap_repeat_instance' => $index + 1,
+                    'column_name' => $column_name,
+                    'dashboard_show_column' => 1,
+                    'export_display_header' => $root_column_name,
+                    'dashboard_display_header' => $root_column_name,
+                    'export_show_column' => 1,
+                    'column_formatting_complete' => 0,
+                    'link_type' => "",
+                    'link_source_column' => ""
+                );
+
+                // check for hashtag shorthand        
+                // flags for tracking what formatting can/cannot be applied
+                $hidden = in_array('hidden', $tags);
+                $ignore = in_array('ignore', $tags);
+                $group = in_array('group', $tags);
+    
+                // add default separator for #group
+                if ($group) {
+                    $instance['group_concat_separator'] = '@@@';
+                    $groupCheck[$root_column_name] = $column_name;
+                } else {
+                    $instance['group_concat_separator'] = '';
+                }
+    
+                // set hidden with #hide, otherwise set default filter visible
+                if ($hidden) {
+                    $instance['dashboard_show_column'] = 0;
+                    $instance['dashboard_show_filter'] = "";
+                    $instance['export_show_column'] = 0;
+                    $instance['column_formatting_complete'] = 2;
+                    $instance['export_urls'] = "";
+                    $instance['link_type'] = "";
+                    $instance['link_source_column'] = "";
+                }
+                else {
+                    $instance['dashboard_show_column'] = 1;
+                    $instance['dashboard_show_filter'] = 1;
+                    $instance['export_show_column'] = 1;
+                }
+    
+                // skip all formatting rules if column is hidden or tagged as "ignore"
+                if (!$hidden && !$ignore) {
+                    // if there are formatting presets, apply them
+                    if (array_key_exists($root_column_name, $formattingPresets)) {
+                        $instance = array_merge($instance, $formattingPresets[$root_column_name]);
+    
+                        // make sure grouped columns have grouped source column
+                        if ($group && array_key_exists($root_column_name, $groupCheck)) {
+                            $instance['link_source_column'] = $groupCheck[$instance['link_source_column']];
+                        }
+    
+                        // set record status to unverified so user can review formatting
+                        $instance['column_formatting_complete'] = 1;
                     }
-
-                    // set record status to unverified so user can review formatting
-                    $instance['column_formatting_complete'] = 1;
-                }
-                // match partial "email" column
-                else if (strpos($root_column_name, 'email') !== false) {
-                    $instance = array_merge($instance, $formattingPresets['email']);
-                }
-
-                // if no source column specified, default to self
-                if (isset($instance['link_type']) && !isset($instance['link_source_column'])) {
-                    $instance['link_source_column'] = $instance['column_name'];
-                }
-
-                // use select filter for coded data
-                if (isset($instance['code_type'])) {
-                    $instance['dashboard_show_filter'] = 2;
-                }
-            }
-
-            array_push($json, $instance);
+                    // match partial "email" column
+                    else if (strpos($root_column_name, 'email') !== false) {
+                        $instance = array_merge($instance, $formattingPresets['email']);
+                    } else {
+                        $instance = array_merge($instance, ['dashboard_display_header' => $root_column_name]);
+                    }
+    
+                    // if no source column specified, default to self
+                    if (isset($instance['link_type']) && !isset($instance['link_source_column'])) {
+                        $instance['link_source_column'] = $instance['column_name'];
+                    }
+    
+                    // use select filter for coded data
+                    if (isset($instance['code_type'])) {
+                        $instance['dashboard_show_filter'] = 2;
+                    }
+                    
+                } 
+    
+                array_push($json, $instance);
+    
+            }  
+             
         }
-
+        
 //        $reportSql = json_decode(\REDCap::getData(
 //            $project_id,
 //            'json',
@@ -441,6 +624,44 @@ order by instance asc'
             'overwrite',
             'YMD'
         );
+
+        $numberOfColumns = count($columns);
+
+        //  Check existing column formatting instances
+        $getColumnInstances = \REDCap::getData(array(
+            'project_id' => $this->configPID,
+            'return_format' => 'json',
+            'events' => ['report_config_arm_1'],
+            'fields' => [
+                'column_name'],
+            'records' => [$record]
+        ));
+
+        //  If there are more existing column instances than the new query has, delete the extra column instances. 
+        if((count(json_decode($getColumnInstances))-1) > $numberOfColumns) {          //  -1 because getData returns an empty data point as index 0
+            $startDeleteIndex = $numberOfColumns + 1;
+            
+            for($i = $numberOfColumns+1; $i < count(json_decode($getColumnInstances)); $i++) {
+                //  TODO check if instance number can be an array
+                \REDCap::deleteRecord($this->configPID,
+                    $record,
+                    1,  //  arm
+                    'report_config_arm_1',  //  event name
+                    'column_formatting',  //  instrument name
+                    $i);  //  repeat instance
+            }
+            
+            $getColumnInstances2 = \REDCap::getData(array(
+                'project_id' => $this->configPID,
+                'return_format' => 'json',
+                'events' => ['report_config_arm_1'],
+                'fields' => [
+                    'column_name'
+            ]));
+    
+        }
+
+   
     }
 
     public function getUserAccess($username, $pid)
@@ -483,6 +704,7 @@ order by instance asc'
 
                         if ($reportRights['executive_export'] == '1') {
                             $userRightsArray[$report_id]['export_access'] = true;
+                            $userRightsArray[$report_id]['executive_export'] = true;  //  TODO check if this or the line above is necessary
                         }
                     }
                 }
@@ -601,8 +823,9 @@ order by instance asc'
         }
 
 //        $eventId_p2 = $this->getFirstEventId($pid2);
-
-        echo json_encode($joinedData);
+        
+        echo htmlentities(json_encode($joinedData, true), ENT_QUOTES, 'UTF-8');
+        // echo json_encode($joinedData);
     }
 
     public function getAdditionalInfo($params) { // params - type, whereVal
@@ -629,7 +852,7 @@ order by instance asc'
 
         $result = $this->query($queries[$params['type']], $params['whereVal']);
 
-        echo json_encode(db_fetch_assoc($result));
+        echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
     }
 
     public function apiCall($url, $data) {

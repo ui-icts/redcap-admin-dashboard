@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-10-19T09:22:03" CreationDateTime="2021-10-19T09:22:03" SourceSystem="REDCap" SourceSystemVersion="11.2.6">
+<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="Admin Dashboard Reports" AsOfDateTime="2021-10-19T09:22:03" CreationDateTime="2021-10-19T09:22:03" SourceSystem="REDCap" SourceSystemVersion="13.5.4">
 <Study OID="Project.AdminDashboardReports">
 <GlobalVariables>
 	<StudyName>Admin Dashboard Reports</StudyName>
@@ -40,6 +40,37 @@
 		<redcap:Reports title="SQL Reports" unique_report_name="R-417CMFAYJR" report_order="1" user_access="ALL" user_edit_access="ALL" description="Does not include User Access data. Ideal for sharing queries with other institutions." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KM9FLWPTYWMFN8DL" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql,column_name,dashboard_show_column,dashboard_show_filter,dashboard_display_header,export_show_column,export_display_header,link_type,link_source_column,specify_custom_link,export_urls,code_type,export_codes,group_concat_separator,hint_icons,column_formatting_complete" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="77de68daecd823babbb58edb1c8e14d7106e83bb"/>
 		<redcap:Reports title="SQL Reports (Queries Only)" unique_report_name="R-624RY48DDK" report_order="2" user_access="ALL" user_edit_access="ALL" description="Does not include Column Formatting or User Access data." combine_checkbox_values="0" output_dags="0" output_survey_fields="0" output_missing_data_codes="0" remove_line_breaks_in_values="0" orderby_field1="report_id" orderby_sort1="ASC" orderby_field2="" orderby_sort2="" orderby_field3="" orderby_sort3="" advanced_logic="" filter_type="RECORD" dynamic_filter1="report_id" dynamic_filter2="" dynamic_filter3="" hash="KCM8DTHJCY38D3XF" short_url="" is_public="0" report_display_include_repeating_fields="1" report_display_header="BOTH" report_display_data="BOTH" limiter_logic="" redcap_reports_fields="report_id,report_title,report_icon,report_description,report_id_custom,report_sql" redcap_reports_filter_dags="" redcap_reports_filter_events="report_config_arm_1" ID="1b6453892473a467d07372d45eb05abc2031647a"/>
 	</redcap:ReportsGroup>
+	<redcap:ProjectDashboardsGroup>
+		<redcap:ProjectDashboards title="How to initialize this project" body="&lt;ol&gt;
+&lt;li&gt;Enable the Admin Dashboard external module on this project&lt;/li&gt;
+&lt;li&gt;Ensure the correct project id is set in the Admin Dashboard module configuration here: &lt;a href=&quot;[redcap-version-url]ExternalModules/manager/control_center.php&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;[redcap-version-url]ExternalModules/manager/control_center.php&lt;/a&gt;
+&lt;ol&gt;
+&lt;li&gt;Click the &quot;Configure&#039; button on Admin Dashboard&lt;/li&gt;
+&lt;li&gt;Check that the &quot;Project ID of report configuration project&quot; field value is the correct project id.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;Go to the online designer
+&lt;ol&gt;
+&lt;li&gt;Go to the &quot;Column Formatting&quot; instrument&lt;/li&gt;
+&lt;li&gt;Edit link_source_column field&lt;/li&gt;
+&lt;li&gt;If there&#039;s already a query in the sql query box and it matches what&#039;s in the field note, skip the next 4 steps
+&lt;ol&gt;
+&lt;li&gt;Copy and paste the field note into the sql query box&lt;/li&gt;
+&lt;li&gt;Remove the 2 BRs and everything before it&lt;/li&gt;
+&lt;li&gt;Should end up with: &lt;strong&gt;select value, value from redcap_data where project_id = project-id and field_name = &quot;column_name&quot; and record = record-name order by instance asc&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Ensure &quot;project-id&quot; and &quot;record-name&quot; above are wrapped in brackets [ ] to activate the smart variable.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;Go to record 1
+&lt;ol&gt;
+&lt;li&gt;Go to the &quot;&lt;strong&gt;app_title#group&lt;/strong&gt;&quot; instance of the column formatting form. (Should be instance 6 or &quot;Project Titles&quot; by default).&lt;/li&gt;
+&lt;li&gt;Ensure the &quot;&lt;strong&gt;Source column for generating URLs&lt;/strong&gt;&quot; field is generating the choices as expected (and that the correct one is selected).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;" dash_order="1" user_access="ALL" is_public="0" ID="b1d5781111d84f7b3fe45a0852e59758cd7a87e5"/>
+	</redcap:ProjectDashboardsGroup>
 </GlobalVariables>
 <MetaDataVersion OID="Metadata.AdminDashboardReports_2021-10-19_0922" Name="Admin Dashboard Reports" redcap:RecordIdField="report_id">
 	<Protocol>
@@ -299,7 +330,7 @@
 		<Question><TranslatedText>[report_title] [report_description]</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;h2 style=&quot;text-align: left;&quot;&gt;[report_title]&lt;/h2&gt; &lt;p&gt;[report_description]&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="report_sql" Name="report_sql" DataType="text" Length="999" redcap:Variable="report_sql" redcap:FieldType="textarea">
-		<Question><TranslatedText>Report SQL (SELECT queries only)</TranslatedText><redcap:FormattedTranslatedText>&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Report SQL &lt;span style=&quot;font-weight: normal;&quot;&gt;&lt;em&gt;(SELECT queries only)&lt;/em&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+		<Question><TranslatedText>SELECT queries only. Admin Dashboard uses Database Query Tool to test and execute queries. Unless a LIMIT is specified in the query, the query results will be limited to 500 rows.</TranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="test_query_success" Name="test_query_success" DataType="boolean" Length="1" redcap:Variable="test_query_success" redcap:FieldType="yesno" redcap:SectionHeader="&lt;div class=&quot;rich-text-field-label&quot;&gt;&lt;p&gt;Test Query Results&lt;/p&gt;&lt;/div&gt;" redcap:FieldAnnotation="@READONLY">
 		<Question><TranslatedText>Success?</TranslatedText></Question>
@@ -359,7 +390,7 @@
 		<Question><TranslatedText>Generate URLs (to other REDCap pages, email addresses, etc) for this column?</TranslatedText></Question>
 		<CodeListRef CodeListOID="link_type.choices"/>
 	</ItemDef>
-	<ItemDef OID="link_source_column" Name="link_source_column" DataType="text" Length="1" redcap:Variable="link_source_column" redcap:FieldType="sql" redcap:FieldNote="e.g. select &#039;project_id&#039; column as source for &#039;app_title&#039; to display project titles as links" redcap:BranchingLogic="[link_type] &lt;&gt; &#039;&#039;">
+	<ItemDef OID="link_source_column" Name="link_source_column" DataType="text" Length="1" redcap:Variable="link_source_column" redcap:FieldType="sql" redcap:FieldNote="e.g. select &#039;project_id&#039; column as source for &#039;app_title&#039; to display project titles as links.  &lt;br/&gt;&lt;br/&gt; select value, value from redcap_data where project_id = [project-id] and field_name = &quot;column_name&quot; and record = [record-name] order by instance asc" redcap:BranchingLogic="[link_type] &lt;&gt; &#039;&#039;">
 		<Question><TranslatedText>Source column for generating URLs</TranslatedText></Question>
 	</ItemDef>
 	<ItemDef OID="specify_custom_link" Name="specify_custom_link" DataType="text" Length="999" redcap:Variable="specify_custom_link" redcap:FieldType="text" redcap:FieldNote="Use {value} to pipe returned value into URL" redcap:BranchingLogic="[link_type] = &#039;99&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;http://httpbin.org/get?column={value}&quot;">
@@ -915,7 +946,7 @@ order by users.username asc"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.dashboard_show_filter" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="dashboard_show_filter" Value="1"/>
-					<ItemData ItemOID="dashboard_display_header" Value="Project Ttiles"/>
+					<ItemData ItemOID="dashboard_display_header" Value="Project Titles"/>
 				</ItemGroupData>
 				<ItemGroupData ItemGroupOID="column_formatting.export_show_column" ItemGroupRepeatKey="1">
 					<ItemData ItemOID="export_show_column" Value="1"/>

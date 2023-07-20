@@ -1,58 +1,60 @@
-td, td > a:link, a:visited
-{
-   font-size: 14px;
+td,
+td > a:link,
+a:visited {
+  font-size: 14px;
 }
 
 .nav-tabs > li > a:hover {
-   background-color: #CCCCCC;
-   color: #000000;
-   border-color: #999999 #999999 #dddddd;
+  background-color: #cccccc;
+  color: #000000;
+  border-color: #999999 #999999 #dddddd;
 }
 
 td > a:hover {
-   color: #119aff;
+  color: #119aff;
 }
 
 #deleted:hover {
-   color: red;
+  color: red;
 }
 
 #archived:hover {
-   color: #525252;
+  color: #525252;
 }
 
-.nav-tabs
-{
-   border-bottom: 2px solid #dddddd;
+.nav-tabs {
+  border-bottom: 2px solid #dddddd;
 }
 
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
-   border-color: #ccc #ccc;
-   border-width: 2px;
-   border-bottom-style: none;
+  border-color: #ccc #ccc;
+  border-width: 2px;
+  border-bottom-style: none;
 }
 
 /* make the display the full width */
-div#outer
-{
-   width: 50%;
+div#outer {
+  width: 50%;
 }
 
-#pagecontainer
-{
-   max-width: 80%;
-   cursor: progress;
+#pagecontainer {
+  max-width: 80%;
+  /* cursor: progress; */
 }
 
-#deleted, .error
-{
-   color: #d80000;
-   text-align: center;
+#deleted,
+.error {
+  color: #d80000;
+  text-align: center;
 }
 
-#archived
-{
-   color: #969696;
+#archived {
+  color: #969696;
+}
+
+.btn-admindash-default {
+  background-color: rgb(16, 108, 214) !important;
+  color: white;
 }
