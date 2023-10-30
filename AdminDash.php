@@ -73,31 +73,27 @@ class AdminDash extends AbstractExternalModule
     function redcap_module_project_enable($version, $project_id) {
         $configPid = $this->getSystemSetting("config-pid");
 
-        error_log(json_encode($configPid));
-
         if (!isset($configPid)) {
             //  check if link_source_column field exists in project and if it's been set.
             $query = $this->query('SELECT element_enum FROM redcap_metadata WHERE field_name = "link_source_column" AND project_id = ?', [$project_id]);
             
             $sqlEnum = $query->fetch_assoc()['element_enum'];
 
-            error_log(json_encode($sqlEnum));
+            if (SUPER_USER == "1" && $sqlEnum != null && $sqlEnum == '') {
 
+                $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
 
-
-            if ($sqlEnum != null && $sqlEnum == '' && SUPER_USER == "1") {
-                error_log("set sql admin dashboard sql field");
                 // add missing sql field (and other settings not included in XML)
                 $this->query(
                     "UPDATE redcap_metadata SET element_enum =
-                        'SELECT value, value FROM redcap_data
+                        'SELECT value, value FROM ?
                         WHERE project_id = [project-id] and
                         field_name = \"column_name\" AND
                         record = [record-name]
                         ORDER BY instance ASC'
                         WHERE field_name = 'link_source_column' AND project_id = ?
                     ",
-                    [$project_id]
+                    [$dataTable, $project_id]
                 );
 
                 $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
@@ -113,8 +109,7 @@ class AdminDash extends AbstractExternalModule
                 link_to_project_id, user_access, append_record_info) values
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
 
-            if(SUPER_USER == "1" && $sqlEnum != null) {
-                error_log("admin dash set config project");
+            if(SUPER_USER == "1" && $sqlEnum != null && $sqlEnum == '') {
                 $this->setSystemSetting("config-pid", $project_id);
             }
           
