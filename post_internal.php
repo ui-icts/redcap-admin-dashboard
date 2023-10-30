@@ -10,17 +10,14 @@ if (!isset($_POST['id'])) {
 }
 
 if(isset($_POST['adMethod'])) {
-    // if($_POST['adMethod'] == 'runReport') {
-    //     call_user_func(array($module, 'runReport'), $_POST);
-    // } 
     if($_POST['adMethod'] == 'joinProjectData') {
-        call_user_func(array($module, 'joinProjectData'), $_POST);
-    } elseif($_POST['adMethod'] == 'getAdditionalInfo') {
-        call_user_func(array($module, 'getAdditionalInfo'), $_POST);
-    } elseif($_POST['adMethod'] == 'getQuery') {
-        call_user_func(array($module, 'getQuery'), $_POST);
+        $module->joinProjectData($_POST);
     } elseif($_POST['adMethod'] == 'runExecutiveReport') {
-        call_user_func(array($module, 'runExecutiveReport'), $_POST);
+        $module->runExecutiveReport($_POST);
+    } elseif(SUPER_USER == "1" && $_POST['adMethod'] == 'getAdditionalInfo') {
+        $module->getAdditionalInfo($_POST);
+    } elseif(SUPER_USER == "1" && $_POST['adMethod'] == 'getQuery') {
+        $module->getQuery($_POST);
     } 
      else {
         die('Something went wrong');

@@ -3,7 +3,6 @@ namespace UIOWA\AdminDash;
 
 use ExternalModules\ExternalModules;
 use ExternalModules\AbstractExternalModule;
-use PHPSQLParser\PHPSQLParser;
 
 class AdminDash extends AbstractExternalModule
 {
@@ -74,51 +73,61 @@ class AdminDash extends AbstractExternalModule
     function redcap_module_project_enable($version, $project_id) {
         $configPid = $this->getSystemSetting("config-pid");
 
+        error_log(json_encode($configPid));
+
         if (!isset($configPid)) {
-            $query = $this->query('select element_enum from redcap_metadata where field_name = "link_source_column" and project_id = ?', [$project_id]);
+            //  check if link_source_column field exists in project and if it's been set.
+            $query = $this->query('SELECT element_enum FROM redcap_metadata WHERE field_name = "link_source_column" AND project_id = ?', [$project_id]);
+            
             $sqlEnum = $query->fetch_assoc()['element_enum'];
 
-            if ($sqlEnum == '') {
+            error_log(json_encode($sqlEnum));
+
+
+
+            if ($sqlEnum != null && $sqlEnum == '' && SUPER_USER == "1") {
+                error_log("set sql admin dashboard sql field");
                 // add missing sql field (and other settings not included in XML)
                 $this->query(
-                    "
-                        update redcap_metadata set element_enum =
-                        'select value, value from redcap_data
-                        where project_id = [project-id] and
-                        field_name = \"column_name\" and
+                    "UPDATE redcap_metadata SET element_enum =
+                        'SELECT value, value FROM redcap_data
+                        WHERE project_id = [project-id] and
+                        field_name = \"column_name\" AND
                         record = [record-name]
-                        order by instance asc'
-                        where field_name = 'link_source_column' and project_id = ?
+                        ORDER BY instance ASC'
+                        WHERE field_name = 'link_source_column' AND project_id = ?
                     ",
                     [$project_id]
                 );
 
-                $this->query("update redcap_projects set secondary_pk_display_value = 0, secondary_pk_display_label = 0 where project_id = ?", [$project_id]);
+                $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
             }
 
             // Get the next order number for bookmark
-            $query = $this->query("select max(link_order) from redcap_external_links where project_id = ?", [$project_id]);
+            $query = $this->query("SELECT max(link_order) FROM redcap_external_links WHERE project_id = ?", [$project_id]);
             $max_link_order = $query->fetch_assoc()['link_order'];
             $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
 
             // Insert into table
-            $this->query("insert into redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
+            $this->query("INSERT INTO redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
                 link_to_project_id, user_access, append_record_info) values
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
 
-            $this->setSystemSetting("config-pid", $project_id);
+            if(SUPER_USER == "1" && $sqlEnum != null) {
+                error_log("admin dash set config project");
+                $this->setSystemSetting("config-pid", $project_id);
+            }
+          
         }
     }
 
-    // function replaceSanitizedString($text) {
-    //     return str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $text);
-    // }
+
 
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
         
         $sanitizedJavascriptObject = htmlentities($this->getJavascriptObject($record, true), ENT_QUOTES, 'UTF-8');
-        if ($project_id == $this->configPID) {
+        if (SUPER_USER == "1" && $project_id == $this->configPID) {
             ?>
             <script>
             
@@ -137,7 +146,7 @@ class AdminDash extends AbstractExternalModule
 
     function redcap_save_record($project_id, $record) {
         // generate column formatting instances
-        if ($project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
+        if (SUPER_USER == "1" && $project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
             $this->saveReportColumns($project_id, $record, $_POST['test_query_column_list']);
         }
     }
@@ -266,19 +275,19 @@ class AdminDash extends AbstractExternalModule
         return json_encode($jsObject);
     }
 
-    public function queryViaDBQueryTool($sql){
-        global $database_query_tool_enabled;
-        $database_query_tool_enabled = '1';
+    // public function queryViaDBQueryTool($sql){
+    //     global $database_query_tool_enabled;
+    //     $database_query_tool_enabled = '1';
 
-        $originalRequestMethod = $_SERVER['REQUEST_METHOD'];
+    //     $originalRequestMethod = $_SERVER['REQUEST_METHOD'];
 
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST['query'] = $sql;
-        $_GET['export'] = 1;
+    //     $_SERVER['REQUEST_METHOD'] = 'POST';
+    //     $_POST['query'] = $sql;
+    //     $_GET['export'] = 1;
 
 
     
-    }
+    // }
 
 
 
@@ -306,34 +315,37 @@ class AdminDash extends AbstractExternalModule
 
 
     public function getQuery($params) {  //  TODO put a superuser check if type = test?
-        $report_id = $params['id']; // user-facing call - lookup query by record id
-        $username = isset($params['username']) ? $params['username'] : USERID;
-        
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-        // get sql query from REDCap record
-
-        if(!isset($params['query'])) {
-            $data = \REDCap::getData(array(
-                'project_id' => $this->configPID,
-                'return_format' => 'json',
-                'records' => $report_id,
-                'fields' => 'report_sql'
-            ));
-
-    
-            $sql = json_decode($data, true)[0]['report_sql'];
-        } else {
+        if(SUPER_USER == "1") {
+            $report_id = $params['id']; // user-facing call - lookup query by record id
+            $username = isset($params['username']) ? $params['username'] : USERID;
             
-            $sql = $params['query'];
+            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            // get sql query from REDCap record
+    
+            if(!isset($params['query'])) {
+                $data = \REDCap::getData(array(
+                    'project_id' => $this->configPID,
+                    'return_format' => 'json',
+                    'records' => $report_id,
+                    'fields' => 'report_sql'
+                ));
+    
+        
+                $sql = json_decode($data, true)[0]['report_sql'];
+            } else {
+                
+                $sql = $params['query'];
+            }
+    
+            if (!isset($params['token'])) {
+                $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+            }
+    
+            $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
+    
+            echo $formattedSql;
         }
-
-        if (!isset($params['token'])) {
-            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-        }
-
-        $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
-
-        echo $formattedSql;
+     
     }
 
     public function runApiReport($params) {
@@ -829,30 +841,33 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function getAdditionalInfo($params) { // params - type, whereVal
-        $queries = array(
-            'user' => '
-                select user_email, user_firstname, user_lastname
-                from redcap_user_information
-                where username = ?
-                limit 1
-            ',
-            'project' => '
-                select app_title
-                from redcap_projects
-                where project_id = ?
-                limit 1
-            ',
-            'report' => '
-                select title
-                from redcap_reports
-                where report_id = ? and project_id = ?
-                limit 1
-            '
-        );
-
-        $result = $this->query($queries[$params['type']], $params['whereVal']);
-
-        echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
+        if(SUPER_USER == "1") {
+            $queries = array(
+                'user' => '
+                    select user_email, user_firstname, user_lastname
+                    from redcap_user_information
+                    where username = ?
+                    limit 1
+                ',
+                'project' => '
+                    select app_title
+                    from redcap_projects
+                    where project_id = ?
+                    limit 1
+                ',
+                'report' => '
+                    select title
+                    from redcap_reports
+                    where report_id = ? and project_id = ?
+                    limit 1
+                '
+            );
+    
+            $result = $this->query($queries[$params['type']], $params['whereVal']);
+    
+            echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
+        }
+     
     }
 
     public function apiCall($url, $data) {
