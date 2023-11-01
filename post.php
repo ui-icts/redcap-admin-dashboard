@@ -1,6 +1,7 @@
 <?php
 /** @var \UIOWA\AdminDash\AdminDash $module */
 
+$userToken = "";
 if (isset($_POST['token'])) { // from API endpoint
     $reportType = json_decode(\REDCap::getData(array(
         'project_id' => $module->configPID,
@@ -34,6 +35,8 @@ if (isset($_POST['token'])) { // from API endpoint
     // verify api token is valid and this report has api_access enabled
     if ($userRights['api_token'] !== $_POST['token'] || $apiEnabled !== '1') {
         die('You do not have permissions to use the API');
+    } else {
+        $userToken = $userRights['api_token'];
     }
 
     $_POST['username'] = $userRights['username'];
@@ -46,4 +49,8 @@ if (!isset($_POST['id'])) {
     $_POST['id'] = $_GET['id'];
 }
 
-call_user_func(array($module, $_POST['adMethod']), $_POST);
+if($userToken === $_POST['token'] && $apiEnabled === '1') {
+    call_user_func(array($module, $_POST['adMethod']), $_POST);
+} else {
+    die('You do not have permissions to use the API');
+}

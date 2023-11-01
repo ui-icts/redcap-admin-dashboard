@@ -2,7 +2,7 @@
 /** @var \UIOWA\AdminDash\AdminDash $module */
 
 // module not yet configured
-if (!isset($module->configPID) && SUPER_USER == '1') {
+if (!isset($module->configPID) && SUPER_USER === '1') {
     include 'setup.php';
     die();
 }
@@ -46,7 +46,7 @@ if (SUPER_USER !== '1' && !$reportRights[$report_id]['project_view'] && !$report
 
 $executiveView = $reportRights[$report_id]['executive_view'] || isset($_GET['asUser']);
 $syncProjectView = $reportRights[$report_id]['project_view'];
-$exportEnabled = SUPER_USER || $reportRights[$report_id]['export_access'];
+$exportEnabled = SUPER_USER === "1" || $reportRights[$report_id]['export_access'];
 
 if ($syncProjectView) {
     require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';

@@ -8,7 +8,8 @@
 
   "versions": {
     "4.1.0": "Fixed several Psalm vulnerabilities.  Refactored how queries are executed for Psalm compliance.  Fixed filter labels not generating/working correctly.  Fixed executive user being able to see and use export buttons without permission.  Fixed multi column research purpose.  Extra columns in a report now deleted properly when entering a new query with fewer columns than the previous query.  Fixed Bootstrap 5 styling.  Fixed report loading animation.  Fixed row hover color.  Added csrf token to post requests.  Updated to EM framework version 9.  Set minimum REDCap version to 12.0.4.",
-    "4.1.1": "Updated external module version to 10 and redcap minimum version to 12.4.6"
+    "4.1.1": "Updated external module version to 10 and redcap minimum version to 12.4.6",
+    "4.1.2": "Added compatibility for new redcap_data(#) tables.  When enabling the module on a project, the config pid can now only be set as a project that has a field named link_source_column."
   },
 
   "authors": [

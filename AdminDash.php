@@ -20,7 +20,7 @@ class AdminDash extends AbstractExternalModule
     }  
 
     function redcap_module_system_change_version($version, $old_version) {
-        $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'', []);
+        $result = $this->query('SELECT value FROM redcap_config WHERE field_name = \'auth_meth_global\'', []);
         $authMethod = db_fetch_assoc($result)['value'];
 
         if ($authMethod == 'shibboleth') {
@@ -79,7 +79,7 @@ class AdminDash extends AbstractExternalModule
             
             $sqlEnum = $query->fetch_assoc()['element_enum'];
 
-            if (SUPER_USER == "1" && $sqlEnum != null && $sqlEnum == '') {
+            if (SUPER_USER === "1" && $sqlEnum != null && $sqlEnum == '') {
 
                 $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
 
@@ -109,7 +109,7 @@ class AdminDash extends AbstractExternalModule
                 link_to_project_id, user_access, append_record_info) values
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
 
-            if(SUPER_USER == "1" && $sqlEnum != null && $sqlEnum == '') {
+            if(SUPER_USER === "1" && $sqlEnum != null) {
                 $this->setSystemSetting("config-pid", $project_id);
             }
           
@@ -122,7 +122,7 @@ class AdminDash extends AbstractExternalModule
         // load customizations for config project
         
         $sanitizedJavascriptObject = htmlentities($this->getJavascriptObject($record, true), ENT_QUOTES, 'UTF-8');
-        if (SUPER_USER == "1" && $project_id == $this->configPID) {
+        if (SUPER_USER === "1" && $project_id == $this->configPID) {
             ?>
             <script>
             
@@ -141,7 +141,7 @@ class AdminDash extends AbstractExternalModule
 
     function redcap_save_record($project_id, $record) {
         // generate column formatting instances
-        if (SUPER_USER == "1" && $project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
+        if (SUPER_USER === "1" && $project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
             $this->saveReportColumns($project_id, $record, $_POST['test_query_column_list']);
         }
     }
@@ -198,7 +198,7 @@ class AdminDash extends AbstractExternalModule
             $accessDetails = $reportAccess[$report['report_id']];
 
             if (  
-                (SUPER_USER != '1' || $execPreviewUser) &&
+                (SUPER_USER !== '1' || $execPreviewUser) &&
                 !$accessDetails['sync_project_access'] &&
                 !$accessDetails['executive_view']
             ) {
@@ -301,16 +301,14 @@ class AdminDash extends AbstractExternalModule
                 'fields' => ['report_sql', 'executive_username', 'executive_view']
             ));
 
-        } else {
-            
-
         }
+
         return $data;
     }
 
 
-    public function getQuery($params) {  //  TODO put a superuser check if type = test?
-        if(SUPER_USER == "1") {
+    public function getQuery($params) {  
+        if(SUPER_USER === "1") {
             $report_id = $params['id']; // user-facing call - lookup query by record id
             $username = isset($params['username']) ? $params['username'] : USERID;
             
@@ -386,7 +384,7 @@ class AdminDash extends AbstractExternalModule
             $executiveUsername = $data['executive_username'];
    
          
-            if($executiveUsername == USERID && $data['executive_view'] == 1) {
+            if($executiveUsername === USERID && $data['executive_view'] == 1) {
                 $isExecutive = true;
                 break;
             }
@@ -395,10 +393,10 @@ class AdminDash extends AbstractExternalModule
         if($isExecutive) {
             $sql = $reportProps[0]['report_sql'];
             $returnData = array();
-        // supports [user-name] and [project-id]
-        if (!isset($params['token'])) {
-            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-        }
+            // supports [user-name] and [project-id]
+            if (!isset($params['token'])) {
+                $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+            }
          
             
             if ($sql == '') {
@@ -705,7 +703,7 @@ class AdminDash extends AbstractExternalModule
             }
 
             if ($reportRights['redcap_repeat_instrument'] !== '') {
-                if ($reportRights['executive_username'] == $username) {
+                if ($reportRights['executive_username'] === $username) {
                     if ($reportRights['executive_view'] == '1') {
                         $userRightsArray[$report_id]['executive_view'] = true;
 
@@ -836,7 +834,7 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function getAdditionalInfo($params) { // params - type, whereVal
-        if(SUPER_USER == "1") {
+        if(SUPER_USER === "1") {
             $queries = array(
                 'user' => '
                     select user_email, user_firstname, user_lastname

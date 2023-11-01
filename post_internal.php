@@ -10,13 +10,13 @@ if (!isset($_POST['id'])) {
 }
 
 if(isset($_POST['adMethod'])) {
-    if($_POST['adMethod'] == 'joinProjectData') {
+    if($_POST['adMethod'] === 'joinProjectData') {
         $module->joinProjectData($_POST);
-    } elseif($_POST['adMethod'] == 'runExecutiveReport') {
+    } elseif($_POST['adMethod'] === 'runExecutiveReport') {
         $module->runExecutiveReport($_POST);
-    } elseif(SUPER_USER == "1" && $_POST['adMethod'] == 'getAdditionalInfo') {
+    } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getAdditionalInfo') {
         $module->getAdditionalInfo($_POST);
-    } elseif(SUPER_USER == "1" && $_POST['adMethod'] == 'getQuery') {
+    } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getQuery') {
         $module->getQuery($_POST);
     } 
      else {

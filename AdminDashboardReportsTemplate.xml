@@ -57,8 +57,8 @@
 &lt;ol&gt;
 &lt;li&gt;Copy and paste the field note into the sql query box&lt;/li&gt;
 &lt;li&gt;Remove the 2 BRs and everything before it&lt;/li&gt;
-&lt;li&gt;Should end up with: &lt;strong&gt;select value, value from redcap_data where project_id = project-id and field_name = &quot;column_name&quot; and record = record-name order by instance asc&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;Ensure &quot;project-id&quot; and &quot;record-name&quot; above are wrapped in brackets [ ] to activate the smart variable.&lt;/li&gt;
+&lt;li&gt;Should end up with something like: &lt;strong&gt;SELECT value, value FROM redcap_data/data-table WHERE project_id = project-id and field_name = &quot;column_name&quot; and record = record-name order by instance asc&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Ensure &quot;project-id&quot; and &quot;record-name&quot; and &quot;data-table&quot; above are wrapped in brackets [ ] to activate the smart variable.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
