@@ -149,7 +149,7 @@ class AdminDash extends AbstractExternalModule
         // load customizations for config project
         
         $sanitizedJavascriptObject = htmlentities($this->getJavascriptObject($record, true), ENT_QUOTES, 'UTF-8');
-        if (SUPER_USER === "1" && $project_id == $this->configPID) {
+        if ($project_id == $this->configPID) {
             ?>
             <script>
             
@@ -168,7 +168,7 @@ class AdminDash extends AbstractExternalModule
 
     function redcap_save_record($project_id, $record) {
         // generate column formatting instances
-        if (SUPER_USER === "1" && $project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
+        if ($project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
             $this->saveReportColumns($project_id, $record, $_POST['test_query_column_list']);
         }
     }
