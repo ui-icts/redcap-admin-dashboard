@@ -79,21 +79,23 @@ class AdminDash extends AbstractExternalModule
             
             $sqlEnum = $query->fetch_assoc()['element_enum'];
 
-            if (SUPER_USER == "1" && $sqlEnum == '') {
+            // error_log(json_encode($sqlEnum));
+
+            if (SUPER_USER == "1" && $sqlEnum != null && $sqlEnum === '') {
 
                 $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
 
                 // add missing sql field (and other settings not included in XML)
                 $this->query(
                     "UPDATE redcap_metadata SET element_enum =
-                        'SELECT value, value FROM ?
+                        'SELECT value, value FROM \"$dataTable\"
                         WHERE project_id = [project-id] and
                         field_name = \"column_name\" AND
                         record = [record-name]
                         ORDER BY instance ASC'
                         WHERE field_name = 'link_source_column' AND project_id = ?
                     ",
-                    [$dataTable, $project_id]
+                    [$project_id]
                 );
 
                 $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
