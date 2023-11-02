@@ -79,7 +79,7 @@ class AdminDash extends AbstractExternalModule
             
             $sqlEnum = $query->fetch_assoc()['element_enum'];
 
-            if (SUPER_USER === "1" && $sqlEnum !== null && $sqlEnum === '') {
+            if (SUPER_USER === "1" && $sqlEnum === '') {
 
                 $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
 
