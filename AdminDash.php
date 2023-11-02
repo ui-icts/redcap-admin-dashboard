@@ -71,51 +71,76 @@ class AdminDash extends AbstractExternalModule
     }
 
     function redcap_module_project_enable($version, $project_id) {
-        $configPid = $this->getSystemSetting("config-pid");
 
-        if (!isset($configPid)) {
-            //  check if link_source_column field exists in project and if it's been set.
-            $query = $this->query('SELECT element_enum FROM redcap_metadata WHERE field_name = "link_source_column" AND project_id = ?', [$project_id]);
+        if(SUPER_USER === "1") {
+            $configPid = $this->getSystemSetting("config-pid");
+
+            if (!isset($configPid)) {
+                //  check if link_source_column field exists in project and if it's been set.
+                $query = $this->query('SELECT element_enum FROM redcap_metadata WHERE field_name = "link_source_column" AND project_id = ?', [$project_id]);
+                $queryResults = $query->fetch_assoc();
+                $hasLinkSourceColumnField = false;
+                if($queryResults !== null) {
+                    $hasLinkSourceColumnField2 = array_key_exists('element_enum', $queryResults);
+    
+                    if($hasLinkSourceColumnField2) {
+                        $hasLinkSourceColumnField = true;
+                        $sqlEnum = $queryResults['element_enum'];
+        
+                        error_log($sqlEnum);
             
-            $sqlEnum = $query->fetch_assoc()['element_enum'];
+                        error_log("enable ad on project");
+            
+                        if ($sqlEnum === null || $sqlEnum === '') {
+                            error_log("enum empty");
+                            $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
+            
+                            $linkSourceColumnSql = 'SELECT value, value FROM ' . $dataTable . '
+                            WHERE project_id = [project-id] and
+                            field_name = "column_name" AND
+                            record = [record-name]
+                            ORDER BY instance ASC';
+            
+                            error_log($linkSourceColumnSql);
+            
+                            // add missing sql field (and other settings not included in XML)
+                            $this->query(
+                                "UPDATE redcap_metadata SET element_enum =
+                                    ?
+                                    WHERE field_name = 'link_source_column' AND project_id = ?
+                                ",
+                                [$linkSourceColumnSql, $project_id]
+                            );
 
-            // error_log(json_encode($sqlEnum));
+                                            // Get the next order number for bookmark
+                            $query = $this->query("SELECT max(link_order) FROM redcap_external_links WHERE project_id = ?", [$project_id]);
+                            $max_link_order = $query->fetch_assoc()['link_order'];
+                            $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
+                
+                            // Insert into table
+                            $this->query("INSERT INTO redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
+                                link_to_project_id, user_access, append_record_info) values
+                                (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
+                        
+                            $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
+                        } else {
+                            error_log("enum not empty");
+                        }
+                    }
+                    
+                }
+    
+    
 
-            if (SUPER_USER == "1" && $sqlEnum !== null && $sqlEnum === '') {
-
-                $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
-
-                // add missing sql field (and other settings not included in XML)
-                $this->query(
-                    "UPDATE redcap_metadata SET element_enum =
-                        'SELECT value, value FROM \"$dataTable\"
-                        WHERE project_id = [project-id] and
-                        field_name = \"column_name\" AND
-                        record = [record-name]
-                        ORDER BY instance ASC'
-                        WHERE field_name = 'link_source_column' AND project_id = ?
-                    ",
-                    [$project_id]
-                );
-
-                $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
+    
+                if(SUPER_USER === "1" && $hasLinkSourceColumnField) {
+                    $this->setSystemSetting("config-pid", $project_id);
+                }
+              
             }
-
-            // Get the next order number for bookmark
-            $query = $this->query("SELECT max(link_order) FROM redcap_external_links WHERE project_id = ?", [$project_id]);
-            $max_link_order = $query->fetch_assoc()['link_order'];
-            $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
-
-            // Insert into table
-            $this->query("INSERT INTO redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
-                link_to_project_id, user_access, append_record_info) values
-                (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
-
-            if(SUPER_USER == "1" && $sqlEnum !== null) {
-                $this->setSystemSetting("config-pid", $project_id);
-            }
-          
         }
+
+    
     }
 
 
