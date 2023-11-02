@@ -79,7 +79,7 @@ class AdminDash extends AbstractExternalModule
             
             $sqlEnum = $query->fetch_assoc()['element_enum'];
 
-            if (SUPER_USER === "1" && $sqlEnum === '') {
+            if (SUPER_USER == "1" && $sqlEnum === '') {
 
                 $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
 
@@ -109,7 +109,7 @@ class AdminDash extends AbstractExternalModule
                 link_to_project_id, user_access, append_record_info) values
                 (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
 
-            if(SUPER_USER === "1" && $sqlEnum !== null) {
+            if(SUPER_USER == "1" && $sqlEnum !== null) {
                 $this->setSystemSetting("config-pid", $project_id);
             }
           
