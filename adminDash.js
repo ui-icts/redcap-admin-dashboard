@@ -1033,7 +1033,8 @@ $(document).ready(function () {
         .then((data) => {
           if (
             !data.toLowerCase().startsWith("error") &&
-            data.toLowerCase().startsWith("select")
+            data.toLowerCase().startsWith("select") &&
+            !data.toLowerCase().startsWith("{&quot")
           ) {
             const dbQueryToolUrl =
               self.redcap_version_url +
