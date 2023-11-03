@@ -86,13 +86,10 @@ class AdminDash extends AbstractExternalModule
                     if($hasLinkSourceColumnField2) {
                         $hasLinkSourceColumnField = true;
                         $sqlEnum = $queryResults['element_enum'];
-        
-                        error_log($sqlEnum);
-            
-                        error_log("enable ad on project");
+
             
                         if ($sqlEnum === null || $sqlEnum === '') {
-                            error_log("enum empty");
+                        
                             $dataTable = method_exists('\REDCap', 'getDataTable') ? "[data-table]" : "redcap_data";
             
                             $linkSourceColumnSql = 'SELECT value, value FROM ' . $dataTable . '
@@ -100,8 +97,6 @@ class AdminDash extends AbstractExternalModule
                             field_name = "column_name" AND
                             record = [record-name]
                             ORDER BY instance ASC';
-            
-                            error_log($linkSourceColumnSql);
             
                             // add missing sql field (and other settings not included in XML)
                             $this->query(
@@ -123,9 +118,7 @@ class AdminDash extends AbstractExternalModule
                                 (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
                         
                             $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
-                        } else {
-                            error_log("enum not empty");
-                        }
+                        } 
                     }
                     
                 }
@@ -137,7 +130,6 @@ class AdminDash extends AbstractExternalModule
             }
         }
 
-    
     }
 
 

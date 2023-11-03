@@ -205,7 +205,6 @@ $.extend(UIOWA_AdminDash, {
     });
 
     // generate export buttons
-    console.log(self.executiveView);
 
     self.dtExportInit(table);
     if ((self.executiveView && self.executiveExport) || !self.executiveView) {
@@ -1184,7 +1183,6 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
-        console.log(data);
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&
