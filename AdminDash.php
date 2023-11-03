@@ -93,7 +93,7 @@ class AdminDash extends AbstractExternalModule
             
                         if ($sqlEnum === null || $sqlEnum === '') {
                             error_log("enum empty");
-                            $dataTable = method_exists('\REDCap', 'getDataTable') ? \REDCap::getDataTable($project_id) : "redcap_data";
+                            $dataTable = method_exists('\REDCap', 'getDataTable') ? "[data-table]" : "redcap_data";
             
                             $linkSourceColumnSql = 'SELECT value, value FROM ' . $dataTable . '
                             WHERE project_id = [project-id] and
@@ -112,7 +112,7 @@ class AdminDash extends AbstractExternalModule
                                 [$linkSourceColumnSql, $project_id]
                             );
 
-                                            // Get the next order number for bookmark
+                            // Get the next order number for bookmark
                             $query = $this->query("SELECT max(link_order) FROM redcap_external_links WHERE project_id = ?", [$project_id]);
                             $max_link_order = $query->fetch_assoc()['link_order'];
                             $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
@@ -129,9 +129,6 @@ class AdminDash extends AbstractExternalModule
                     }
                     
                 }
-    
-    
-
     
                 if(SUPER_USER === "1" && $hasLinkSourceColumnField) {
                     $this->setSystemSetting("config-pid", $project_id);
@@ -176,6 +173,8 @@ class AdminDash extends AbstractExternalModule
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
+
+
         
         $jsObject = array(
             'urlLookup' => array(
@@ -186,7 +185,8 @@ class AdminDash extends AbstractExternalModule
             'reportId' => $report_id,
             'queryTimeout' => $this->getSystemSetting('query-timeout'),
             'redcap_csrf_token' => $this->getCSRFToken(),
-            'loadedReport' => false
+            'loadedReport' => false,
+            // 'isSuperUser' => SUPER_USER
         );
 
         // remove PID if project context added it
@@ -287,8 +287,8 @@ class AdminDash extends AbstractExternalModule
                 'showAdminControls' => SUPER_USER,
                 'configPID' => $this->configPID,
                 'formattingReference' => $formattingReference,
-                'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
-                'executiveExport' => $reportAccess[$report_id]['executive_export'],
+                'executiveView' => SUPER_USER === "1" ? false : $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
+                'executiveExport' => SUPER_USER === "1" ? false : $reportAccess[$report_id]['executive_export'],
                 'redcap_csrf_token' => $this->getCSRFToken(),
                 'redcap_version_url' => APP_PATH_WEBROOT
             ));
@@ -296,20 +296,6 @@ class AdminDash extends AbstractExternalModule
 
         return json_encode($jsObject);
     }
-
-    // public function queryViaDBQueryTool($sql){
-    //     global $database_query_tool_enabled;
-    //     $database_query_tool_enabled = '1';
-
-    //     $originalRequestMethod = $_SERVER['REQUEST_METHOD'];
-
-    //     $_SERVER['REQUEST_METHOD'] = 'POST';
-    //     $_POST['query'] = $sql;
-    //     $_GET['export'] = 1;
-
-
-    
-    // }
 
 
 
@@ -364,6 +350,8 @@ class AdminDash extends AbstractExternalModule
             $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
     
             echo $formattedSql;
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
         }
      
     }
@@ -404,56 +392,64 @@ class AdminDash extends AbstractExternalModule
 
     public function runExecutiveReport($params) {
    
-        $reportProps = json_decode($this->getReportProps($params),true);
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-        $isExecutive = false;
-        foreach($reportProps AS $instance => $data) {
-            $executiveUsername = $data['executive_username'];
-   
-         
-            if($executiveUsername === USERID && $data['executive_view'] == 1) {
-                $isExecutive = true;
-                break;
-            }
-        }
-
-        if($isExecutive) {
-            $sql = $reportProps[0]['report_sql'];
-            $returnData = array();
-            // supports [user-name] and [project-id]
-            if (!isset($params['token'])) {
-                $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-            }
-         
-            
-            if ($sql == '') {
-            
-                $returnData['error'] = 'No SQL query defined.';
-            } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
-            
-                $returnData['error'] = 'SQL query is not a SELECT query.';
-            } else {
-                //fix for group_concat limit
-                // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
-        
-                $result = $this->query($sql, []);
-
-                
-                if (is_string($result)) {
-                    echo $result;
-                    return;
+        if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
+            $reportProps = json_decode($this->getReportProps($params),true);
+            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            $isExecutive = false;
+            foreach($reportProps AS $instance => $data) {
+                $executiveUsername = $data['executive_username'];
+       
+             
+                if($executiveUsername === USERID && $data['executive_view'] == 1) {
+                    $isExecutive = true;
+                    break;
                 }
-          
-                //prepare data for table
-                while ($row = db_fetch_assoc($result)) {
-                    $returnData[] = $row;
-                }
+            }
     
-
+            if($isExecutive) {
+                $sql = $reportProps[0]['report_sql'];
+                $returnData = array();
+                // supports [user-name] and [project-id]
+                if (!isset($params['token'])) {
+                    $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+                }
+             
+                
+                if ($sql == '') {
+                
+                    $returnData['error'] = 'No SQL query defined.';
+                } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+                
+                    $returnData['error'] = 'SQL query is not a SELECT query.';
+                } else {
+                    //fix for group_concat limit
+                    // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+            
+                    $result = $this->query($sql, []);
+    
+                    
+                    if (is_string($result)) {
+                        echo $result;
+                        return;
+                    }
               
+                    //prepare data for table
+                    while ($row = db_fetch_assoc($result)) {
+                        $returnData[] = $row;
+                    }
+        
+    
+                  
+                }
+                echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+            } else {
+                echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
             }
-            echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
         }
+
+
       
     }
 
@@ -886,6 +882,8 @@ class AdminDash extends AbstractExternalModule
             $result = $this->query($queries[$params['type']], $params['whereVal']);
     
             echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
         }
      
     }

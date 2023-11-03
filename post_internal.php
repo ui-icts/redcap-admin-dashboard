@@ -12,7 +12,7 @@ if (!isset($_POST['id'])) {
 if(isset($_POST['adMethod'])) {
     if($_POST['adMethod'] === 'joinProjectData') {
         $module->joinProjectData($_POST);
-    } elseif($_POST['adMethod'] === 'runExecutiveReport') {
+    } elseif(SUPER_USER != "1" && $_POST['adMethod'] === 'runExecutiveReport') {
         $module->runExecutiveReport($_POST);
     } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getAdditionalInfo') {
         $module->getAdditionalInfo($_POST);
@@ -20,7 +20,7 @@ if(isset($_POST['adMethod'])) {
         $module->getQuery($_POST);
     } 
      else {
-        die('Something went wrong');
+        die('error: something went wrong');
     }
     
 }

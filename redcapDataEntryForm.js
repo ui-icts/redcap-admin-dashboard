@@ -117,22 +117,10 @@ $(document).ready(function () {
                     resultArray.length >= 1 &&
                     resultArray[0].startsWith('<p class="red">')
                   ) {
-                  } else if (
-                    resultArray.length === 1 &&
-                    !stringifyData.startsWith(String.raw`"\r`) &&
-                    !stringifyData.startsWith(String.raw`"\n`) &&
-                    !stringifyData.startsWith(String.raw`"\t`) &&
-                    !stringifyData.startsWith(String.raw`"<`)
-                  ) {
+                  } else if (resultArray.length === 1) {
                     dbQueryToolEnabled = true;
                     headers = resultArray[0].split(",");
-                  } else if (
-                    resultArray.length >= 2 &&
-                    !stringifyData.startsWith(String.raw`"\r`) &&
-                    !stringifyData.startsWith(String.raw`"\n`) &&
-                    !stringifyData.startsWith(String.raw`"\t`) &&
-                    !stringifyData.startsWith(String.raw`"<`)
-                  ) {
+                  } else if (resultArray.length >= 2) {
                     headers = resultArray[0].split(",");
                     dbQueryToolEnabled = true;
                     for (let i = 1; i < resultArray.length; i++) {
