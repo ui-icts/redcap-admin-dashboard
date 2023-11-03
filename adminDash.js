@@ -1183,10 +1183,11 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
+        console.log(data);
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&
-          !data.toLowerCase().startsWith("quot") &&
+          !data.toLowerCase().startsWith("&quot") &&
           !JSON.stringify(data).startsWith("{")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
