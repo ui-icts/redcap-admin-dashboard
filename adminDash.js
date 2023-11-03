@@ -1018,7 +1018,10 @@ $(document).ready(function () {
     ? "joinProjectData"
     : "getQuery";
 
-  if (requestType === "getQuery" || requestType === "joinProjectData") {
+  if (
+    !UIOWA_AdminDash.executiveView &&
+    (requestType === "getQuery" || requestType === "joinProjectData")
+  ) {
     getQueryData.append("adMethod", requestType);
 
     if (requestType === "getQuery") {
