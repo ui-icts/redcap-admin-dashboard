@@ -1187,8 +1187,7 @@ $(document).ready(function () {
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&
-          !data.toLowerCase().startsWith("&quot") &&
-          !JSON.stringify(data).startsWith("{")
+          !data.toLowerCase().startsWith("{&quot")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
           newJson = JSON.parse(newJson);
