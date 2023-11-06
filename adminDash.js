@@ -207,7 +207,10 @@ $.extend(UIOWA_AdminDash, {
     // generate export buttons
 
     self.dtExportInit(table);
-    if ((self.executiveView && self.executiveExport) || !self.executiveView) {
+    if (
+      self.loadedReport.ready &&
+      ((self.executiveView && self.executiveExport) || !self.executiveView)
+    ) {
       $("#buttons").show(); //  TODO change this so buttons won't render at all instead of just being hidden
     }
     // } else {
@@ -215,24 +218,27 @@ $.extend(UIOWA_AdminDash, {
     // }
 
     // show/hide columns
-    new $.fn.dataTable.Buttons(table, {
-      buttons: [
-        {
-          text: "Show/Hide Columns",
-          extend: "colvis",
-          columns: ":not(.noVis)",
-        },
-      ],
-    })
-      .container()
-      .appendTo($("#visButtons"));
 
-    // sync filter visibility with column
-    table.on("column-visibility.dt", function (e, settings, column, state) {
-      let $filterTd = $(".filter-row > td").eq(column);
+    if (self.loadedReport.ready) {
+      new $.fn.dataTable.Buttons(table, {
+        buttons: [
+          {
+            text: "Show/Hide Columns",
+            extend: "colvis",
+            columns: ":not(.noVis)",
+          },
+        ],
+      })
+        .container()
+        .appendTo($("#visButtons"));
 
-      state ? $filterTd.show() : $filterTd.hide();
-    });
+      // sync filter visibility with column
+      table.on("column-visibility.dt", function (e, settings, column, state) {
+        let $filterTd = $(".filter-row > td").eq(column);
+
+        state ? $filterTd.show() : $filterTd.hide();
+      });
+    }
 
     // child row show/hide logic
     $(".report-table tbody").on("click", "td.details-control", function () {
@@ -423,7 +429,10 @@ $.extend(UIOWA_AdminDash, {
         // }
       },
     };
-    if ((self.executiveView && self.executiveExport) || !self.executiveView) {
+    if (
+      this.loadedReport.ready &&
+      ((self.executiveView && self.executiveExport) || !self.executiveView)
+    ) {
       // export buttons
       new $.fn.dataTable.Buttons(table, {
         buttons: [
@@ -1055,7 +1064,9 @@ $(document).ready(function () {
                 if (data.startsWith('<p class="red">')) {
                   // console.log("db query tool not enabled");
                   self.loadedReport.error = "Database Query Tool disabled.";
-                  self.loadedReport.ready = true;
+                  self.loadedReport.ready = false;
+
+                  $("#reportLoading").html("");
                 } else {
                   const dataArrayized = self.csvTo2dArray(data);
 
@@ -1134,8 +1145,9 @@ $(document).ready(function () {
                       ready: true,
                     });
                   } else {
-                    self.loadedReport.error = "Zero rows returned.";
-                    self.loadedReport.ready = true;
+                    self.loadedReport.error = "Error.  Zero rows returned";
+                    self.loadedReport.ready = false;
+                    $("#reportLoading").html("");
                   }
                 }
                 // if (data.startsWith('<p class="red">')) {
@@ -1146,7 +1158,8 @@ $(document).ready(function () {
               });
           } else {
             self.loadedReport.error = "Error.  Zero rows returned";
-            self.loadedReport.ready = true;
+            self.loadedReport.ready = false;
+            $("#reportLoading").html("");
           }
         });
     } else if (requestType === "joinProjectData") {
@@ -1170,8 +1183,9 @@ $(document).ready(function () {
               ready: true,
             });
           } else {
-            // self.loadedReport.error = "Zero rows returned."
-            self.loadedReport.ready = true;
+            self.loadedReport.error = "Error.  Zero rows returned";
+            self.loadedReport.ready = false;
+            $("#reportLoading").html("");
           }
         });
     }
@@ -1256,8 +1270,9 @@ $(document).ready(function () {
           //   self.loadedReport.ready = true;
           // }
         } else {
-          self.loadedReport.error = "Error.  Zero rows returned.";
-          self.loadedReport.ready = true;
+          self.loadedReport.error = "Error.  Zero rows returned";
+          self.loadedReport.ready = false;
+          $("#reportLoading").html("");
         }
       });
   }
