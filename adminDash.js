@@ -1060,9 +1060,7 @@ $(document).ready(function () {
             })
               .then((response) => response.text())
               .then((data) => {
-                // console.log(data);
                 if (data.startsWith('<p class="red">')) {
-                  // console.log("db query tool not enabled");
                   self.loadedReport.error = "Database Query Tool disabled.";
                   self.loadedReport.ready = false;
 
@@ -1083,13 +1081,11 @@ $(document).ready(function () {
                   }
 
                   if (newJson.length >= 1) {
-                    // console.log(data);
                     let columns = [];
 
                     let columnFormatting =
                       self.loadedReport.meta.column_formatting;
 
-                    // let purposeOtherIndex = -1;
                     let purposeOtherName = "";
                     let hasMultiColumnResearchPurpose = false;
                     if (columnFormatting) {
@@ -1102,7 +1098,7 @@ $(document).ready(function () {
                         const codeType = column.code_type;
                         if (codeType === "4") {
                           hasMultiColumnResearchPurpose = true;
-                          // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
+
                           columns =
                             self.generateMultiColumnResearchPurposeColumns(
                               idx,
@@ -1150,11 +1146,6 @@ $(document).ready(function () {
                     $("#reportLoading").html("");
                   }
                 }
-                // if (data.startsWith('<p class="red">')) {
-
-                // } else {
-
-                // }
               });
           } else {
             self.loadedReport.error = "Error.  Zero rows returned";
@@ -1163,7 +1154,6 @@ $(document).ready(function () {
           }
         });
     } else if (requestType === "joinProjectData") {
-      console.log(UIOWA_AdminDash.urlLookup.post);
       fetch(UIOWA_AdminDash.urlLookup.post, {
         method: "POST",
         body: getQueryData,

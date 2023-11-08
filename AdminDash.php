@@ -771,8 +771,6 @@ class AdminDash extends AbstractExternalModule
     public function joinProjectData($params)
     {
 
-
-        error_log(json_encode($params));
         $joinConfig = json_decode(\REDCap::getData(array(
             'project_id' => $this->configPID,
             'return_format' => 'json',
