@@ -30,6 +30,7 @@ $(document).ready(function () {
                     <pre id="report_sql-editor"></pre>
                     <div id="testQueryResult" style="float:left; padding-left: 10px; padding-top: 10px; max-width:80%;"></div>
                     <div style="text-align:right; float:right; padding-bottom: 10px; padding-right: 10px">
+                        
                         <button type="button" class="btn btn-admindash-default test-query">Test Query</button>
                     </div>
                 </td>
@@ -81,130 +82,102 @@ $(document).ready(function () {
             "redcap_csrf_token",
             UIOWA_AdminDash.redcap_csrf_token
           );
-          getQueryData.append("adMethod", "getQuery");
+
           getQueryData.append("query", editor.getValue());
 
-          fetch(UIOWA_AdminDash.urlLookup.post, {
+          const dbQueryToolUrl =
+            UIOWA_AdminDash.urlLookup.redcapBase +
+            "ControlCenter/database_query_tool.php?export=1";
+          const getData = new URLSearchParams();
+          getData.append(
+            "redcap_csrf_token",
+            UIOWA_AdminDash.redcap_csrf_token
+          );
+          getData.append("query", editor.getValue());
+
+          fetch(dbQueryToolUrl, {
             method: "POST",
-            body: getQueryData,
+            body: getData,
           })
             .then((response) => response.text())
             .then((data) => {
-              const dbQueryToolUrl =
-                UIOWA_AdminDash.urlLookup.redcapBase +
-                "ControlCenter/database_query_tool.php?export=1";
-              const getData = new URLSearchParams();
-              getData.append(
-                "redcap_csrf_token",
-                UIOWA_AdminDash.redcap_csrf_token
-              );
-              getData.append("query", data);
+              let endTime = performance.now();
 
-              fetch(dbQueryToolUrl, {
-                method: "POST",
-                body: getData,
-              })
-                .then((response) => response.text())
-                .then((data) => {
-                  let endTime = performance.now();
-                  const resultArray = data.split("\n");
-                  const stringifyData = JSON.stringify(data);
-                  let dbQueryToolEnabled = false;
-                  // console.log(resultArray);
-                  let newJson = [];
-                  let headers = [];
-                  if (
-                    resultArray.length >= 1 &&
-                    resultArray[0].startsWith('<p class="red">')
-                  ) {
-                  } else if (
-                    resultArray.length === 1 &&
-                    !stringifyData.startsWith(String.raw`"\r`) &&
-                    !stringifyData.startsWith(String.raw`"\n`) &&
-                    !stringifyData.startsWith(String.raw`"\t`) &&
-                    !stringifyData.startsWith(String.raw`"<`)
-                  ) {
-                    dbQueryToolEnabled = true;
-                    headers = resultArray[0].split(",");
-                  } else if (
-                    resultArray.length >= 2 &&
-                    !stringifyData.startsWith(String.raw`"\r`) &&
-                    !stringifyData.startsWith(String.raw`"\n`) &&
-                    !stringifyData.startsWith(String.raw`"\t`) &&
-                    !stringifyData.startsWith(String.raw`"<`)
-                  ) {
-                    headers = resultArray[0].split(",");
-                    dbQueryToolEnabled = true;
-                    for (let i = 1; i < resultArray.length; i++) {
-                      const rowArrayized = resultArray[i].split(",");
+              const resultArray = data.split("\n");
 
-                      let rowObject = {};
+              let hasError = true;
+              let errorMessage = "";
 
-                      for (let i2 = 0; i2 < rowArrayized.length; i2++) {
-                        rowObject[headers[i2]] = rowArrayized[i2];
-                      }
-                      newJson = [...newJson, rowObject];
-                    }
+              let newJson = [];
+              let headers = [];
+              if (resultArray.length >= 1 && resultArray[0].startsWith("<")) {
+                hasError = true;
+                errorMessage =
+                  "Ensure Database Query Tool is enabled or revise the query";
+              } else if (resultArray.length === 1) {
+                hasError = false;
+                headers = resultArray[0].split(",");
+              } else if (resultArray.length >= 2) {
+                headers = resultArray[0].split(",");
+                hasError = false;
+                for (let i = 1; i < resultArray.length; i++) {
+                  const rowArrayized = resultArray[i].split(",");
+
+                  let rowObject = {};
+
+                  for (let i2 = 0; i2 < rowArrayized.length; i2++) {
+                    rowObject[headers[i2]] = rowArrayized[i2];
                   }
+                  newJson = [...newJson, rowObject];
+                }
+              } else {
+                hasError = true;
+                errorMessage = "Something went wrong";
+              }
 
-                  if (resultArray.length >= 1 && dbQueryToolEnabled) {
-                    $this
-                      .html('<i class="fas fa-check"></i> Success')
-                      .removeClass("btn-admindash-default")
-                      .addClass("btn-success");
+              if (resultArray.length >= 1 && !hasError) {
+                $this
+                  .html('<i class="fas fa-check"></i> Success')
+                  .removeClass("btn-admindash-default")
+                  .addClass("btn-success");
 
-                    $('[name="test_query_error"]').val("");
-                    $('[name="test_query_columns"]').val(headers.length);
-                    $('[name="test_query_column_list"]').val(
-                      JSON.stringify(headers, null, 2)
-                    );
-                    $('[name="test_query_success___radio"][value="1"]')
-                      .prop("disabled", "")
-                      .prop("checked", true)
-                      .click()
-                      .prop("disabled", "disabled");
+                $('[name="test_query_error"]').val("");
+                $('[name="test_query_columns"]').val(headers.length);
+                $('[name="test_query_column_list"]').val(
+                  JSON.stringify(headers, null, 2)
+                );
+                $('[name="test_query_success___radio"][value="1"]')
+                  .prop("disabled", "")
+                  .prop("checked", true)
+                  .click()
+                  .prop("disabled", "disabled");
 
-                    $resultDiv.html(
-                      '<span style="color:green;">Query returned ' +
-                        newJson.length +
-                        " row(s) in " +
-                        Math.floor(endTime - startTime) +
-                        "ms</span>"
-                    );
-                  } else {
-                    let errorMessage = "";
-                    if (!dbQueryToolEnabled) {
-                      errorMessage =
-                        "Database Query Tool disabled.  Must be enabled";
-                    } else {
-                      errorMessage = "Something went wrong";
-                    }
-                    // let errorMsg = err.responseText;
+                $resultDiv.html(
+                  '<span style="color:green;">Query returned ' +
+                    newJson.length +
+                    " row(s) in " +
+                    Math.floor(endTime - startTime) +
+                    "ms</span>"
+                );
+              } else {
+                $(
+                  '[name="test_query_column_list"], [name="test_query_columns"]'
+                ).val("");
+                $('[name="test_query_success___radio"][value="0"]')
+                  .prop("disabled", "")
+                  .click()
+                  .prop("disabled", "disabled");
 
-                    // errorMsg = errorMsg.substring(
-                    //     errorMsg.lastIndexOf("The error from the database was:"),
-                    //     errorMsg.lastIndexOf("See the server error log for more details")
-                    // );
-
-                    $(
-                      '[name="test_query_column_list"], [name="test_query_columns"]'
-                    ).val("");
-                    $('[name="test_query_success___radio"][value="0"]')
-                      .prop("disabled", "")
-                      .click()
-                      .prop("disabled", "disabled");
-
-                    $this
-                      .html('<i class="fas fa-times"></i> Error')
-                      .removeClass("btn-admindash-default")
-                      .addClass("btn-danger");
-                    $resultDiv.html(
-                      '<span style="color:red;">Query failed! ' +
-                        errorMessage +
-                        "</span>"
-                    );
-                  }
-                });
+                $this
+                  .html('<i class="fas fa-times"></i> Error')
+                  .removeClass("btn-admindash-default")
+                  .addClass("btn-danger");
+                $resultDiv.html(
+                  '<span style="color:red;">Query failed! ' +
+                    errorMessage +
+                    "</span>"
+                );
+              }
             });
         } catch (e) {
           console.log("Fetch error:  " + e);

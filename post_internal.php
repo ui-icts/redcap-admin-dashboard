@@ -10,20 +10,18 @@ if (!isset($_POST['id'])) {
 }
 
 if(isset($_POST['adMethod'])) {
-    // if($_POST['adMethod'] == 'runReport') {
-    //     call_user_func(array($module, 'runReport'), $_POST);
-    // } 
-    if($_POST['adMethod'] == 'joinProjectData') {
-        call_user_func(array($module, 'joinProjectData'), $_POST);
-    } elseif($_POST['adMethod'] == 'getAdditionalInfo') {
-        call_user_func(array($module, 'getAdditionalInfo'), $_POST);
-    } elseif($_POST['adMethod'] == 'getQuery') {
-        call_user_func(array($module, 'getQuery'), $_POST);
-    } elseif($_POST['adMethod'] == 'runExecutiveReport') {
-        call_user_func(array($module, 'runExecutiveReport'), $_POST);
-    } 
-     else {
-        die('Something went wrong');
+    if(SUPER_USER === "1" && $_POST['adMethod'] === 'getQuery') {
+        $module->getQuery($_POST);
+    } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getAdditionalInfo') {
+        $module->getAdditionalInfo($_POST);
+    } elseif($_POST['adMethod'] === 'joinProjectData') { 
+        $module->joinProjectData($_POST);
+    } elseif(SUPER_USER != "1" && $_POST['adMethod'] === 'runExecutiveReport') {
+        $module->runExecutiveReport($_POST);
+    } else {
+        die('error: something went wrong');
     }
     
+} else {
+    die('error: something went wrong');
 }

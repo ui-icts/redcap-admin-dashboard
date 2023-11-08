@@ -2,7 +2,7 @@
 /** @var \UIOWA\AdminDash\AdminDash $module */
 
 // module not yet configured
-if (!isset($module->configPID) && SUPER_USER == '1') {
+if (!isset($module->configPID) && SUPER_USER === '1') {
     include 'setup.php';
     die();
 }
@@ -40,13 +40,13 @@ elseif (isset($_GET['record'])) {
 $reportRights = $module->getUserAccess(USERID, $_GET['pid']);
 
 // if not superuser, verify access
-if (SUPER_USER !== '1' && !$reportRights[$report_id]['project_view'] && !$reportRights[$report_id]['executive_view']) {
+if (SUPER_USER != '1' && !$reportRights[$report_id]['project_view'] && !$reportRights[$report_id]['executive_view']) {
     die('You do not have access to this page.');
 }
 
-$executiveView = $reportRights[$report_id]['executive_view'] || isset($_GET['asUser']);
+$executiveView = SUPER_USER != "1" && ($reportRights[$report_id]['executive_view'] || isset($_GET['asUser'])) ? 1 : 0;
 $syncProjectView = $reportRights[$report_id]['project_view'];
-$exportEnabled = SUPER_USER || $reportRights[$report_id]['export_access'];
+$exportEnabled = SUPER_USER === "1" || $reportRights[$report_id]['export_access'];
 
 if ($syncProjectView) {
     require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
@@ -144,7 +144,7 @@ $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_i
 <div id="adminDashApp">
     <?php if(!$syncProjectView): ?>
     <h2 v-cloak style="text-align: center; color: #106CD6; font-weight: bold; padding-top: 75px; padding-bottom: 10px">
-        <?php if($executiveView): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
+        <?php if((SUPER_USER === "1" && isset($_GET['asUser'])) || (SUPER_USER != "1" && $executiveView)): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
     </h2>
     <div id="nav" v-cloak v-if="Object.keys(reportLookup).length > 0">
         <ul class="nav nav-tabs border-bottom">
@@ -201,7 +201,7 @@ $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_i
         <div style="text-align: center; clear: both;">
             <h3 id="reportTitle">
                 <span class="report-icon" :class="getReportIcon(loadedReport.meta.config.report_icon)">&nbsp;</span>{{ loadedReport.meta.config.report_title ? loadedReport.meta.config.report_title : 'Untitled Report' }}
-                <?php if(!$executiveView): ?>
+                <?php if(SUPER_USER === "1" || !$executiveView): ?>
                 <button v-if="showAdminControls === '1'" class="btn-sm edit-report btn-admindash-edit-report" style="margin: 5px; vertical-align: text-top">
                     <span class="fas fa-edit"></span>
                 </button>

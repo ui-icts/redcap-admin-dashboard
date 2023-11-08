@@ -207,7 +207,10 @@ $.extend(UIOWA_AdminDash, {
     // generate export buttons
 
     self.dtExportInit(table);
-    if ((self.executiveView && self.executiveExport) || !self.executiveView) {
+    if (
+      self.loadedReport.ready &&
+      ((self.executiveView && self.executiveExport) || !self.executiveView)
+    ) {
       $("#buttons").show(); //  TODO change this so buttons won't render at all instead of just being hidden
     }
     // } else {
@@ -215,24 +218,27 @@ $.extend(UIOWA_AdminDash, {
     // }
 
     // show/hide columns
-    new $.fn.dataTable.Buttons(table, {
-      buttons: [
-        {
-          text: "Show/Hide Columns",
-          extend: "colvis",
-          columns: ":not(.noVis)",
-        },
-      ],
-    })
-      .container()
-      .appendTo($("#visButtons"));
 
-    // sync filter visibility with column
-    table.on("column-visibility.dt", function (e, settings, column, state) {
-      let $filterTd = $(".filter-row > td").eq(column);
+    if (self.loadedReport.ready) {
+      new $.fn.dataTable.Buttons(table, {
+        buttons: [
+          {
+            text: "Show/Hide Columns",
+            extend: "colvis",
+            columns: ":not(.noVis)",
+          },
+        ],
+      })
+        .container()
+        .appendTo($("#visButtons"));
 
-      state ? $filterTd.show() : $filterTd.hide();
-    });
+      // sync filter visibility with column
+      table.on("column-visibility.dt", function (e, settings, column, state) {
+        let $filterTd = $(".filter-row > td").eq(column);
+
+        state ? $filterTd.show() : $filterTd.hide();
+      });
+    }
 
     // child row show/hide logic
     $(".report-table tbody").on("click", "td.details-control", function () {
@@ -423,7 +429,10 @@ $.extend(UIOWA_AdminDash, {
         // }
       },
     };
-    if ((self.executiveView && self.executiveExport) || !self.executiveView) {
+    if (
+      this.loadedReport.ready &&
+      ((self.executiveView && self.executiveExport) || !self.executiveView)
+    ) {
       // export buttons
       new $.fn.dataTable.Buttons(table, {
         buttons: [
@@ -1017,7 +1026,161 @@ $(document).ready(function () {
     ? "joinProjectData"
     : "getQuery";
 
-  if (UIOWA_AdminDash.executiveView) {
+  if (
+    (UIOWA_AdminDash.showAdminControls && requestType === "getQuery") ||
+    requestType === "joinProjectData"
+  ) {
+    getQueryData.append("adMethod", requestType);
+
+    if (requestType === "getQuery") {
+      fetch(UIOWA_AdminDash.urlLookup.post, {
+        method: "POST",
+        body: getQueryData,
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          if (
+            !data.toLowerCase().startsWith("error") &&
+            data.toLowerCase().startsWith("select") &&
+            !data.toLowerCase().startsWith("{&quot")
+          ) {
+            const dbQueryToolUrl =
+              self.redcap_version_url +
+              "ControlCenter/database_query_tool.php?export=1";
+            const getData = new URLSearchParams();
+            getData.append(
+              "redcap_csrf_token",
+              UIOWA_AdminDash.redcap_csrf_token
+            );
+            getData.append("query", data);
+
+            fetch(dbQueryToolUrl, {
+              method: "POST",
+              body: getData,
+            })
+              .then((response) => response.text())
+              .then((data) => {
+                if (data.startsWith('<p class="red">')) {
+                  self.loadedReport.error = "Database Query Tool disabled.";
+                  self.loadedReport.ready = false;
+
+                  $("#reportLoading").html("");
+                } else {
+                  const dataArrayized = self.csvTo2dArray(data);
+
+                  let newJson = [];
+                  const headers = dataArrayized[0];
+
+                  for (let i = 1; i < dataArrayized.length; i++) {
+                    let rowObject = {};
+
+                    for (let i2 = 0; i2 < dataArrayized[i].length; i2++) {
+                      rowObject[headers[i2]] = dataArrayized[i][i2];
+                    }
+                    newJson = [...newJson, rowObject];
+                  }
+
+                  if (newJson.length >= 1) {
+                    let columns = [];
+
+                    let columnFormatting =
+                      self.loadedReport.meta.column_formatting;
+
+                    let purposeOtherName = "";
+                    let hasMultiColumnResearchPurpose = false;
+                    if (columnFormatting) {
+                      columns = Object.keys(columnFormatting);
+
+                      const parseColumnFormatting =
+                        Object.entries(columnFormatting);
+
+                      for (const [idx, column] of parseColumnFormatting) {
+                        const codeType = column.code_type;
+                        if (codeType === "4") {
+                          hasMultiColumnResearchPurpose = true;
+
+                          columns =
+                            self.generateMultiColumnResearchPurposeColumns(
+                              idx,
+                              columns
+                            );
+                        }
+                      }
+
+                      columns = $.map(
+                        columnFormatting,
+                        function (columnMeta, column_name) {
+                          if (
+                            columnMeta.code_type === "4" &&
+                            column_name === purposeOtherName
+                          ) {
+                            return columnMeta.dashboard_show_column === "0"
+                              ? null
+                              : [...self.codeTypeLabelMap[3]];
+                          } else {
+                            return columnMeta.dashboard_show_column === "0"
+                              ? null
+                              : column_name;
+                          }
+                        }
+                      );
+                    }
+
+                    if (hasMultiColumnResearchPurpose) {
+                      newJson = self.generateMultiColumnResearchPurposeData(
+                        newJson,
+                        columnFormatting
+                      );
+                    }
+
+                    columns = self.generateMultiColumnResearchPurpose();
+
+                    $.extend(self.loadedReport, {
+                      columns: columns,
+                      data: newJson,
+                      ready: true,
+                    });
+                  } else {
+                    self.loadedReport.error = "Error.  Zero rows returned";
+                    self.loadedReport.ready = false;
+                    $("#reportLoading").html("");
+                  }
+                }
+              });
+          } else {
+            self.loadedReport.error = "Error.  Zero rows returned";
+            self.loadedReport.ready = false;
+            $("#reportLoading").html("");
+          }
+        });
+    } else if (requestType === "joinProjectData") {
+      fetch(UIOWA_AdminDash.urlLookup.post, {
+        method: "POST",
+        body: getQueryData,
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          if (data !== "" && !data.toLowerCase().startsWith("error")) {
+            data = data.replaceAll("&quot;", '"');
+            data = JSON.parse(data);
+
+            let columns = [];
+
+            columns = Object.keys(data[0]);
+
+            $.extend(self.loadedReport, {
+              columns: columns,
+              data: data,
+              ready: true,
+            });
+          } else {
+            self.loadedReport.error = "Error.  Zero rows returned";
+            self.loadedReport.ready = false;
+            $("#reportLoading").html("");
+          }
+        });
+    }
+  } else if (UIOWA_AdminDash.executiveView) {
     getQueryData.append("adMethod", "runExecutiveReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
@@ -1025,16 +1188,16 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
-        if (data !== "") {
+        if (
+          data !== "" &&
+          !data.toLowerCase().startsWith("error") &&
+          !data.toLowerCase().startsWith("{&quot")
+        ) {
           let newJson = data.replaceAll("&quot;", '"');
           newJson = JSON.parse(newJson);
-          // if (parsedResult.length > 0) {
+
           let columns = [];
 
-          // if (requestType === 'joinProjectData') {
-          //     columns = Object.keys(parsedResult[0]);
-          // }
-          // else {
           let columnFormatting = self.loadedReport.meta.column_formatting;
           let purposeOtherName = "";
           let hasMultiColumnResearchPurpose = false;
@@ -1047,7 +1210,7 @@ $(document).ready(function () {
               const codeType = column.code_type;
               if (codeType === "4") {
                 hasMultiColumnResearchPurpose = true;
-                // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
+
                 columns = self.generateMultiColumnResearchPurposeColumns(
                   idx,
                   columns
@@ -1082,167 +1245,17 @@ $(document).ready(function () {
             columns = self.generateMultiColumnResearchPurpose();
           }
 
-          // if (newJson.length >= 1) {
           self.loadedReport.ready = true;
           $.extend(self.loadedReport, {
             columns: columns,
             data: newJson,
             ready: true,
           });
-          // } else {
-          //   self.loadedReport.error = "Zero rows returned.";
-          //   self.loadedReport.ready = true;
-          // }
         } else {
-          self.loadedReport.error = "Zero rows returned.";
-          self.loadedReport.ready = true;
+          self.loadedReport.error = "Error.  Zero rows returned";
+          self.loadedReport.ready = false;
+          $("#reportLoading").html("");
         }
       });
-  } else {
-    getQueryData.append("adMethod", requestType);
-
-    if (requestType === "getQuery") {
-      fetch(UIOWA_AdminDash.urlLookup.post, {
-        method: "POST",
-        body: getQueryData,
-      })
-        .then((response) => response.text())
-        .then((data) => {
-          const dbQueryToolUrl =
-            self.redcap_version_url +
-            "ControlCenter/database_query_tool.php?export=1";
-          const getData = new URLSearchParams();
-          getData.append(
-            "redcap_csrf_token",
-            UIOWA_AdminDash.redcap_csrf_token
-          );
-          getData.append("query", data);
-
-          fetch(dbQueryToolUrl, {
-            method: "POST",
-            body: getData,
-          })
-            .then((response) => response.text())
-            .then((data) => {
-              // console.log(data);
-              if (data.startsWith('<p class="red">')) {
-                // console.log("db query tool not enabled");
-                self.loadedReport.error = "Database Query Tool disabled.";
-                self.loadedReport.ready = true;
-              } else {
-                const dataArrayized = self.csvTo2dArray(data);
-
-                let newJson = [];
-                const headers = dataArrayized[0];
-
-                for (let i = 1; i < dataArrayized.length; i++) {
-                  let rowObject = {};
-
-                  for (let i2 = 0; i2 < dataArrayized[i].length; i2++) {
-                    rowObject[headers[i2]] = dataArrayized[i][i2];
-                  }
-                  newJson = [...newJson, rowObject];
-                }
-
-                if (newJson.length >= 1) {
-                  // console.log(data);
-                  let columns = [];
-
-                  let columnFormatting =
-                    self.loadedReport.meta.column_formatting;
-
-                  // let purposeOtherIndex = -1;
-                  let purposeOtherName = "";
-                  let hasMultiColumnResearchPurpose = false;
-                  if (columnFormatting) {
-                    columns = Object.keys(columnFormatting);
-
-                    const parseColumnFormatting =
-                      Object.entries(columnFormatting);
-
-                    for (const [idx, column] of parseColumnFormatting) {
-                      const codeType = column.code_type;
-                      if (codeType === "4") {
-                        hasMultiColumnResearchPurpose = true;
-                        // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
-                        columns =
-                          self.generateMultiColumnResearchPurposeColumns(
-                            idx,
-                            columns
-                          );
-                      }
-                    }
-
-                    columns = $.map(
-                      columnFormatting,
-                      function (columnMeta, column_name) {
-                        if (
-                          columnMeta.code_type === "4" &&
-                          column_name === purposeOtherName
-                        ) {
-                          return columnMeta.dashboard_show_column === "0"
-                            ? null
-                            : [...self.codeTypeLabelMap[3]];
-                        } else {
-                          return columnMeta.dashboard_show_column === "0"
-                            ? null
-                            : column_name;
-                        }
-                      }
-                    );
-                  }
-
-                  if (hasMultiColumnResearchPurpose) {
-                    newJson = self.generateMultiColumnResearchPurposeData(
-                      newJson,
-                      columnFormatting
-                    );
-                  }
-
-                  columns = self.generateMultiColumnResearchPurpose();
-
-                  $.extend(self.loadedReport, {
-                    columns: columns,
-                    data: newJson,
-                    ready: true,
-                  });
-                } else {
-                  self.loadedReport.error = "Zero rows returned.";
-                  self.loadedReport.ready = true;
-                }
-              }
-              // if (data.startsWith('<p class="red">')) {
-
-              // } else {
-
-              // }
-            });
-        });
-    } else if (requestType === "joinProjectData") {
-      fetch(UIOWA_AdminDash.urlLookup.post, {
-        method: "POST",
-        body: getQueryData,
-      })
-        .then((response) => response.text())
-        .then((data) => {
-          if (data !== "") {
-            data = data.replaceAll("&quot;", '"');
-            data = JSON.parse(data);
-
-            let columns = [];
-
-            columns = Object.keys(data[0]);
-
-            $.extend(self.loadedReport, {
-              columns: columns,
-              data: data,
-              ready: true,
-            });
-          } else {
-            // self.loadedReport.error = "Zero rows returned."
-            self.loadedReport.ready = true;
-          }
-        });
-    }
   }
 });

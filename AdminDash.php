@@ -3,7 +3,6 @@ namespace UIOWA\AdminDash;
 
 use ExternalModules\ExternalModules;
 use ExternalModules\AbstractExternalModule;
-use PHPSQLParser\PHPSQLParser;
 
 class AdminDash extends AbstractExternalModule
 {
@@ -21,7 +20,7 @@ class AdminDash extends AbstractExternalModule
     }  
 
     function redcap_module_system_change_version($version, $old_version) {
-        $result = $this->query('select value from redcap_config where field_name = \'auth_meth_global\'', []);
+        $result = $this->query('SELECT value FROM redcap_config WHERE field_name = \'auth_meth_global\'', []);
         $authMethod = db_fetch_assoc($result)['value'];
 
         if ($authMethod == 'shibboleth') {
@@ -72,47 +71,68 @@ class AdminDash extends AbstractExternalModule
     }
 
     function redcap_module_project_enable($version, $project_id) {
-        $configPid = $this->getSystemSetting("config-pid");
 
-        if (!isset($configPid)) {
-            $query = $this->query('select element_enum from redcap_metadata where field_name = "link_source_column" and project_id = ?', [$project_id]);
-            $sqlEnum = $query->fetch_assoc()['element_enum'];
+        if(SUPER_USER === "1") {
+            $configPid = $this->getSystemSetting("config-pid");
 
-            if ($sqlEnum == '') {
-                // add missing sql field (and other settings not included in XML)
-                $this->query(
-                    "
-                        update redcap_metadata set element_enum =
-                        'select value, value from redcap_data
-                        where project_id = [project-id] and
-                        field_name = \"column_name\" and
-                        record = [record-name]
-                        order by instance asc'
-                        where field_name = 'link_source_column' and project_id = ?
-                    ",
-                    [$project_id]
-                );
+            if (!isset($configPid)) {
+                //  check if link_source_column field exists in project and if it's been set.
+                $query = $this->query('SELECT element_enum FROM redcap_metadata WHERE field_name = "link_source_column" AND project_id = ?', [$project_id]);
+                $queryResults = $query->fetch_assoc();
+                $hasLinkSourceColumnField = false;
+                if($queryResults !== null) {
+                    $hasLinkSourceColumnField2 = array_key_exists('element_enum', $queryResults);
+    
+                    if($hasLinkSourceColumnField2) {
+                        $hasLinkSourceColumnField = true;
+                        $sqlEnum = $queryResults['element_enum'];
 
-                $this->query("update redcap_projects set secondary_pk_display_value = 0, secondary_pk_display_label = 0 where project_id = ?", [$project_id]);
+            
+                        if ($sqlEnum === null || $sqlEnum === '') {
+                        
+                            $dataTable = method_exists('\REDCap', 'getDataTable') ? "[data-table]" : "redcap_data";
+            
+                            $linkSourceColumnSql = 'SELECT value, value FROM ' . $dataTable . '
+                            WHERE project_id = [project-id] and
+                            field_name = "column_name" AND
+                            record = [record-name]
+                            ORDER BY instance ASC';
+            
+                            // add missing sql field (and other settings not included in XML)
+                            $this->query(
+                                "UPDATE redcap_metadata SET element_enum =
+                                    ?
+                                    WHERE field_name = 'link_source_column' AND project_id = ?
+                                ",
+                                [$linkSourceColumnSql, $project_id]
+                            );
+
+                            // Get the next order number for bookmark
+                            $query = $this->query("SELECT max(link_order) FROM redcap_external_links WHERE project_id = ?", [$project_id]);
+                            $max_link_order = $query->fetch_assoc()['link_order'];
+                            $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
+                
+                            // Insert into table
+                            $this->query("INSERT INTO redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
+                                link_to_project_id, user_access, append_record_info) values
+                                (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
+                        
+                            $this->query("UPDATE redcap_projects SET secondary_pk_display_value = 0, secondary_pk_display_label = 0 WHERE project_id = ?", [$project_id]);
+                        } 
+                    }
+                    
+                }
+    
+                if(SUPER_USER === "1" && $hasLinkSourceColumnField) {
+                    $this->setSystemSetting("config-pid", $project_id);
+                }
+              
             }
-
-            // Get the next order number for bookmark
-            $query = $this->query("select max(link_order) from redcap_external_links where project_id = ?", [$project_id]);
-            $max_link_order = $query->fetch_assoc()['link_order'];
-            $next_link_order = (is_numeric($max_link_order) ? $max_link_order+1 : 1);
-
-            // Insert into table
-            $this->query("insert into redcap_external_links (project_id, link_order, link_label, link_url, open_new_window, link_type,
-                link_to_project_id, user_access, append_record_info) values
-                (?, ?, ?, ?, ?, ?, ?, ?, ?)", [$project_id, $next_link_order, "Open Admin Dashboard", $this->getUrl("index.php"), 1, "LINK", null, "ALL", 1]);
-
-            $this->setSystemSetting("config-pid", $project_id);
         }
+
     }
 
-    // function replaceSanitizedString($text) {
-    //     return str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $text);
-    // }
+
 
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
@@ -145,6 +165,8 @@ class AdminDash extends AbstractExternalModule
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
+
+
         
         $jsObject = array(
             'urlLookup' => array(
@@ -155,7 +177,8 @@ class AdminDash extends AbstractExternalModule
             'reportId' => $report_id,
             'queryTimeout' => $this->getSystemSetting('query-timeout'),
             'redcap_csrf_token' => $this->getCSRFToken(),
-            'loadedReport' => false
+            'loadedReport' => false,
+            // 'isSuperUser' => SUPER_USER
         );
 
         // remove PID if project context added it
@@ -247,6 +270,7 @@ class AdminDash extends AbstractExternalModule
                 }
             }
 
+
             $jsObject = array_merge($jsObject, array(
                 'loadedReport' => array(
                     'meta' => $formattedMeta,
@@ -266,20 +290,6 @@ class AdminDash extends AbstractExternalModule
         return json_encode($jsObject);
     }
 
-    public function queryViaDBQueryTool($sql){
-        global $database_query_tool_enabled;
-        $database_query_tool_enabled = '1';
-
-        $originalRequestMethod = $_SERVER['REQUEST_METHOD'];
-
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST['query'] = $sql;
-        $_GET['export'] = 1;
-
-
-    
-    }
-
 
 
     public function getReportProps($params) {
@@ -297,43 +307,46 @@ class AdminDash extends AbstractExternalModule
                 'fields' => ['report_sql', 'executive_username', 'executive_view']
             ));
 
-        } else {
-            
-
         }
+
         return $data;
     }
 
 
-    public function getQuery($params) {  //  TODO put a superuser check if type = test?
-        $report_id = $params['id']; // user-facing call - lookup query by record id
-        $username = isset($params['username']) ? $params['username'] : USERID;
-        
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-        // get sql query from REDCap record
-
-        if(!isset($params['query'])) {
-            $data = \REDCap::getData(array(
-                'project_id' => $this->configPID,
-                'return_format' => 'json',
-                'records' => $report_id,
-                'fields' => 'report_sql'
-            ));
-
-    
-            $sql = json_decode($data, true)[0]['report_sql'];
-        } else {
+    public function getQuery($params) {  
+        if(SUPER_USER === "1") {
+            $report_id = $params['id']; // user-facing call - lookup query by record id
+            $username = isset($params['username']) ? $params['username'] : USERID;
             
-            $sql = $params['query'];
+            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            // get sql query from REDCap record
+    
+            if(!isset($params['query'])) {
+                $data = \REDCap::getData(array(
+                    'project_id' => $this->configPID,
+                    'return_format' => 'json',
+                    'records' => $report_id,
+                    'fields' => 'report_sql'
+                ));
+    
+        
+                $sql = json_decode($data, true)[0]['report_sql'];
+            } else {
+                
+                $sql = $params['query'];
+            }
+    
+            if (!isset($params['token'])) {
+                $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+            }
+    
+            $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
+    
+            echo $formattedSql;
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
         }
-
-        if (!isset($params['token'])) {
-            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-        }
-
-        $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
-
-        echo $formattedSql;
+     
     }
 
     public function runApiReport($params) {
@@ -372,56 +385,64 @@ class AdminDash extends AbstractExternalModule
 
     public function runExecutiveReport($params) {
    
-        $reportProps = json_decode($this->getReportProps($params),true);
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-        $isExecutive = false;
-        foreach($reportProps AS $instance => $data) {
-            $executiveUsername = $data['executive_username'];
-   
-         
-            if($executiveUsername == USERID && $data['executive_view'] == 1) {
-                $isExecutive = true;
-                break;
+        if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
+            $reportProps = json_decode($this->getReportProps($params),true);
+            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            $isExecutive = false;
+            foreach($reportProps AS $instance => $data) {
+                $executiveUsername = $data['executive_username'];
+       
+             
+                if($executiveUsername === USERID && $data['executive_view'] == 1) {
+                    $isExecutive = true;
+                    break;
+                }
             }
-        }
-
-        if($isExecutive) {
-            $sql = $reportProps[0]['report_sql'];
-            $returnData = array();
-        // supports [user-name] and [project-id]
-        if (!isset($params['token'])) {
-            $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-        }
-         
-            
-            if ($sql == '') {
-            
-                $returnData['error'] = 'No SQL query defined.';
-            } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
-            
-                $returnData['error'] = 'SQL query is not a SELECT query.';
-            } else {
-                //fix for group_concat limit
-                // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
-        
-                $result = $this->query($sql, []);
-
-                
-                if (is_string($result)) {
-                    echo $result;
-                    return;
-                }
-          
-                //prepare data for table
-                while ($row = db_fetch_assoc($result)) {
-                    $returnData[] = $row;
-                }
     
-
+            if($isExecutive) {
+                $sql = $reportProps[0]['report_sql'];
+                $returnData = array();
+                // supports [user-name] and [project-id]
+                if (!isset($params['token'])) {
+                    $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+                }
+             
+                
+                if ($sql == '') {
+                
+                    $returnData['error'] = 'No SQL query defined.';
+                } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+                
+                    $returnData['error'] = 'SQL query is not a SELECT query.';
+                } else {
+                    //fix for group_concat limit
+                    // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+            
+                    $result = $this->query($sql, []);
+    
+                    
+                    if (is_string($result)) {
+                        echo $result;
+                        return;
+                    }
               
+                    //prepare data for table
+                    while ($row = db_fetch_assoc($result)) {
+                        $returnData[] = $row;
+                    }
+        
+    
+                  
+                }
+                echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+            } else {
+                echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
             }
-            echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
         }
+
+
       
     }
 
@@ -698,7 +719,7 @@ class AdminDash extends AbstractExternalModule
             }
 
             if ($reportRights['redcap_repeat_instrument'] !== '') {
-                if ($reportRights['executive_username'] == $username) {
+                if ($reportRights['executive_username'] === $username) {
                     if ($reportRights['executive_view'] == '1') {
                         $userRightsArray[$report_id]['executive_view'] = true;
 
@@ -749,6 +770,7 @@ class AdminDash extends AbstractExternalModule
 
     public function joinProjectData($params)
     {
+
         $joinConfig = json_decode(\REDCap::getData(array(
             'project_id' => $this->configPID,
             'return_format' => 'json',
@@ -829,30 +851,35 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function getAdditionalInfo($params) { // params - type, whereVal
-        $queries = array(
-            'user' => '
-                select user_email, user_firstname, user_lastname
-                from redcap_user_information
-                where username = ?
-                limit 1
-            ',
-            'project' => '
-                select app_title
-                from redcap_projects
-                where project_id = ?
-                limit 1
-            ',
-            'report' => '
-                select title
-                from redcap_reports
-                where report_id = ? and project_id = ?
-                limit 1
-            '
-        );
-
-        $result = $this->query($queries[$params['type']], $params['whereVal']);
-
-        echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
+        if(SUPER_USER === "1") {
+            $queries = array(
+                'user' => '
+                    select user_email, user_firstname, user_lastname
+                    from redcap_user_information
+                    where username = ?
+                    limit 1
+                ',
+                'project' => '
+                    select app_title
+                    from redcap_projects
+                    where project_id = ?
+                    limit 1
+                ',
+                'report' => '
+                    select title
+                    from redcap_reports
+                    where report_id = ? and project_id = ?
+                    limit 1
+                '
+            );
+    
+            $result = $this->query($queries[$params['type']], $params['whereVal']);
+    
+            echo htmlentities(json_encode(db_fetch_assoc($result)), ENT_QUOTES, 'UTF-8');
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
+        }
+     
     }
 
     public function apiCall($url, $data) {
