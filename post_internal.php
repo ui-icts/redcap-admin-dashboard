@@ -10,17 +10,18 @@ if (!isset($_POST['id'])) {
 }
 
 if(isset($_POST['adMethod'])) {
-    if($_POST['adMethod'] === 'joinProjectData') {
+    if(SUPER_USER === "1" && $_POST['adMethod'] === 'getQuery') {
+        $module->getQuery($_POST);
+    } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getAdditionalInfo') {
+        $module->getAdditionalInfo($_POST);
+    } elseif($_POST['adMethod'] === 'joinProjectData') { 
         $module->joinProjectData($_POST);
     } elseif(SUPER_USER != "1" && $_POST['adMethod'] === 'runExecutiveReport') {
         $module->runExecutiveReport($_POST);
-    } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getAdditionalInfo') {
-        $module->getAdditionalInfo($_POST);
-    } elseif(SUPER_USER === "1" && $_POST['adMethod'] === 'getQuery') {
-        $module->getQuery($_POST);
-    } 
-     else {
+    } else {
         die('error: something went wrong');
     }
     
+} else {
+    die('error: something went wrong');
 }

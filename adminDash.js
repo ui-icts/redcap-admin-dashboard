@@ -1027,7 +1027,7 @@ $(document).ready(function () {
     : "getQuery";
 
   if (
-    (!UIOWA_AdminDash.executiveView && requestType === "getQuery") ||
+    (UIOWA_AdminDash.showAdminControls && requestType === "getQuery") ||
     requestType === "joinProjectData"
   ) {
     getQueryData.append("adMethod", requestType);
@@ -1163,6 +1163,7 @@ $(document).ready(function () {
           }
         });
     } else if (requestType === "joinProjectData") {
+      console.log(UIOWA_AdminDash.urlLookup.post);
       fetch(UIOWA_AdminDash.urlLookup.post, {
         method: "POST",
         body: getQueryData,
@@ -1204,13 +1205,9 @@ $(document).ready(function () {
         ) {
           let newJson = data.replaceAll("&quot;", '"');
           newJson = JSON.parse(newJson);
-          // if (parsedResult.length > 0) {
+
           let columns = [];
 
-          // if (requestType === 'joinProjectData') {
-          //     columns = Object.keys(parsedResult[0]);
-          // }
-          // else {
           let columnFormatting = self.loadedReport.meta.column_formatting;
           let purposeOtherName = "";
           let hasMultiColumnResearchPurpose = false;
@@ -1223,7 +1220,7 @@ $(document).ready(function () {
               const codeType = column.code_type;
               if (codeType === "4") {
                 hasMultiColumnResearchPurpose = true;
-                // newArray[removeIndex] = [...self.codeTypeLabelMap[3]];
+
                 columns = self.generateMultiColumnResearchPurposeColumns(
                   idx,
                   columns
@@ -1258,17 +1255,12 @@ $(document).ready(function () {
             columns = self.generateMultiColumnResearchPurpose();
           }
 
-          // if (newJson.length >= 1) {
           self.loadedReport.ready = true;
           $.extend(self.loadedReport, {
             columns: columns,
             data: newJson,
             ready: true,
           });
-          // } else {
-          //   self.loadedReport.error = "Zero rows returned.";
-          //   self.loadedReport.ready = true;
-          // }
         } else {
           self.loadedReport.error = "Error.  Zero rows returned";
           self.loadedReport.ready = false;

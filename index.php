@@ -144,7 +144,7 @@ $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_i
 <div id="adminDashApp">
     <?php if(!$syncProjectView): ?>
     <h2 v-cloak style="text-align: center; color: #106CD6; font-weight: bold; padding-top: 75px; padding-bottom: 10px">
-        <?php if($executiveView): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
+        <?php if((SUPER_USER === "1" && isset($_GET['asUser'])) || (SUPER_USER != "1" && $executiveView)): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
     </h2>
     <div id="nav" v-cloak v-if="Object.keys(reportLookup).length > 0">
         <ul class="nav nav-tabs border-bottom">
