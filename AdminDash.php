@@ -283,6 +283,7 @@ class AdminDash extends AbstractExternalModule
                 }
             }
 
+            // error_log($accessDetails['sync_project_access']);
 
             $jsObject = array_merge($jsObject, array(
                 'loadedReport' => array(
@@ -295,6 +296,7 @@ class AdminDash extends AbstractExternalModule
                 'formattingReference' => $formattingReference,
                 'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
                 'executiveExport' => $reportAccess[$report_id]['executive_export'],
+                'syncView' => $accessDetails['sync_project_access'],
                 'redcap_csrf_token' => $this->getCSRFToken(),
                 'redcap_version_url' => APP_PATH_WEBROOT
             ));
@@ -769,6 +771,8 @@ class AdminDash extends AbstractExternalModule
                         $userRightsArray[$report_id]['project_view'] = true;
                     }
 
+                
+
                     if ($reportRights['project_sync_export'] == '2') { // only users with "full data set" rights can export
                         $userRightsArray[$report_id]['export_access'] = $projectRights['data_export_tool'] == '1';
                     } elseif ($reportRights['project_sync_export'] == '1') { // any user can export
@@ -777,7 +781,7 @@ class AdminDash extends AbstractExternalModule
                 }
             }
         }
-
+        error_log(json_encode($userRightsArray));
         return $userRightsArray;
     }
 
