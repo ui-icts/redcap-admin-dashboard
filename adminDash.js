@@ -1188,6 +1188,7 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
+        console.log(data);
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&
