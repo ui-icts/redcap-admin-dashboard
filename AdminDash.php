@@ -529,7 +529,7 @@ class AdminDash extends AbstractExternalModule
                 }
                 echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
             } else {
-                echo "Error: something went wrong. " . $reportProps[0]["report_id"] . " " . json_encode($reportAccess);
+                echo "Error: something went wrong. " . json_encode($reportProps) . " " . json_encode($reportAccess);
                 // echo htmlentities("Error: something went wrong. " . json_encode($reportAccess), ENT_QUOTES, 'UTF-8');
             }
         } else {
