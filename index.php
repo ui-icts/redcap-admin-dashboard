@@ -5,6 +5,8 @@
 if (!isset($module->configPID) && SUPER_USER === '1') {
     include 'setup.php';
     die();
+} elseif(!isset($module->configPID) && SUPER_USER != '1') {
+    die();
 }
 
 if (isset($_GET['report'])) {

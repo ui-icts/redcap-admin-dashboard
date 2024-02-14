@@ -87,7 +87,6 @@ class AdminDash extends AbstractExternalModule
                         $hasLinkSourceColumnField = true;
                         $sqlEnum = $queryResults['element_enum'];
 
-            
                         if ($sqlEnum === null || $sqlEnum === '') {
                         
                             $dataTable = method_exists('\REDCap', 'getDataTable') ? "[data-table]" : "redcap_data";
@@ -162,6 +161,20 @@ class AdminDash extends AbstractExternalModule
         }
     }
 
+    public function isHttps() {
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            return ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTOCOL'])) {
+            return ($_SERVER['HTTP_X_FORWARDED_PROTOCOL'] === 'https');
+        } elseif (isset($_SERVER['HTTPS'])
+            && !empty($_SERVER['HTTPS'])
+            && strcasecmp($_SERVER['HTTPS'], 'off') !== 0
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
@@ -170,7 +183,7 @@ class AdminDash extends AbstractExternalModule
         
         $jsObject = array(
             'urlLookup' => array(
-                'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
+                'redcapBase' => ($this->isHttps() ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
                 'reportBase' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
                 'post' => $this->getUrl("post_internal.php")
             ),
