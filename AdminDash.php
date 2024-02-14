@@ -475,7 +475,7 @@ class AdminDash extends AbstractExternalModule
             $reportAccess = $this->getUserAccess(USERID, $pid);
             // error_log(json_encode($reportProps));
             // error_log(json_encode($reportAccess));
-            echo json_encode($reportProps);
+            echo json_encode($reportAccess);
             // $projectView = $reportAccess[$params[$report_id]]["project_view"];
 
  
