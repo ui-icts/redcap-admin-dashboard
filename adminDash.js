@@ -1184,7 +1184,7 @@ $(document).ready(function () {
           }
         });
     }
-  } else if (UIOWA_AdminDash.executiveView) {
+  } else if (UIOWA_AdminDash.executiveView === true) {
     console.log("exec view");
     getQueryData.append("adMethod", "runExecutiveReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
@@ -1263,7 +1263,7 @@ $(document).ready(function () {
           $("#reportLoading").html("");
         }
       });
-  } else if (UIOWA_AdminDash.syncView) {
+  } else if (UIOWA_AdminDash.syncView === true) {
     console.log("exec view");
     getQueryData.append("adMethod", "runProjectViewReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
