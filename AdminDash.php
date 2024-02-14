@@ -476,7 +476,7 @@ class AdminDash extends AbstractExternalModule
             // error_log(json_encode($reportProps));
             // error_log(json_encode($reportAccess));
             // echo json_encode($reportAccess);
-            $projectView = $reportAccess[$_GET["id"]]["project_view"];
+            $projectView = $reportAccess[$_POST["id"]]["project_view"];
 
  
             // error_log(json_encode($projectView));
@@ -529,7 +529,7 @@ class AdminDash extends AbstractExternalModule
                 }
                 echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
             } else {
-                echo "Error: something went wrong. " . json_encode($reportProps) . " " . $_GET["id"] . " " . json_encode($reportAccess);
+                echo "Error: something went wrong. " . json_encode($reportProps) . " " . $_POST["id"] . " " . json_encode($reportAccess);
                 // echo htmlentities("Error: something went wrong. " . json_encode($reportAccess), ENT_QUOTES, 'UTF-8');
             }
         } else {
