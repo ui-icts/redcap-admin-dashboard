@@ -475,6 +475,7 @@ class AdminDash extends AbstractExternalModule
 
             $projectView = $reportAccess[$params[$report_id]]["project_view"];
 
+            error_log("project sync view");
             error_log(json_encode($projectView));
 
             // $isExecutive = false;

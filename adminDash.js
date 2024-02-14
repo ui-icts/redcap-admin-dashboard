@@ -1264,7 +1264,7 @@ $(document).ready(function () {
         }
       });
   } else if (UIOWA_AdminDash.syncView === true) {
-    console.log("exec view");
+    console.log("project view");
     getQueryData.append("adMethod", "runProjectViewReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
