@@ -467,31 +467,13 @@ class AdminDash extends AbstractExternalModule
 
     public function runProjectViewReport($params) {
    
-        if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
-            // error_log("project sync view");
+        if(SUPER_USER != "1") {  //  prevent super users from viewing project sync dashboard
+    
             $reportProps = json_decode($this->getReportProps($params),true);
             $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
-
             $reportAccess = $this->getUserAccess(USERID, $pid);
-            // error_log(json_encode($reportProps));
-            // error_log(json_encode($reportAccess));
-            // echo json_encode($reportAccess);
             $projectView = $reportAccess[$params["id"]]["project_view"];
 
- 
-            // error_log(json_encode($projectView));
-
-            // $isExecutive = false;
-            // foreach($reportProps AS $instance => $data) {
-            //     $executiveUsername = $data['executive_username'];
-       
-             
-            //     if($executiveUsername === USERID && $data['executive_view'] == 1) {
-            //         $isExecutive = true;
-            //         break;
-            //     }
-            // }
-    
             if($projectView) {
                 $sql = $reportProps[0]['report_sql'];
                 $returnData = array();
@@ -529,8 +511,8 @@ class AdminDash extends AbstractExternalModule
                 }
                 echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
             } else {
-                echo "Error: something went wrong. " . json_encode($reportProps) . " " . $params["id"] . " " . json_encode($reportAccess);
-                // echo htmlentities("Error: something went wrong. " . json_encode($reportAccess), ENT_QUOTES, 'UTF-8');
+            
+                echo htmlentities("error: something went wrong. " . json_encode($reportAccess), ENT_QUOTES, 'UTF-8');
             }
         } else {
             echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
