@@ -1027,7 +1027,7 @@ $(document).ready(function () {
     : "getQuery";
 
   if (
-    (UIOWA_AdminDash.showAdminControls && requestType === "getQuery") ||
+    (UIOWA_AdminDash.showAdminControls == 1 && requestType === "getQuery") ||
     requestType === "joinProjectData"
   ) {
     console.log("show admin control");
