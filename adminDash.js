@@ -1026,6 +1026,8 @@ $(document).ready(function () {
     ? "joinProjectData"
     : "getQuery";
 
+  console.log(UIOWA_AdminDash);
+
   if (
     (UIOWA_AdminDash.showAdminControls == 1 && requestType === "getQuery") ||
     requestType === "joinProjectData"
@@ -1182,7 +1184,7 @@ $(document).ready(function () {
           }
         });
     }
-  } else if (UIOWA_AdminDash.executiveView) {
+  } else if (UIOWA_AdminDash.executiveView || UIOWA_AdminDash.syncView) {
     console.log("exec view");
     getQueryData.append("adMethod", "runExecutiveReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
