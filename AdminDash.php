@@ -225,6 +225,8 @@ class AdminDash extends AbstractExternalModule
         $reportLookup = $this->getReportLookup();
         $reportAccess = $this->getUserAccess(isset($execPreviewUser) ? $execPreviewUser : USERID, $_GET['pid']);
 
+        // error_log(json_encode($reportAccess));
+
         // remove any reports user does not have access to
         foreach($reportLookup as $index => $report) {
             $accessDetails = $reportAccess[$report['report_id']];
@@ -296,10 +298,12 @@ class AdminDash extends AbstractExternalModule
                 'formattingReference' => $formattingReference,
                 'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
                 'executiveExport' => $reportAccess[$report_id]['executive_export'],
-                'syncView' => $reportAccess[$report_id]['sync_project_access'],
+                'syncView' => $reportAccess[$report_id]['project_view'],
                 'redcap_csrf_token' => $this->getCSRFToken(),
                 'redcap_version_url' => APP_PATH_WEBROOT
             ));
+
+            error_log($reportAccess[$report_id]['project_view']);
         }
 
         return json_encode($jsObject);
@@ -771,7 +775,7 @@ class AdminDash extends AbstractExternalModule
                         $userRightsArray[$report_id]['project_view'] = true;
                     }
 
-                
+                    // error_log(json_encode($userRightsArray));
 
                     if ($reportRights['project_sync_export'] == '2') { // only users with "full data set" rights can export
                         $userRightsArray[$report_id]['export_access'] = $projectRights['data_export_tool'] == '1';
@@ -781,7 +785,7 @@ class AdminDash extends AbstractExternalModule
                 }
             }
         }
-        error_log(json_encode($userRightsArray));
+        // error_log(json_encode($userRightsArray));
         return $userRightsArray;
     }
 
