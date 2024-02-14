@@ -476,7 +476,7 @@ class AdminDash extends AbstractExternalModule
             // error_log(json_encode($reportProps));
             // error_log(json_encode($reportAccess));
             echo json_encode($reportAccess);
-            // $projectView = $reportAccess[$params[$report_id]]["project_view"];
+            $projectView = $reportAccess["project_view"];
 
  
             // error_log(json_encode($projectView));
@@ -492,45 +492,45 @@ class AdminDash extends AbstractExternalModule
             //     }
             // }
     
-            // if($projectView) {
-            //     $sql = $reportProps[0]['report_sql'];
-            //     $returnData = array();
-            //     // supports [user-name] and [project-id]
-            //     if (!isset($params['token'])) {
-            //         $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
-            //     }
+            if($projectView) {
+                $sql = $reportProps[0]['report_sql'];
+                $returnData = array();
+                // supports [user-name] and [project-id]
+                if (!isset($params['token'])) {
+                    $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+                }
              
                 
-            //     if ($sql == '') {
+                if ($sql == '') {
                 
-            //         $returnData['error'] = 'No SQL query defined.';
-            //     } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+                    $returnData['error'] = 'No SQL query defined.';
+                } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
                 
-            //         $returnData['error'] = 'SQL query is not a SELECT query.';
-            //     } else {
-            //         //fix for group_concat limit
-            //         // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+                    $returnData['error'] = 'SQL query is not a SELECT query.';
+                } else {
+                    //fix for group_concat limit
+                    // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
             
-            //         $result = $this->query($sql, []);
+                    $result = $this->query($sql, []);
     
                     
-            //         if (is_string($result)) {
-            //             echo $result;
-            //             return;
-            //         }
+                    if (is_string($result)) {
+                        echo $result;
+                        return;
+                    }
               
-            //         //prepare data for table
-            //         while ($row = db_fetch_assoc($result)) {
-            //             $returnData[] = $row;
-            //         }
+                    //prepare data for table
+                    while ($row = db_fetch_assoc($result)) {
+                        $returnData[] = $row;
+                    }
         
     
                   
-            //     }
-            //     echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
-            // } else {
-            //     echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
-            // }
+                }
+                echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+            } else {
+                echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
+            }
         } else {
             echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
         }
