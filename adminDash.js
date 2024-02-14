@@ -1030,9 +1030,11 @@ $(document).ready(function () {
     (UIOWA_AdminDash.showAdminControls && requestType === "getQuery") ||
     requestType === "joinProjectData"
   ) {
+    console.log("show admin control");
     getQueryData.append("adMethod", requestType);
 
     if (requestType === "getQuery") {
+      console.log("get query");
       fetch(UIOWA_AdminDash.urlLookup.post, {
         method: "POST",
         body: getQueryData,
