@@ -42,9 +42,16 @@ elseif (isset($_GET['record'])) {
 $reportRights = $module->getUserAccess(USERID, $_GET['pid']);
 
 // if not superuser, verify access
-if (SUPER_USER != '1' && !$reportRights[$report_id]['project_view'] && !$reportRights[$report_id]['executive_view']) {
+$sanitizedJavascriptObject = [];
+if(SUPER_USER == 1 || (SUPER_USER != 1 && ($reportRights[$report_id]['project_view'] || $reportRights[$report_id]['executive_view']))) {
+    $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_id, false, $_GET['asUser']), ENT_QUOTES, 'UTF-8');
+} else {
     die('You do not have access to this page.');
 }
+
+// if (SUPER_USER != '1' && !$reportRights[$report_id]['project_view'] && !$reportRights[$report_id]['executive_view']) {
+//     die('You do not have access to this page.');
+// }
 
 $executiveView = SUPER_USER != "1" && ($reportRights[$report_id]['executive_view'] || isset($_GET['asUser'])) ? 1 : 0;
 $syncProjectView = $reportRights[$report_id]['project_view'];
@@ -59,7 +66,7 @@ else {
     include APP_PATH_VIEWS . 'HomeTabs.php';
 }
 
-$sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_id, false, $_GET['asUser']), ENT_QUOTES, 'UTF-8');
+// $sanitizedJavascriptObject = htmlentities($module->getJavascriptObject($report_id, false, $_GET['asUser']), ENT_QUOTES, 'UTF-8');
 
 ?>
 <style>
