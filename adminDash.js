@@ -1181,6 +1181,7 @@ $(document).ready(function () {
         });
     }
   } else if (UIOWA_AdminDash.executiveView) {
+    console.log("exec view");
     getQueryData.append("adMethod", "runExecutiveReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
