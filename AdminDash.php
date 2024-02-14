@@ -493,7 +493,7 @@ class AdminDash extends AbstractExternalModule
             // }
     
             if($projectView) {
-                $sql = $reportProps[0]['report_sql'];
+                $sql = $reportProps[$params["reportId"]]['report_sql'];
                 $returnData = array();
                 // supports [user-name] and [project-id]
                 if (!isset($params['token'])) {
