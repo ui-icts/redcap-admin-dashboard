@@ -18,6 +18,8 @@ if(isset($_POST['adMethod'])) {
         $module->joinProjectData($_POST);
     } elseif(SUPER_USER != "1" && $_POST['adMethod'] === 'runExecutiveReport') {
         $module->runExecutiveReport($_POST);
+    } elseif(SUPER_USER != "1" && $_POST['adMethod'] === 'runProjectViewReport') {
+        $module->runProjectViewReport($_POST);
     } else {
         die('error: something went wrong');
     }

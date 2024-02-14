@@ -465,7 +465,75 @@ class AdminDash extends AbstractExternalModule
       
     }
 
+    public function runProjectViewReport($params) {
    
+        if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
+            $reportProps = json_decode($this->getReportProps($params),true);
+            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+
+            $reportAccess = $this->getUserAccess(USERID, $_GET['pid']);
+
+            $projectView = $reportAccess[$params[$report_id]]["project_view"];
+
+            error_log(json_encode($projectView));
+
+            // $isExecutive = false;
+            // foreach($reportProps AS $instance => $data) {
+            //     $executiveUsername = $data['executive_username'];
+       
+             
+            //     if($executiveUsername === USERID && $data['executive_view'] == 1) {
+            //         $isExecutive = true;
+            //         break;
+            //     }
+            // }
+    
+            if($projectView) {
+                $sql = $reportProps[0]['report_sql'];
+                $returnData = array();
+                // supports [user-name] and [project-id]
+                if (!isset($params['token'])) {
+                    $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
+                }
+             
+                
+                if ($sql == '') {
+                
+                    $returnData['error'] = 'No SQL query defined.';
+                } elseif (!(strtolower(substr($sql, 0, 6)) == "select")) {
+                
+                    $returnData['error'] = 'SQL query is not a SELECT query.';
+                } else {
+                    //fix for group_concat limit
+                    // $this->query('SET SESSION group_concat_max_len = 1000000;', []);
+            
+                    $result = $this->query($sql, []);
+    
+                    
+                    if (is_string($result)) {
+                        echo $result;
+                        return;
+                    }
+              
+                    //prepare data for table
+                    while ($row = db_fetch_assoc($result)) {
+                        $returnData[] = $row;
+                    }
+        
+    
+                  
+                }
+                echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
+            } else {
+                echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
+            }
+        } else {
+            echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
+        }
+
+
+      
+    }
 
     public function saveReportColumns($project_id, $record, $columns)
     {

@@ -1184,9 +1184,88 @@ $(document).ready(function () {
           }
         });
     }
-  } else if (UIOWA_AdminDash.executiveView || UIOWA_AdminDash.syncView) {
+  } else if (UIOWA_AdminDash.executiveView) {
     console.log("exec view");
     getQueryData.append("adMethod", "runExecutiveReport");
+    fetch(UIOWA_AdminDash.urlLookup.post, {
+      method: "POST",
+      body: getQueryData,
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        console.log(data);
+        if (
+          data !== "" &&
+          !data.toLowerCase().startsWith("error") &&
+          !data.toLowerCase().startsWith("{&quot")
+        ) {
+          let newJson = data.replaceAll("&quot;", '"');
+          newJson = JSON.parse(newJson);
+
+          let columns = [];
+
+          let columnFormatting = self.loadedReport.meta.column_formatting;
+          let purposeOtherName = "";
+          let hasMultiColumnResearchPurpose = false;
+          if (columnFormatting) {
+            columns = Object.keys(columnFormatting);
+
+            const parseColumnFormatting = Object.entries(columnFormatting);
+
+            for (const [idx, column] of parseColumnFormatting) {
+              const codeType = column.code_type;
+              if (codeType === "4") {
+                hasMultiColumnResearchPurpose = true;
+
+                columns = self.generateMultiColumnResearchPurposeColumns(
+                  idx,
+                  columns
+                );
+              }
+            }
+
+            columns = $.map(
+              columnFormatting,
+              function (columnMeta, column_name) {
+                if (
+                  columnMeta.code_type === "4" &&
+                  column_name === purposeOtherName
+                ) {
+                  return columnMeta.dashboard_show_column === "0"
+                    ? null
+                    : [...self.codeTypeLabelMap[3]];
+                } else {
+                  return columnMeta.dashboard_show_column === "0"
+                    ? null
+                    : column_name;
+                }
+              }
+            );
+          }
+
+          if (hasMultiColumnResearchPurpose) {
+            newJson = self.generateMultiColumnResearchPurposeData(
+              newJson,
+              columnFormatting
+            );
+            columns = self.generateMultiColumnResearchPurpose();
+          }
+
+          self.loadedReport.ready = true;
+          $.extend(self.loadedReport, {
+            columns: columns,
+            data: newJson,
+            ready: true,
+          });
+        } else {
+          self.loadedReport.error = "Error.  Zero rows returned";
+          self.loadedReport.ready = false;
+          $("#reportLoading").html("");
+        }
+      });
+  } else if (UIOWA_AdminDash.syncView) {
+    console.log("exec view");
+    getQueryData.append("adMethod", "runProjectViewReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
       body: getQueryData,
