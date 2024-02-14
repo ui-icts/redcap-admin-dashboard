@@ -493,7 +493,7 @@ class AdminDash extends AbstractExternalModule
             // }
     
             if($projectView) {
-                $sql = $reportProps[$params["reportId"]]['report_sql'];
+                $sql = $reportProps[0]['report_sql'];
                 $returnData = array();
                 // supports [user-name] and [project-id]
                 if (!isset($params['token'])) {
@@ -529,7 +529,7 @@ class AdminDash extends AbstractExternalModule
                 }
                 echo htmlentities(json_encode($returnData), ENT_QUOTES, 'UTF-8');
             } else {
-                echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
+                echo htmlentities("Error: something went wrong. " . json_encode($reportProps), ENT_QUOTES, 'UTF-8');
             }
         } else {
             echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
