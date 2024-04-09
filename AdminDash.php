@@ -225,8 +225,6 @@ class AdminDash extends AbstractExternalModule
         $reportLookup = $this->getReportLookup();
         $reportAccess = $this->getUserAccess(isset($execPreviewUser) ? $execPreviewUser : USERID, $_GET['pid']);
 
-        // error_log(json_encode($reportAccess));
-
         // remove any reports user does not have access to
         foreach($reportLookup as $index => $report) {
             $accessDetails = $reportAccess[$report['report_id']];
@@ -285,8 +283,6 @@ class AdminDash extends AbstractExternalModule
                 }
             }
 
-            // error_log($accessDetails['sync_project_access']);
-
             $jsObject = array_merge($jsObject, array(
                 'loadedReport' => array(
                     'meta' => $formattedMeta,
@@ -303,7 +299,6 @@ class AdminDash extends AbstractExternalModule
                 'redcap_version_url' => APP_PATH_WEBROOT
             ));
 
-            error_log($reportAccess[$report_id]['project_view']);
         }
 
         return json_encode($jsObject);
@@ -359,8 +354,7 @@ class AdminDash extends AbstractExternalModule
                 $sql = \Piping::pipeSpecialTags($sql, $pid, null, null, null, $username);
             }
     
-            $formattedSql = htmlentities(strip_tags($sql), ENT_QUOTES, 'UTF-8');
-    
+            $formattedSql = htmlentities($sql, ENT_QUOTES, 'UTF-8');
             echo $formattedSql;
         } else {
             echo htmlentities("error: something went wrong.", ENT_QUOTES, 'UTF-8');
@@ -830,8 +824,6 @@ class AdminDash extends AbstractExternalModule
                         $userRightsArray[$report_id]['project_view'] = true;
                     }
 
-                    // error_log(json_encode($userRightsArray));
-
                     if ($reportRights['project_sync_export'] == '2') { // only users with "full data set" rights can export
                         $userRightsArray[$report_id]['export_access'] = $projectRights['data_export_tool'] == '1';
                     } elseif ($reportRights['project_sync_export'] == '1') { // any user can export
@@ -840,7 +832,7 @@ class AdminDash extends AbstractExternalModule
                 }
             }
         }
-        // error_log(json_encode($userRightsArray));
+
         return $userRightsArray;
     }
 

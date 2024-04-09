@@ -1026,17 +1026,13 @@ $(document).ready(function () {
     ? "joinProjectData"
     : "getQuery";
 
-  console.log(UIOWA_AdminDash);
-
   if (
     (UIOWA_AdminDash.showAdminControls == 1 && requestType === "getQuery") ||
     requestType === "joinProjectData"
   ) {
-    console.log("show admin control");
     getQueryData.append("adMethod", requestType);
 
     if (requestType === "getQuery") {
-      console.log("get query");
       fetch(UIOWA_AdminDash.urlLookup.post, {
         method: "POST",
         body: getQueryData,
@@ -1056,7 +1052,12 @@ $(document).ready(function () {
               "redcap_csrf_token",
               UIOWA_AdminDash.redcap_csrf_token
             );
-            getData.append("query", data);
+            const finalQuery = data
+              .replaceAll("&gt;", ">")
+              .replaceAll("&lt;", "<")
+              .replaceAll("&#039;", "'");
+
+            getData.append("query", finalQuery);
 
             fetch(dbQueryToolUrl, {
               method: "POST",
@@ -1070,7 +1071,21 @@ $(document).ready(function () {
 
                   $("#reportLoading").html("");
                 } else {
+                  // const rawData = shift(self.csvTo2dArray(data))
                   const dataArrayized = self.csvTo2dArray(data);
+
+                  if (
+                    data.startsWith("<script") &&
+                    data.includes("CustomQueryFolders") &&
+                    !data.includes("<style")
+                  ) {
+                    //  In some REDCap version 14.x, db query tool now returns an extra row of data with a script tag and prevents reports from loading
+                    dataArrayized.shift();
+                  } else {
+                    self.loadedReport.error =
+                      "Something went wrong.  Query likely malformed, possibly due to php htmlentities()";
+                    self.loadedReport.ready = false;
+                  }
 
                   let newJson = [];
                   const headers = dataArrayized[0];
@@ -1166,6 +1181,7 @@ $(document).ready(function () {
         .then((data) => {
           if (data !== "" && !data.toLowerCase().startsWith("error")) {
             data = data.replaceAll("&quot;", '"');
+
             data = JSON.parse(data);
 
             let columns = [];
@@ -1185,7 +1201,6 @@ $(document).ready(function () {
         });
     }
   } else if (UIOWA_AdminDash.executiveView === true) {
-    console.log("exec view");
     getQueryData.append("adMethod", "runExecutiveReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
@@ -1193,7 +1208,6 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
-        console.log(data);
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&
@@ -1264,7 +1278,6 @@ $(document).ready(function () {
         }
       });
   } else if (UIOWA_AdminDash.syncView === true) {
-    console.log("project view");
     getQueryData.append("adMethod", "runProjectViewReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
@@ -1272,7 +1285,6 @@ $(document).ready(function () {
     })
       .then((response) => response.text())
       .then((data) => {
-        console.log(data);
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&

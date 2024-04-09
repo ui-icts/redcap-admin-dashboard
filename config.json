@@ -4,12 +4,13 @@
   "documentation": "README.md",
 
   "namespace": "UIOWA\\AdminDash",
-  "framework-version": 10,
+  "framework-version": 13,
 
   "versions": {
     "4.1.0": "Fixed several Psalm vulnerabilities.  Refactored how queries are executed for Psalm compliance.  Fixed filter labels not generating/working correctly.  Fixed executive user being able to see and use export buttons without permission.  Fixed multi column research purpose.  Extra columns in a report now deleted properly when entering a new query with fewer columns than the previous query.  Fixed Bootstrap 5 styling.  Fixed report loading animation.  Fixed row hover color.  Added csrf token to post requests.  Updated to EM framework version 9.  Set minimum REDCap version to 12.0.4.",
     "4.1.1": "Updated external module version to 10 and redcap minimum version to 12.4.6",
-    "4.1.2": "Added compatibility for new redcap_data(#) tables.  When enabling the module on a project, the config pid can now only be set as a project that has a field named link_source_column."
+    "4.1.2": "Added compatibility for new redcap_data(#) tables.  When enabling the module on a project, the config pid can now only be set as a project that has a field named link_source_column.",
+    "4.1.3": "Fixed Executive View.  Fixed REDCap 14.x issue preventing reports from loading.  Fixed issue with some symbols being removed by htmlentities() causing malformed queries.  Updated to EM Framework version 13 and minimum REDCap version 13.7.3."
   },
 
   "authors": [
@@ -67,14 +68,6 @@
     ]
   },
 
-  "permissions": [
-    "redcap_data_entry_form",
-    "redcap_save_record",
-    "redcap_module_link_check_display",
-    "redcap_module_system_change_version",
-    "redcap_module_project_enable"
-  ],
-
   "no-auth-pages": ["post"],
 
   "no-csrf-pages": ["post"],
@@ -108,7 +101,7 @@
   "compatibility": {
     "php-version-min": "",
     "php-version-max": "",
-    "redcap-version-min": "12.4.6",
+    "redcap-version-min": "13.7.3",
     "redcap-version-max": ""
   }
 }
