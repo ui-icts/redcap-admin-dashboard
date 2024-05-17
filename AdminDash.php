@@ -6,18 +6,6 @@ use ExternalModules\AbstractExternalModule;
 
 class AdminDash extends AbstractExternalModule
 {
-    public $configPID;
-    public $currentPID;
-
-    public function __construct()
-    {
-        parent::__construct();
-        define("MODULE_DOCROOT", $this->getModulePath());
-
-        $this->configPID = $this->getSystemSetting('config-pid');
-        $this->currentPID = isset($_GET['pid']) ? $_GET['pid'] : $this->configPID;
-    
-    }  
 
     function redcap_module_system_change_version($version, $old_version) {
         $result = $this->query('SELECT value FROM redcap_config WHERE field_name = \'auth_meth_global\'', []);
@@ -31,13 +19,15 @@ class AdminDash extends AbstractExternalModule
     }
 
     function redcap_module_link_check_display($project_id, $link) {
+
+        $configPID = $this->getSystemSetting("config-pid");
         if ($project_id) {
             $link_id = intval(explode('_', $link['name'])[1]);
 
             $reportRights = $this->getUserAccess(USERID, $project_id);
 
             $reportId = json_decode(\REDCap::getData(array(
-                'project_id' => $this->configPID,
+                'project_id' => $configPID,
                 'fields' => array('report_id'),
                 'return_format' => 'json',
                 'events' => ['user_access_arm_1', 'user_access_arm_2'],
@@ -45,7 +35,7 @@ class AdminDash extends AbstractExternalModule
             )), true)[$link_id]['report_id'];
 
             $reportInfo = json_decode(\REDCap::getData(array(
-                'project_id' => $this->configPID,
+                'project_id' => $configPID,
                 'events' => ['report_config_arm_1', 'report_config_arm_2'],
                 'records' => $reportId,
                 'fields' => ['report_id', 'report_title', 'report_icon'],
@@ -73,6 +63,7 @@ class AdminDash extends AbstractExternalModule
     function redcap_module_project_enable($version, $project_id) {
 
         if(SUPER_USER === "1") {
+       
             $configPid = $this->getSystemSetting("config-pid");
 
             if (!isset($configPid)) {
@@ -135,9 +126,9 @@ class AdminDash extends AbstractExternalModule
 
     function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance) {
         // load customizations for config project
-        
+        $configPID = $this->getSystemSetting("config-pid");
         $sanitizedJavascriptObject = htmlentities($this->getJavascriptObject($record, true), ENT_QUOTES, 'UTF-8');
-        if ($project_id == $this->configPID) {
+        if ($project_id == $configPID) {
             ?>
             <script>
             
@@ -156,7 +147,8 @@ class AdminDash extends AbstractExternalModule
 
     function redcap_save_record($project_id, $record) {
         // generate column formatting instances
-        if ($project_id == $this->configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
+        $configPID = $this->getSystemSetting("config-pid");
+        if ($project_id == $configPID && $_POST['__chk__generate_column_formatting_RC_1'] == '1') {
             $this->saveReportColumns($project_id, $record, $_POST['test_query_column_list']);
         }
     }
@@ -179,7 +171,7 @@ class AdminDash extends AbstractExternalModule
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
 
-
+        $configPID = $this->getSystemSetting("config-pid");
         
         $jsObject = array(
             'urlLookup' => array(
@@ -196,13 +188,13 @@ class AdminDash extends AbstractExternalModule
 
         // remove PID if project context added it
         foreach ($jsObject['urlLookup'] as $key => $url) {
-            $jsObject['urlLookup'][$key] = str_replace('&pid=' . $this->configPID, '', $url);
+            $jsObject['urlLookup'][$key] = str_replace('&pid=' . $configPID, '', $url);
         }
 
         // redcap data entry only
         if ($isDataEntryForm) {
             $configDataDictionary = json_decode(\REDCap::getDataDictionary(
-                $this->configPID, 'json', null, 'icon_lookup'), true);
+                $configPID, 'json', null, 'icon_lookup'), true);
 
             $formattingReference = array();
 
@@ -242,14 +234,14 @@ class AdminDash extends AbstractExternalModule
 
         if ($report_id !== -1) {
             $loadedReportMetadata = json_decode(\REDCap::getData(array(
-                'project_id' => $this->configPID,
+                'project_id' => $configPID,
                 'events' => ['report_config_arm_1', 'report_config_arm_2'],
                 'return_format' => 'json',
                 'records' => $report_id
             )), true);
 
             $configDataDictionary = json_decode(\REDCap::getDataDictionary(
-                $this->configPID, 'json', null, null, 'formatting_reference'), true);
+                $configPID, 'json', null, null, 'formatting_reference'), true);
 
             $formattingReference = array();
 
@@ -290,7 +282,7 @@ class AdminDash extends AbstractExternalModule
                     'ready' => false
                 ),
                 'showAdminControls' => SUPER_USER,
-                'configPID' => $this->configPID,
+                'configPID' => $configPID,
                 'formattingReference' => $formattingReference,
                 'executiveView' => $reportAccess[$report_id]['executive_view'] || isset($execPreviewUser),
                 'executiveExport' => $reportAccess[$report_id]['executive_export'],
@@ -307,15 +299,17 @@ class AdminDash extends AbstractExternalModule
 
 
     public function getReportProps($params) {
+        $configPID = $this->getSystemSetting("config-pid");
+        $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
         $report_id = $params['id']; // user-facing call - lookup query by record id
         $username = isset($params['username']) ? $params['username'] : USERID;
         
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+        $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
         // get sql query from REDCap record
 
         if(!isset($params['query'])) {
             $data = \REDCap::getData(array(
-                'project_id' => $this->configPID,
+                'project_id' => $configPID,
                 'return_format' => 'json',
                 'records' => $report_id,
                 'fields' => ['report_sql', 'executive_username', 'executive_view']
@@ -329,15 +323,17 @@ class AdminDash extends AbstractExternalModule
 
     public function getQuery($params) {  
         if(SUPER_USER === "1") {
+            $configPID = $this->getSystemSetting("config-pid");
+            $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $report_id = $params['id']; // user-facing call - lookup query by record id
             $username = isset($params['username']) ? $params['username'] : USERID;
             
-            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
             // get sql query from REDCap record
     
             if(!isset($params['query'])) {
                 $data = \REDCap::getData(array(
-                    'project_id' => $this->configPID,
+                    'project_id' => $configPID,
                     'return_format' => 'json',
                     'records' => $report_id,
                     'fields' => 'report_sql'
@@ -363,8 +359,10 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function runApiReport($params) {
+        
         $reportProps = json_decode($this->getReportProps($params),true);
-        $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+        $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
+        $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
 
         $sql = $reportProps[0]['report_sql'];
         $returnData = array();
@@ -399,8 +397,9 @@ class AdminDash extends AbstractExternalModule
     public function runExecutiveReport($params) {
    
         if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
+            $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $reportProps = json_decode($this->getReportProps($params),true);
-            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
             $isExecutive = false;
             foreach($reportProps AS $instance => $data) {
                 $executiveUsername = $data['executive_username'];
@@ -462,9 +461,9 @@ class AdminDash extends AbstractExternalModule
     public function runProjectViewReport($params) {
    
         if(SUPER_USER != "1") {  //  prevent super users from viewing project sync dashboard
-    
+            $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $reportProps = json_decode($this->getReportProps($params),true);
-            $pid = isset($params['project_id']) ? $params['project_id'] : $this->currentPID;
+            $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
             $reportAccess = $this->getUserAccess(USERID, $pid);
             $projectView = $reportAccess[$params["id"]]["project_view"];
 
@@ -518,9 +517,9 @@ class AdminDash extends AbstractExternalModule
 
     public function saveReportColumns($project_id, $record, $columns)
     {
-
+        $configPID = $this->getSystemSetting("config-pid");
         $existingColumns  = json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
+            'project_id' => $configPID,
             'return_format' => 'json',
             'events' => ['report_config_arm_1'],
             'fields' => [
@@ -718,7 +717,7 @@ class AdminDash extends AbstractExternalModule
 
         //  Check existing column formatting instances
         $getColumnInstances = \REDCap::getData(array(
-            'project_id' => $this->configPID,
+            'project_id' => $configPID,
             'return_format' => 'json',
             'events' => ['report_config_arm_1'],
             'fields' => [
@@ -732,7 +731,7 @@ class AdminDash extends AbstractExternalModule
             
             for($i = $numberOfColumns+1; $i < count(json_decode($getColumnInstances)); $i++) {
                 //  TODO check if instance number can be an array
-                \REDCap::deleteRecord($this->configPID,
+                \REDCap::deleteRecord($configPID,
                     $record,
                     1,  //  arm
                     'report_config_arm_1',  //  event name
@@ -741,7 +740,7 @@ class AdminDash extends AbstractExternalModule
             }
             
             $getColumnInstances2 = \REDCap::getData(array(
-                'project_id' => $this->configPID,
+                'project_id' => $configPID,
                 'return_format' => 'json',
                 'events' => ['report_config_arm_1'],
                 'fields' => [
@@ -755,10 +754,11 @@ class AdminDash extends AbstractExternalModule
 
     public function getUserAccess($username, $pid)
     {
+        $configPID = $this->getSystemSetting("config-pid");
         $userRightsArray = array();
 
         $allReportRights = \REDCap::getData(array(
-            'project_id' => $this->configPID,
+            'project_id' => $configPID,
             'return_format' => 'json',
             'events' => ['user_access_arm_1', 'user_access_arm_2'],
             'fields' => [
@@ -838,9 +838,9 @@ class AdminDash extends AbstractExternalModule
 
     public function joinProjectData($params)
     {
-
+        $configPID = $this->getSystemSetting("config-pid");
         $joinConfig = json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
+            'project_id' => $configPID,
             'return_format' => 'json',
             'records' => $params['report_id'],
             'fields' => array(
@@ -974,8 +974,9 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function getReportLookup() {
+        $configPID = $this->getSystemSetting("config-pid");
         return json_decode(\REDCap::getData(array(
-            'project_id' => $this->configPID,
+            'project_id' => $configPID,
             'return_format' => 'json',
             'filterLogic' => '[report_visibility] = "1"',
             'fields' => array('report_id', 'report_id_custom', 'report_title', 'report_icon', 'report_type', 'folder_name', 'tab_color', 'tab_color_custom')

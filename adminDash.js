@@ -1074,18 +1074,18 @@ $(document).ready(function () {
                   // const rawData = shift(self.csvTo2dArray(data))
                   const dataArrayized = self.csvTo2dArray(data);
 
-                  if (
-                    data.startsWith("<script") &&
-                    data.includes("CustomQueryFolders") &&
-                    !data.includes("<style")
-                  ) {
-                    //  In some REDCap version 14.x, db query tool now returns an extra row of data with a script tag and prevents reports from loading
-                    dataArrayized.shift();
-                  } else {
-                    self.loadedReport.error =
-                      "Something went wrong.  Query likely malformed, possibly due to php htmlentities()";
-                    self.loadedReport.ready = false;
-                  }
+                  // if (
+                  //   data.startsWith("<script") &&
+                  //   data.includes("CustomQueryFolders") &&
+                  //   !data.includes("<style")
+                  // ) {
+                  //   //  In some REDCap version 14.x, db query tool now returns an extra row of data with a script tag and prevents reports from loading
+                  //   dataArrayized.shift();
+                  // } else {
+                  //   self.loadedReport.error =
+                  //     "Something went wrong.  Query likely malformed, possibly due to php htmlentities()";
+                  //   self.loadedReport.ready = false;
+                  // }
 
                   let newJson = [];
                   const headers = dataArrayized[0];

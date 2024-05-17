@@ -1,11 +1,12 @@
 <?php
 /** @var \UIOWA\AdminDash\AdminDash $module */
-
+// $baseData = $module->getBaseData();
 // module not yet configured
-if (!isset($module->configPID) && SUPER_USER === '1') {
+$configPID = $module->getSystemSetting("config-pid");
+if (!isset($configPID) && SUPER_USER === '1') {
     include 'setup.php';
     die();
-} elseif(!isset($module->configPID) && SUPER_USER != '1') {
+} elseif(!isset($configPID) && SUPER_USER != '1') {
     die();
 }
 
