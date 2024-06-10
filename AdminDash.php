@@ -970,7 +970,7 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function getRedcapUrl() {
-        return (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
+        return ($this->isHttps() ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
     }
 
     public function getReportLookup() {

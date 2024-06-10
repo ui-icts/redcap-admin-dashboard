@@ -1211,7 +1211,8 @@ $(document).ready(function () {
         if (
           data !== "" &&
           !data.toLowerCase().startsWith("error") &&
-          !data.toLowerCase().startsWith("{&quot")
+          !data.toLowerCase().startsWith("{&quot") &&
+          !data.startsWith("<")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
           newJson = JSON.parse(newJson);
