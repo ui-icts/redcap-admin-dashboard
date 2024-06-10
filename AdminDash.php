@@ -361,6 +361,7 @@ class AdminDash extends AbstractExternalModule
     public function runApiReport($params) {
         
         $reportProps = json_decode($this->getReportProps($params),true);
+        $configPID = $this->getSystemSetting("config-pid");
         $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
         $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
 
@@ -397,6 +398,7 @@ class AdminDash extends AbstractExternalModule
     public function runExecutiveReport($params) {
    
         if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
+            $configPID = $this->getSystemSetting("config-pid");
             $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $reportProps = json_decode($this->getReportProps($params),true);
             $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
