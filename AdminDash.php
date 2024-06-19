@@ -153,19 +153,19 @@ class AdminDash extends AbstractExternalModule
         }
     }
 
-    public function isHttps() {
-        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-            return ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTOCOL'])) {
-            return ($_SERVER['HTTP_X_FORWARDED_PROTOCOL'] === 'https');
-        } elseif (isset($_SERVER['HTTPS'])
-            && !empty($_SERVER['HTTPS'])
-            && strcasecmp($_SERVER['HTTPS'], 'off') !== 0
-        ) {
-            return true;
-        }
-        return false;
-    }
+    // public function isHttps() {
+    //     if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    //         return ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    //     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTOCOL'])) {
+    //         return ($_SERVER['HTTP_X_FORWARDED_PROTOCOL'] === 'https');
+    //     } elseif (isset($_SERVER['HTTPS'])
+    //         && !empty($_SERVER['HTTPS'])
+    //         && strcasecmp($_SERVER['HTTPS'], 'off') !== 0
+    //     ) {
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
@@ -175,7 +175,7 @@ class AdminDash extends AbstractExternalModule
         
         $jsObject = array(
             'urlLookup' => array(
-                'redcapBase' => ($this->isHttps() ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
+                'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
                 'reportBase' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
                 'post' => $this->getUrl("post_internal.php")
             ),
@@ -463,6 +463,7 @@ class AdminDash extends AbstractExternalModule
     public function runProjectViewReport($params) {
    
         if(SUPER_USER != "1") {  //  prevent super users from viewing project sync dashboard
+            $configPID = $this->getSystemSetting("config-pid");
             $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $reportProps = json_decode($this->getReportProps($params),true);
             $pid = isset($params['project_id']) ? $params['project_id'] : $currentPID;
@@ -972,7 +973,8 @@ class AdminDash extends AbstractExternalModule
     }
 
     public function getRedcapUrl() {
-        return ($this->isHttps() ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
+        // return ($this->isHttps() ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
+        return (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT;
     }
 
     public function getReportLookup() {
