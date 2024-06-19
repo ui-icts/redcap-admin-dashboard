@@ -1027,7 +1027,7 @@ $(document).ready(function () {
     : "getQuery";
 
   if (
-    (UIOWA_AdminDash.showAdminControls && requestType === "getQuery") ||
+    (UIOWA_AdminDash.showAdminControls == 1 && requestType === "getQuery") ||
     requestType === "joinProjectData"
   ) {
     getQueryData.append("adMethod", requestType);
@@ -1052,7 +1052,12 @@ $(document).ready(function () {
               "redcap_csrf_token",
               UIOWA_AdminDash.redcap_csrf_token
             );
-            getData.append("query", data);
+            const finalQuery = data
+              .replaceAll("&gt;", ">")
+              .replaceAll("&lt;", "<")
+              .replaceAll("&#039;", "'");
+
+            getData.append("query", finalQuery);
 
             fetch(dbQueryToolUrl, {
               method: "POST",
@@ -1066,7 +1071,21 @@ $(document).ready(function () {
 
                   $("#reportLoading").html("");
                 } else {
+                  // const rawData = shift(self.csvTo2dArray(data))
                   const dataArrayized = self.csvTo2dArray(data);
+
+                  // if (
+                  //   data.startsWith("<script") &&
+                  //   data.includes("CustomQueryFolders") &&
+                  //   !data.includes("<style")
+                  // ) {
+                  //   //  In some REDCap version 14.x, db query tool now returns an extra row of data with a script tag and prevents reports from loading
+                  //   dataArrayized.shift();
+                  // } else {
+                  //   self.loadedReport.error =
+                  //     "Something went wrong.  Query likely malformed, possibly due to php htmlentities()";
+                  //   self.loadedReport.ready = false;
+                  // }
 
                   let newJson = [];
                   const headers = dataArrayized[0];
@@ -1162,6 +1181,7 @@ $(document).ready(function () {
         .then((data) => {
           if (data !== "" && !data.toLowerCase().startsWith("error")) {
             data = data.replaceAll("&quot;", '"');
+
             data = JSON.parse(data);
 
             let columns = [];
@@ -1180,8 +1200,86 @@ $(document).ready(function () {
           }
         });
     }
-  } else if (UIOWA_AdminDash.executiveView) {
+  } else if (UIOWA_AdminDash.executiveView === true) {
     getQueryData.append("adMethod", "runExecutiveReport");
+    fetch(UIOWA_AdminDash.urlLookup.post, {
+      method: "POST",
+      body: getQueryData,
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        if (
+          data !== "" &&
+          !data.toLowerCase().startsWith("error") &&
+          !data.toLowerCase().startsWith("{&quot") &&
+          !data.startsWith("<")
+        ) {
+          let newJson = data.replaceAll("&quot;", '"');
+          newJson = JSON.parse(newJson);
+
+          let columns = [];
+
+          let columnFormatting = self.loadedReport.meta.column_formatting;
+          let purposeOtherName = "";
+          let hasMultiColumnResearchPurpose = false;
+          if (columnFormatting) {
+            columns = Object.keys(columnFormatting);
+
+            const parseColumnFormatting = Object.entries(columnFormatting);
+
+            for (const [idx, column] of parseColumnFormatting) {
+              const codeType = column.code_type;
+              if (codeType === "4") {
+                hasMultiColumnResearchPurpose = true;
+
+                columns = self.generateMultiColumnResearchPurposeColumns(
+                  idx,
+                  columns
+                );
+              }
+            }
+
+            columns = $.map(
+              columnFormatting,
+              function (columnMeta, column_name) {
+                if (
+                  columnMeta.code_type === "4" &&
+                  column_name === purposeOtherName
+                ) {
+                  return columnMeta.dashboard_show_column === "0"
+                    ? null
+                    : [...self.codeTypeLabelMap[3]];
+                } else {
+                  return columnMeta.dashboard_show_column === "0"
+                    ? null
+                    : column_name;
+                }
+              }
+            );
+          }
+
+          if (hasMultiColumnResearchPurpose) {
+            newJson = self.generateMultiColumnResearchPurposeData(
+              newJson,
+              columnFormatting
+            );
+            columns = self.generateMultiColumnResearchPurpose();
+          }
+
+          self.loadedReport.ready = true;
+          $.extend(self.loadedReport, {
+            columns: columns,
+            data: newJson,
+            ready: true,
+          });
+        } else {
+          self.loadedReport.error = "Error.  Zero rows returned";
+          self.loadedReport.ready = false;
+          $("#reportLoading").html("");
+        }
+      });
+  } else if (UIOWA_AdminDash.syncView === true) {
+    getQueryData.append("adMethod", "runProjectViewReport");
     fetch(UIOWA_AdminDash.urlLookup.post, {
       method: "POST",
       body: getQueryData,

@@ -105,6 +105,13 @@ $(document).ready(function () {
 
               const resultArray = data.split("\n");
 
+              if (
+                data.startsWith("<script") &&
+                data.includes("CustomQueryFolders")
+              ) {
+                resultArray.shift();
+              }
+
               let hasError = true;
               let errorMessage = "";
 
