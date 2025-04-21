@@ -153,19 +153,19 @@ class AdminDash extends AbstractExternalModule
         }
     }
 
-    // public function isHttps() {
-    //     if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-    //         return ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-    //     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTOCOL'])) {
-    //         return ($_SERVER['HTTP_X_FORWARDED_PROTOCOL'] === 'https');
-    //     } elseif (isset($_SERVER['HTTPS'])
-    //         && !empty($_SERVER['HTTPS'])
-    //         && strcasecmp($_SERVER['HTTPS'], 'off') !== 0
-    //     ) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
+    public function getUserDelimiter() {
+
+        $sql = 'SELECT csv_delimiter FROM redcap_user_information WHERE username = ?';
+        $result = $this->query($sql, [USERID]);
+
+        while ($row = db_fetch_assoc($result)) {
+            $returnData[] = $row;
+        }
+
+        $csvDelimiter = $returnData[0]["csv_delimiter"];
+        return $csvDelimiter;
+        // echo htmlentities(json_encode($csvDelimiter), ENT_QUOTES, 'UTF-8');
+    }
 
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
@@ -183,6 +183,7 @@ class AdminDash extends AbstractExternalModule
             'queryTimeout' => $this->getSystemSetting('query-timeout'),
             'redcap_csrf_token' => $this->getCSRFToken(),
             'loadedReport' => false,
+            'delimiter' => $this->getUserDelimiter()
             // 'isSuperUser' => SUPER_USER
         );
 

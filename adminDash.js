@@ -511,7 +511,6 @@ $.extend(UIOWA_AdminDash, {
       // Replace coded value with label
       if (columnDetails.code_type !== "") {
         try {
-          // formattedVal = "hi";
           // if export, check if labels are preferred
           if (type === "export" && columnDetails.export_codes === "0") {
             formattedVal = item;
@@ -780,7 +779,21 @@ $.extend(UIOWA_AdminDash, {
     return returnHtml;
   },
   csvTo2dArray: function (parseMe) {
-    const splitFinder = /,|\r?\n|"(\\"|[^"])*?"/g;
+    let delimiter = ",";
+    if (UIOWA_AdminDash.delimiter === "SPACE") {
+      delimiter = " ";
+    } else if (UIOWA_AdminDash.delimiter === "TAB") {
+      delimiter = "\t";
+    } else if (UIOWA_AdminDash.delimiter === "|") {
+      delimiter = "[|]";
+    } else if (UIOWA_AdminDash.delimiter === "^") {
+      delimiter = "[/\^]";
+    } else {
+      delimiter = UIOWA_AdminDash.delimiter;
+    }
+
+    const splitFinder = new RegExp(`${delimiter}|\r?\n|"(\\"|[^"])*?"`, `g`);
+
     let currentRow = [];
     const rowsOut = [currentRow];
     let lastIndex = (splitFinder.lastIndex = 0);
@@ -1071,21 +1084,8 @@ $(document).ready(function () {
 
                   $("#reportLoading").html("");
                 } else {
-                  // const rawData = shift(self.csvTo2dArray(data))
-                  const dataArrayized = self.csvTo2dArray(data);
 
-                  // if (
-                  //   data.startsWith("<script") &&
-                  //   data.includes("CustomQueryFolders") &&
-                  //   !data.includes("<style")
-                  // ) {
-                  //   //  In some REDCap version 14.x, db query tool now returns an extra row of data with a script tag and prevents reports from loading
-                  //   dataArrayized.shift();
-                  // } else {
-                  //   self.loadedReport.error =
-                  //     "Something went wrong.  Query likely malformed, possibly due to php htmlentities()";
-                  //   self.loadedReport.ready = false;
-                  // }
+                  const dataArrayized = self.csvTo2dArray(data);
 
                   let newJson = [];
                   const headers = dataArrayized[0];
