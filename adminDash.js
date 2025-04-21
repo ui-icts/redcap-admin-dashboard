@@ -935,7 +935,7 @@ $.extend(UIOWA_AdminDash, {
 
 $(document).ready(function () {
   let self = UIOWA_AdminDash;
-
+  
   // initialize Vue.js
   new Vue({
     el: "#adminDashApp",
@@ -1068,7 +1068,10 @@ $(document).ready(function () {
             const finalQuery = data
               .replaceAll("&gt;", ">")
               .replaceAll("&lt;", "<")
-              .replaceAll("&#039;", "'");
+              .replaceAll("&#039;", "'")
+              .replaceAll("&#40;", "(")
+              .replaceAll("&#41;", ")")
+              .replaceAll("&#46;", ".")
 
             getData.append("query", finalQuery);
 
@@ -1084,7 +1087,6 @@ $(document).ready(function () {
 
                   $("#reportLoading").html("");
                 } else {
-
                   const dataArrayized = self.csvTo2dArray(data);
 
                   let newJson = [];
@@ -1181,7 +1183,9 @@ $(document).ready(function () {
         .then((data) => {
           if (data !== "" && !data.toLowerCase().startsWith("error")) {
             data = data.replaceAll("&quot;", '"');
-
+            data = data.replaceAll("&#40;", '(');
+            data = data.replaceAll("&#41;", ')');
+            data = data.replaceAll("&#46;", ".")
             data = JSON.parse(data);
 
             let columns = [];
@@ -1215,6 +1219,9 @@ $(document).ready(function () {
           !data.startsWith("<")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
+          newJson = data.replaceAll("&#40;", '(');
+          newJson = data.replaceAll("&#41;", ')');
+          newJson = data.replaceAll("&#46;", ".")
           newJson = JSON.parse(newJson);
 
           let columns = [];
@@ -1292,6 +1299,9 @@ $(document).ready(function () {
           !data.toLowerCase().startsWith("{&quot")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
+          newJson = data.replaceAll("&#40;", '(');
+          newJson = data.replaceAll("&#41;", ')');
+          newJson = data.replaceAll("&#46;", ".")
           newJson = JSON.parse(newJson);
 
           let columns = [];

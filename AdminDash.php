@@ -164,7 +164,6 @@ class AdminDash extends AbstractExternalModule
 
         $csvDelimiter = $returnData[0]["csv_delimiter"];
         return $csvDelimiter;
-        // echo htmlentities(json_encode($csvDelimiter), ENT_QUOTES, 'UTF-8');
     }
 
     // todo get rid of report_id probably
@@ -184,7 +183,6 @@ class AdminDash extends AbstractExternalModule
             'redcap_csrf_token' => $this->getCSRFToken(),
             'loadedReport' => false,
             'delimiter' => $this->getUserDelimiter()
-            // 'isSuperUser' => SUPER_USER
         );
 
         // remove PID if project context added it
