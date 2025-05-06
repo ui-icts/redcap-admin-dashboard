@@ -33,6 +33,8 @@ $.extend(UIOWA_AdminDash, {
     let self = this;
 
     let tempFormatting = self.loadedReport.meta.column_formatting;
+    const replacePeriod = "_"
+    let columnsContainingPeriods = []
 
     if (tempFormatting !== undefined) {
       const columnConfigArray = Object.entries(
@@ -40,13 +42,31 @@ $.extend(UIOWA_AdminDash, {
       );
 
       let researchPurposeIndex = "";
-
+    
       for (let i = 0; i < columnConfigArray.length; i++) {
         const column = columnConfigArray[i];
-        const columnName = column[0];
+        const originalColumnName = column[0]
+        let columnName = column[0];
         const columnConfig = column[1];
 
-        // purposeOtherConfig =
+        if(columnName.includes(".")) {
+          columnsContainingPeriods = [...columnsContainingPeriods, originalColumnName]
+          columnName = columnName.replaceAll(".", replacePeriod)
+        }
+
+        for(let i2 = 0; i2 < self.loadedReport.columns.length; i2++) {
+          if(self.loadedReport.columns[i2].includes(".")) {
+            columnsContainingPeriods = [...columnsContainingPeriods, self.loadedReport.columns[i2]]
+            const newColumnName = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
+            self.loadedReport.columns[i2] = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
+            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName] = {...self.loadedReport.meta.column_formatting[originalColumnName]}
+            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].column_name = newColumnName
+            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].dashboard_display_header = newColumnName
+            // UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].export_display_header = newColumnName
+            delete self.loadedReport.meta.column_formatting[originalColumnName]
+          }
+        }
+
 
         let newColumns = {};
 
@@ -77,7 +97,28 @@ $.extend(UIOWA_AdminDash, {
           delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
         }
       }
+
+      self.columnsContainingPeriods = columnsContainingPeriods
+
+  
+
     }
+
+    if(columnsContainingPeriods.length >= 1) {
+      for(let i2 = 0; i2 < self.loadedReport.data.length; i2++) {
+          for(const column of Object.keys(self.loadedReport.data[i2])) {
+            const newColumnName = column.replaceAll(".", replacePeriod)
+
+          if(column.includes(".")) {
+
+            self.loadedReport.data[i2][newColumnName] = self.loadedReport.data[i2][column]
+            delete self.loadedReport.data[i2][column]
+          }
+        }
+        
+      }
+    }
+
 
     // report edit shortcut (admins only)
     $(".edit-report").click(function () {
@@ -112,6 +153,8 @@ $.extend(UIOWA_AdminDash, {
     if (self.loadedReport.meta.column_formatting) {
       // set column titles and renderers
       columns = $.map(self.loadedReport.columns, function (column_name) {
+        column_name = column_name.replaceAll(".", replacePeriod)
+   
         let columnDetails =
           self.loadedReport.meta.column_formatting[column_name];
         let column = {
@@ -935,7 +978,7 @@ $.extend(UIOWA_AdminDash, {
 
 $(document).ready(function () {
   let self = UIOWA_AdminDash;
-  
+
   // initialize Vue.js
   new Vue({
     el: "#adminDashApp",
@@ -1112,6 +1155,8 @@ $(document).ready(function () {
                     if (columnFormatting) {
                       columns = Object.keys(columnFormatting);
 
+
+
                       const parseColumnFormatting =
                         Object.entries(columnFormatting);
 
@@ -1155,6 +1200,8 @@ $(document).ready(function () {
                     }
 
                     columns = self.generateMultiColumnResearchPurpose();
+
+            
 
                     $.extend(self.loadedReport, {
                       columns: columns,

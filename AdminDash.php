@@ -166,15 +166,31 @@ class AdminDash extends AbstractExternalModule
         return $csvDelimiter;
     }
 
+    public function get_client_ip() {
+        if (array_key_exists('HTTP_X_FORWARDED_PROTO', $_SERVER)) {
+          return  $_SERVER['HTTP_X_FORWARDED_PROTO'];
+        } 
+      
+        return '';
+      }
+
+
     // todo get rid of report_id probably
     public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
 
         $configPID = $this->getSystemSetting("config-pid");
+        $redcapUrl = APP_PATH_WEBROOT_FULL . "redcap_v" . REDCAP_VERSION . "/";
+        $getClientIp = $this->get_client_ip();
+
+        if($getClientIp != "") {
+            $redcapUrl = $getClientIp;
+        }
         
         $jsObject = array(
             'urlLookup' => array(
-                'redcapBase' => (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . SERVER_NAME . APP_PATH_WEBROOT,
+                'urlTest' => $getClientIp,
+                'redcapBase' => $redcapUrl,
                 'reportBase' => $this->getUrl("index.php", false, $this->getSystemSetting("use-api-urls")), // todo - config setting
                 'post' => $this->getUrl("post_internal.php")
             ),
@@ -182,7 +198,8 @@ class AdminDash extends AbstractExternalModule
             'queryTimeout' => $this->getSystemSetting('query-timeout'),
             'redcap_csrf_token' => $this->getCSRFToken(),
             'loadedReport' => false,
-            'delimiter' => $this->getUserDelimiter()
+            'delimiter' => $this->getUserDelimiter(),
+            'columnsContainingPeriods' => []
         );
 
         // remove PID if project context added it
