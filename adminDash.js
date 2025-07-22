@@ -1201,7 +1201,21 @@ $(document).ready(function () {
 
                     columns = self.generateMultiColumnResearchPurpose();
 
+                    console.log(UIOWA_AdminDash)
+                    console.log(columns)
+
+                    if(UIOWA_AdminDash.delimiter == "SPACE" || UIOWA_AdminDash.delimiter == "TAB") {
+                      for(const dataRow of newJson) {
+                        for(const column of columns) {
+                          if(dataRow[column] == undefined) {
+                            dataRow[column] = ""
+                          }
+                        }
+                      }
+                    }
             
+                    console.log('data')
+                    console.log(newJson)
 
                     $.extend(self.loadedReport, {
                       columns: columns,
