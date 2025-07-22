@@ -1,26 +1,4 @@
 $.extend(UIOWA_AdminDash, {
-  columnLabelMap: ["status", "purpose", "purpose_other"],
-
-  codeTypeLabelMap: {
-    2: [
-      "Practice / Just for fun",
-      "Other",
-      "Research",
-      "Quality Improvement",
-      "Operational Support",
-    ],
-    3: [
-      "Basic or Bench Research",
-      "Clinical research study or trial",
-      "Translational Research 1",
-      "Translational Research 2",
-      "Behavioral or psychosocial research study",
-      "Epidemiology",
-      "Repository",
-      "Other",
-    ],
-    1: ["Development", "Production", "Analysis"],
-  },
 
   sanitizeCellData: function (cellData) {
     // TODO https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
@@ -62,7 +40,6 @@ $.extend(UIOWA_AdminDash, {
             UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName] = {...self.loadedReport.meta.column_formatting[originalColumnName]}
             UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].column_name = newColumnName
             UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].dashboard_display_header = newColumnName
-            // UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].export_display_header = newColumnName
             delete self.loadedReport.meta.column_formatting[originalColumnName]
           }
         }
@@ -73,18 +50,17 @@ $.extend(UIOWA_AdminDash, {
         if (columnConfig.code_type === "4") {
           researchPurposeIndex = columnName;
 
-          for (let j = 0; j < self.codeTypeLabelMap["3"].length; j++) {
+          for (let j = 0; j < self.formattingReference.purpose_other.length; j++) {
             const tempColumnConfig = {
               ...columnConfig,
-              ["column_name"]: self.codeTypeLabelMap["3"][j],
-              // ["link_source_column"]: "purpose_other",
+              ["column_name"]: self.formattingReference.purpose_other[j],
               ["code_type"]: "",
-              ["dashboard_display_header"]: self.codeTypeLabelMap["3"][j],
+              ["dashboard_display_header"]: self.formattingReference.purpose_other[j],
             };
 
             newColumns = {
               ...newColumns,
-              [JSON.stringify(self.codeTypeLabelMap["3"][j])]: tempColumnConfig,
+              [JSON.stringify(self.formattingReference.purpose_other[j])]: tempColumnConfig,
             };
           }
 
@@ -395,47 +371,68 @@ $.extend(UIOWA_AdminDash, {
           let labels = [];
 
           if (columnDetails !== undefined && columnDetails.code_type !== "") {
-            labels = self.codeTypeLabelMap[columnDetails.code_type];
-          } else if (
-            columnDetails !== undefined &&
-            columnDetails.code_type === "" &&
-            columnDetails.column_name == "purpose_other"
-          ) {
-            labels = self.codeTypeLabelMap[3];
-          }
 
-          if (
-            columnDetails !== undefined &&
-            columnDetails.code_type !== "" &&
-            self.columnLabelMap.includes(columnDetails.column_name)
-          ) {
-            if (idx === 0) {
+            // for(const filterLabel of self.formattingReference[])
+
+            if(columnDetails.code_type === "1") {
+              labels = self.formattingReference.status
+            }
+            else if(columnDetails.code_type === "2") {
+              labels = self.formattingReference.purpose
+            }
+            else if(columnDetails.code_type === "3" || columnDetails.code_type === "4") {
+              labels = self.formattingReference.purpose_other
+            }
+
+          }
+        
+
+          if(columnDetails !== undefined &&
+            columnDetails.code_type !== "" && idx === 0 && columnDetails.code_type != "4") {
               $.each(labels, function (idx2, option) {
                 $select.append(
                   '<option value="' + option + '">' + option + "</option>"
                 );
               });
             }
-          } else if (
-            columnDetails !== undefined &&
-            columnDetails.code_type === "" &&
-            self.columnLabelMap.includes(columnDetails.column_name)
-          ) {
-            if (idx === 0) {
-              $.each(labels, function (idx2, option) {
+            else if(columnDetails !== undefined &&
+            columnDetails.code_type == "" && idx === 0 ) {
+              
+              let valuesWithComma = []
+
+               $.each(self.loadedReport.data, function (idx2, dataRow) {
+              
+                let columnName = columnDetails.column_name
+
+                if(columnDetails.column_name.includes(" ")) {
+                  columnName = JSON.stringify(columnDetails.column_name)
+                }
+
+                const dataValue = dataRow[columnName]
+
+                if(dataValue != undefined && dataValue.includes(",")) {
+                  const dataValues = dataValue.split(",")
+
+                  for(const dataPart of dataValues) {
+                    const dataPartTrimmed = dataPart.trim()
+                    if(!valuesWithComma.includes(dataPartTrimmed)) {
+                      valuesWithComma = [...valuesWithComma, dataPartTrimmed]
+
+                      $select.append(
+                        '<option value="' + dataPartTrimmed + '">' + dataPartTrimmed + "</option>"
+                      );
+                    }
+                  }
+                }
+
                 $select.append(
-                  '<option value="' + idx2 + '">' + idx2 + "</option>"
+                  '<option value="' + dataRow[columnName] + '">' + dataRow[columnName] + "</option>"
                 );
               });
             }
-          } else {
-            $select.append(
-              '<option value="' + value + '">' + value + "</option>"
-            );
-          }
-        } else {
-          $select.append('<option value="null">[null]</option>');
-        }
+        
+        } 
+       
       });
     }
     // add free text filter
@@ -570,11 +567,13 @@ $.extend(UIOWA_AdminDash, {
               const arrayOfFormattedVals = item.split(",");
               let codesAsLabels = "";
               $.each(arrayOfFormattedVals, function (idx, value) {
-                const index = self.codeTypeLabelMap[3].indexOf(value);
+                const index = self.formattingReference.purpose_other.indexOf(value);
+            
                 if (idx === arrayOfFormattedVals.length - 1) {
-                  codesAsLabels += self.codeTypeLabelMap[3][value];
+                  codesAsLabels += self.formattingReference.purpose_other[value];
                 } else {
-                  codesAsLabels += self.codeTypeLabelMap[3][value] + ", ";
+                  codesAsLabels += self.formattingReference.purpose_other[value] + ", ";
+                  
                 }
               });
 
@@ -702,21 +701,11 @@ $.extend(UIOWA_AdminDash, {
     } else if (codeIndex === "2") {
       // Project Purpose
       return this.formattingReference.purpose[value];
-    } else if (codeIndex === "3") {
-      // Research/Other Purpose multiple
-
-      let valueArray = value.split(",");
-
-      if (Array.isArray(valueArray) && !valueArray.some(isNaN)) {
-        valueArray = $.map(value, function (code) {
-          return self.formattingReference.purpose_other[code];
-        });
-
-        value = valueArray.join(", ");
-      }
-
-      return value;
-    }
+    } 
+    else if (codeIndex === "3") {
+     return this.formattingReference.purpose_other[value];
+    } 
+   
   },
   adFormat_icons: function (value, index, row, columnReference, columnDetails) {
     let returnHtml = "";
@@ -891,25 +880,25 @@ $.extend(UIOWA_AdminDash, {
       if (columnConfig.code_type === "4") {
         researchPurposeIndex = columnName;
 
-        for (let j = 0; j < UIOWA_AdminDash.codeTypeLabelMap["3"].length; j++) {
+        for (let j = 0; j < UIOWA_AdminDash.formattingReference.purpose_other.length; j++) {
           const tempColConfig = {
             ...columnConfig,
-            ["column_name"]: UIOWA_AdminDash.codeTypeLabelMap["3"][j],
+            ["column_name"]: UIOWA_AdminDash.formattingReference.purpose_other[j],
             // ["link_source_column"]: "purpose_other",
             ["code_type"]: "",
             ["dashboard_display_header"]:
-              UIOWA_AdminDash.codeTypeLabelMap["3"][j],
+              UIOWA_AdminDash.formattingReference.purpose_other[j],
           };
 
           newColumns = {
             ...newColumns,
-            [JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][j])]:
+            [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j])]:
               tempColConfig,
           };
 
           finalColumns = [
             ...finalColumns,
-            JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][j]),
+            JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j]),
           ];
         }
 
@@ -933,7 +922,7 @@ $.extend(UIOWA_AdminDash, {
 
     const newArray = columns.toSpliced(removeIndex, 1);
 
-    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.codeTypeLabelMap[3]);
+    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.formattingReference.purpose_other);
     return newArray;
   },
   generateMultiColumnResearchPurposeData: function (newJson, columnFormatting) {
@@ -945,7 +934,6 @@ $.extend(UIOWA_AdminDash, {
       const rowProps = Object.entries(columnFormatting);
 
       for (let i8 = 0; i8 < rowProps.length; i8++) {
-        // const propName = rowProps[i8][0];
         const propConfig = rowProps[i8][1];
 
         if (propConfig.code_type === "4") {
@@ -953,12 +941,12 @@ $.extend(UIOWA_AdminDash, {
 
           for (
             let idx10 = 0;
-            idx10 < UIOWA_AdminDash.codeTypeLabelMap["3"].length;
+            idx10 < UIOWA_AdminDash.formattingReference.purpose_other.length;
             idx10++
           ) {
             newData = {
               ...newData,
-              [JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][idx10])]:
+              [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[idx10])]:
                 purposeOtherValues.includes(JSON.stringify(idx10))
                   ? "TRUE"
                   : "FALSE",
@@ -1182,7 +1170,7 @@ $(document).ready(function () {
                           ) {
                             return columnMeta.dashboard_show_column === "0"
                               ? null
-                              : [...self.codeTypeLabelMap[3]];
+                              : [...self.formattingReference.purpose_other];
                           } else {
                             return columnMeta.dashboard_show_column === "0"
                               ? null
@@ -1201,9 +1189,6 @@ $(document).ready(function () {
 
                     columns = self.generateMultiColumnResearchPurpose();
 
-                    console.log(UIOWA_AdminDash)
-                    console.log(columns)
-
                     if(UIOWA_AdminDash.delimiter == "SPACE" || UIOWA_AdminDash.delimiter == "TAB") {
                       for(const dataRow of newJson) {
                         for(const column of columns) {
@@ -1214,9 +1199,7 @@ $(document).ready(function () {
                       }
                     }
             
-                    console.log('data')
-                    console.log(newJson)
-
+                  
                     $.extend(self.loadedReport, {
                       columns: columns,
                       data: newJson,
@@ -1316,7 +1299,7 @@ $(document).ready(function () {
                 ) {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
-                    : [...self.codeTypeLabelMap[3]];
+                    : [...self.formattingReference.purpose_other];
                 } else {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
@@ -1396,7 +1379,7 @@ $(document).ready(function () {
                 ) {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
-                    : [...self.codeTypeLabelMap[3]];
+                    : [...self.formattingReference.purpose_other];
                 } else {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
