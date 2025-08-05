@@ -44,7 +44,6 @@ $.extend(UIOWA_AdminDash, {
           }
         }
 
-
         let newColumns = {};
 
         if (columnConfig.code_type === "4") {
@@ -372,8 +371,6 @@ $.extend(UIOWA_AdminDash, {
 
           if (columnDetails !== undefined && columnDetails.code_type !== "") {
 
-            // for(const filterLabel of self.formattingReference[])
-
             if(columnDetails.code_type === "1") {
               labels = self.formattingReference.status
             }
@@ -383,10 +380,8 @@ $.extend(UIOWA_AdminDash, {
             else if(columnDetails.code_type === "3" || columnDetails.code_type === "4") {
               labels = self.formattingReference.purpose_other
             }
-
           }
         
-
           if(columnDetails !== undefined &&
             columnDetails.code_type !== "" && idx === 0 && columnDetails.code_type != "4") {
               $.each(labels, function (idx2, option) {
@@ -564,6 +559,7 @@ $.extend(UIOWA_AdminDash, {
               columnDetails.code_type === "3" ||
               columnDetails.code_type === "4"
             ) {
+
               const arrayOfFormattedVals = item.split(",");
               let codesAsLabels = "";
               $.each(arrayOfFormattedVals, function (idx, value) {
@@ -1115,7 +1111,7 @@ $(document).ready(function () {
                 if (data.startsWith('<p class="red">')) {
                   self.loadedReport.error = "Database Query Tool disabled.";
                   self.loadedReport.ready = false;
-
+              
                   $("#reportLoading").html("");
                 } else {
                   const dataArrayized = self.csvTo2dArray(data);
@@ -1198,7 +1194,6 @@ $(document).ready(function () {
                         }
                       }
                     }
-            
                   
                     $.extend(self.loadedReport, {
                       columns: columns,
