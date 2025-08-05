@@ -392,38 +392,49 @@ $.extend(UIOWA_AdminDash, {
             }
             else if(columnDetails !== undefined &&
             columnDetails.code_type == "" && idx === 0 ) {
-              
-              let valuesWithComma = []
 
-               $.each(self.loadedReport.data, function (idx2, dataRow) {
-              
-                let columnName = columnDetails.column_name
-
-                if(columnDetails.column_name.includes(" ")) {
-                  columnName = JSON.stringify(columnDetails.column_name)
-                }
-
-                const dataValue = dataRow[columnName]
-
-                if(dataValue != undefined && dataValue.includes(",")) {
-                  const dataValues = dataValue.split(",")
-
-                  for(const dataPart of dataValues) {
-                    const dataPartTrimmed = dataPart.trim()
-                    if(!valuesWithComma.includes(dataPartTrimmed)) {
-                      valuesWithComma = [...valuesWithComma, dataPartTrimmed]
-
-                      $select.append(
-                        '<option value="' + dataPartTrimmed + '">' + dataPartTrimmed + "</option>"
-                      );
-                    }
-                  }
-                }
+              $select.append(
+                  '<option value="' + "FALSE" + '">' + "FALSE" + "</option>"
+                );
 
                 $select.append(
-                  '<option value="' + dataRow[columnName] + '">' + dataRow[columnName] + "</option>"
+                  '<option value="' + "TRUE" + '">' + "TRUE" + "</option>"
                 );
-              });
+              
+              // let valuesWithComma = []
+
+              //  $.each(self.loadedReport.data, function (idx2, dataRow) {
+              
+                // let columnName = columnDetails.column_name
+
+                // if(columnDetails.column_name.includes(" ")) {
+                // let columnName = JSON.stringify(columnDetails.column_name)
+                // } else {
+                //   console.log(columnName)
+                // }
+
+                // const dataValue = dataRow[columnName]
+
+                // if(dataValue != undefined && dataValue.includes(",")) {
+                //   const dataValues = dataValue.split(",")
+
+                //   for(const dataPart of dataValues) {
+                //     const dataPartTrimmed = dataPart.trim()
+                //     if(!valuesWithComma.includes(dataPartTrimmed)) {
+                //       valuesWithComma = [...valuesWithComma, dataPartTrimmed]
+
+                //       $select.append(
+                //         '<option value="' + dataPartTrimmed + '">' + dataPartTrimmed + "</option>"
+                //       );
+                //     }
+                //   }
+                // }
+
+                // $select.append(
+                //   '<option value="' + dataRow[columnName] + '">' + dataRow[columnName] + "</option>"
+                // );
+                
+              // });
             }
         
         } 
@@ -925,7 +936,6 @@ $.extend(UIOWA_AdminDash, {
     tempFormatting = UIOWA_AdminDash.loadedReport.meta.column_formatting;
     for (let i7 = 0; i7 < newJson.length; i7++) {
       let row = newJson[i7];
-
       let newData = {};
       const rowProps = Object.entries(columnFormatting);
 
@@ -933,28 +943,40 @@ $.extend(UIOWA_AdminDash, {
         const propConfig = rowProps[i8][1];
 
         if (propConfig.code_type === "4") {
-          const purposeOtherValues = row.purpose_other.split(",");
+
+          let purposeOtherValues = []
+
+          if(row[propConfig.column_name] != undefined && row[propConfig.column_name].includes(",")) {
+            purposeOtherValues = row[propConfig.column_name].split(",");
+          } else {
+            purposeOtherValues = [row[propConfig.column_name]]
+          }
 
           for (
             let idx10 = 0;
             idx10 < UIOWA_AdminDash.formattingReference.purpose_other.length;
             idx10++
           ) {
+
+            let dataValue = "FALSE";
+            if(purposeOtherValues.includes(JSON.stringify(idx10))) {
+              dataValue = "TRUE"
+            }
+
             newData = {
               ...newData,
               [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[idx10])]:
-                purposeOtherValues.includes(JSON.stringify(idx10))
-                  ? "TRUE"
-                  : "FALSE",
+                dataValue
             };
           }
 
           row = { ...row, ...newData };
 
-          delete row["purpose_other"];
+          // delete row["purpose_other"];
           newJson[i7] = row;
         }
       }
+      delete row["purpose_other"];
     }
     return newJson;
   },
