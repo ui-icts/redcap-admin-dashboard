@@ -117,18 +117,33 @@ $(document).ready(function () {
 
               let newJson = [];
               let headers = [];
+
+              let delimiter = ",";
+              if (UIOWA_AdminDash.delimiter === "SPACE") {
+                delimiter = " ";
+              } else if (UIOWA_AdminDash.delimiter === "TAB") {
+                delimiter = "\t";
+              } else if (UIOWA_AdminDash.delimiter === "|") {
+                delimiter = "|";
+              } else if (UIOWA_AdminDash.delimiter === "^") {
+                delimiter = "^";
+              } else {
+                delimiter = UIOWA_AdminDash.delimiter;
+              }
+
+
               if (resultArray.length >= 1 && resultArray[0].startsWith("<")) {
                 hasError = true;
                 errorMessage =
                   "Ensure Database Query Tool is enabled or revise the query";
               } else if (resultArray.length === 1) {
                 hasError = false;
-                headers = resultArray[0].split(",");
+                headers = resultArray[0].split(delimiter);
               } else if (resultArray.length >= 2) {
-                headers = resultArray[0].split(",");
+                headers = resultArray[0].split(delimiter);
                 hasError = false;
                 for (let i = 1; i < resultArray.length; i++) {
-                  const rowArrayized = resultArray[i].split(",");
+                  const rowArrayized = resultArray[i].split(delimiter);
 
                   let rowObject = {};
 

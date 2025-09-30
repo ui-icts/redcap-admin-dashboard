@@ -1,26 +1,4 @@
 $.extend(UIOWA_AdminDash, {
-  columnLabelMap: ["status", "purpose", "purpose_other"],
-
-  codeTypeLabelMap: {
-    2: [
-      "Practice / Just for fun",
-      "Other",
-      "Research",
-      "Quality Improvement",
-      "Operational Support",
-    ],
-    3: [
-      "Basic or Bench Research",
-      "Clinical research study or trial",
-      "Translational Research 1",
-      "Translational Research 2",
-      "Behavioral or psychosocial research study",
-      "Epidemiology",
-      "Repository",
-      "Other",
-    ],
-    1: ["Development", "Production", "Analysis"],
-  },
 
   sanitizeCellData: function (cellData) {
     // TODO https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
@@ -33,6 +11,8 @@ $.extend(UIOWA_AdminDash, {
     let self = this;
 
     let tempFormatting = self.loadedReport.meta.column_formatting;
+    const replacePeriod = "_"
+    let columnsContainingPeriods = []
 
     if (tempFormatting !== undefined) {
       const columnConfigArray = Object.entries(
@@ -40,31 +20,46 @@ $.extend(UIOWA_AdminDash, {
       );
 
       let researchPurposeIndex = "";
-
+    
       for (let i = 0; i < columnConfigArray.length; i++) {
         const column = columnConfigArray[i];
-        const columnName = column[0];
+        const originalColumnName = column[0]
+        let columnName = column[0];
         const columnConfig = column[1];
 
-        // purposeOtherConfig =
+        if(columnName.includes(".")) {
+          columnsContainingPeriods = [...columnsContainingPeriods, originalColumnName]
+          columnName = columnName.replaceAll(".", replacePeriod)
+        }
+
+        for(let i2 = 0; i2 < self.loadedReport.columns.length; i2++) {
+          if(self.loadedReport.columns[i2].includes(".")) {
+            columnsContainingPeriods = [...columnsContainingPeriods, self.loadedReport.columns[i2]]
+            const newColumnName = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
+            self.loadedReport.columns[i2] = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
+            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName] = {...self.loadedReport.meta.column_formatting[originalColumnName]}
+            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].column_name = newColumnName
+            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].dashboard_display_header = newColumnName
+            delete self.loadedReport.meta.column_formatting[originalColumnName]
+          }
+        }
 
         let newColumns = {};
 
         if (columnConfig.code_type === "4") {
           researchPurposeIndex = columnName;
 
-          for (let j = 0; j < self.codeTypeLabelMap["3"].length; j++) {
+          for (let j = 0; j < self.formattingReference.purpose_other.length; j++) {
             const tempColumnConfig = {
               ...columnConfig,
-              ["column_name"]: self.codeTypeLabelMap["3"][j],
-              // ["link_source_column"]: "purpose_other",
+              ["column_name"]: self.formattingReference.purpose_other[j],
               ["code_type"]: "",
-              ["dashboard_display_header"]: self.codeTypeLabelMap["3"][j],
+              ["dashboard_display_header"]: self.formattingReference.purpose_other[j],
             };
 
             newColumns = {
               ...newColumns,
-              [JSON.stringify(self.codeTypeLabelMap["3"][j])]: tempColumnConfig,
+              [JSON.stringify(self.formattingReference.purpose_other[j])]: tempColumnConfig,
             };
           }
 
@@ -77,7 +72,28 @@ $.extend(UIOWA_AdminDash, {
           delete self.loadedReport.meta.column_formatting[researchPurposeIndex];
         }
       }
+
+      self.columnsContainingPeriods = columnsContainingPeriods
+
+  
+
     }
+
+    if(columnsContainingPeriods.length >= 1) {
+      for(let i2 = 0; i2 < self.loadedReport.data.length; i2++) {
+          for(const column of Object.keys(self.loadedReport.data[i2])) {
+            const newColumnName = column.replaceAll(".", replacePeriod)
+
+          if(column.includes(".")) {
+
+            self.loadedReport.data[i2][newColumnName] = self.loadedReport.data[i2][column]
+            delete self.loadedReport.data[i2][column]
+          }
+        }
+        
+      }
+    }
+
 
     // report edit shortcut (admins only)
     $(".edit-report").click(function () {
@@ -112,6 +128,8 @@ $.extend(UIOWA_AdminDash, {
     if (self.loadedReport.meta.column_formatting) {
       // set column titles and renderers
       columns = $.map(self.loadedReport.columns, function (column_name) {
+        column_name = column_name.replaceAll(".", replacePeriod)
+   
         let columnDetails =
           self.loadedReport.meta.column_formatting[column_name];
         let column = {
@@ -352,47 +370,75 @@ $.extend(UIOWA_AdminDash, {
           let labels = [];
 
           if (columnDetails !== undefined && columnDetails.code_type !== "") {
-            labels = self.codeTypeLabelMap[columnDetails.code_type];
-          } else if (
-            columnDetails !== undefined &&
-            columnDetails.code_type === "" &&
-            columnDetails.column_name == "purpose_other"
-          ) {
-            labels = self.codeTypeLabelMap[3];
-          }
 
-          if (
-            columnDetails !== undefined &&
-            columnDetails.code_type !== "" &&
-            self.columnLabelMap.includes(columnDetails.column_name)
-          ) {
-            if (idx === 0) {
+            if(columnDetails.code_type === "1") {
+              labels = self.formattingReference.status
+            }
+            else if(columnDetails.code_type === "2") {
+              labels = self.formattingReference.purpose
+            }
+            else if(columnDetails.code_type === "3" || columnDetails.code_type === "4") {
+              labels = self.formattingReference.purpose_other
+            }
+          }
+        
+          if(columnDetails !== undefined &&
+            columnDetails.code_type !== "" && idx === 0 && columnDetails.code_type != "4") {
               $.each(labels, function (idx2, option) {
                 $select.append(
                   '<option value="' + option + '">' + option + "</option>"
                 );
               });
             }
-          } else if (
-            columnDetails !== undefined &&
-            columnDetails.code_type === "" &&
-            self.columnLabelMap.includes(columnDetails.column_name)
-          ) {
-            if (idx === 0) {
-              $.each(labels, function (idx2, option) {
-                $select.append(
-                  '<option value="' + idx2 + '">' + idx2 + "</option>"
+            else if(columnDetails !== undefined &&
+            columnDetails.code_type == "" && idx === 0 ) {
+
+              $select.append(
+                  '<option value="' + "FALSE" + '">' + "FALSE" + "</option>"
                 );
-              });
+
+                $select.append(
+                  '<option value="' + "TRUE" + '">' + "TRUE" + "</option>"
+                );
+              
+              // let valuesWithComma = []
+
+              //  $.each(self.loadedReport.data, function (idx2, dataRow) {
+              
+                // let columnName = columnDetails.column_name
+
+                // if(columnDetails.column_name.includes(" ")) {
+                // let columnName = JSON.stringify(columnDetails.column_name)
+                // } else {
+                //   console.log(columnName)
+                // }
+
+                // const dataValue = dataRow[columnName]
+
+                // if(dataValue != undefined && dataValue.includes(",")) {
+                //   const dataValues = dataValue.split(",")
+
+                //   for(const dataPart of dataValues) {
+                //     const dataPartTrimmed = dataPart.trim()
+                //     if(!valuesWithComma.includes(dataPartTrimmed)) {
+                //       valuesWithComma = [...valuesWithComma, dataPartTrimmed]
+
+                //       $select.append(
+                //         '<option value="' + dataPartTrimmed + '">' + dataPartTrimmed + "</option>"
+                //       );
+                //     }
+                //   }
+                // }
+
+                // $select.append(
+                //   '<option value="' + dataRow[columnName] + '">' + dataRow[columnName] + "</option>"
+                // );
+                
+              // });
             }
-          } else {
-            $select.append(
-              '<option value="' + value + '">' + value + "</option>"
-            );
-          }
-        } else {
-          $select.append('<option value="null">[null]</option>');
-        }
+        
+        } 
+       
       });
     }
     // add free text filter
@@ -511,7 +557,6 @@ $.extend(UIOWA_AdminDash, {
       // Replace coded value with label
       if (columnDetails.code_type !== "") {
         try {
-          // formattedVal = "hi";
           // if export, check if labels are preferred
           if (type === "export" && columnDetails.export_codes === "0") {
             formattedVal = item;
@@ -525,14 +570,17 @@ $.extend(UIOWA_AdminDash, {
               columnDetails.code_type === "3" ||
               columnDetails.code_type === "4"
             ) {
+
               const arrayOfFormattedVals = item.split(",");
               let codesAsLabels = "";
               $.each(arrayOfFormattedVals, function (idx, value) {
-                const index = self.codeTypeLabelMap[3].indexOf(value);
+                const index = self.formattingReference.purpose_other.indexOf(value);
+            
                 if (idx === arrayOfFormattedVals.length - 1) {
-                  codesAsLabels += self.codeTypeLabelMap[3][value];
+                  codesAsLabels += self.formattingReference.purpose_other[value];
                 } else {
-                  codesAsLabels += self.codeTypeLabelMap[3][value] + ", ";
+                  codesAsLabels += self.formattingReference.purpose_other[value] + ", ";
+                  
                 }
               });
 
@@ -660,21 +708,11 @@ $.extend(UIOWA_AdminDash, {
     } else if (codeIndex === "2") {
       // Project Purpose
       return this.formattingReference.purpose[value];
-    } else if (codeIndex === "3") {
-      // Research/Other Purpose multiple
-
-      let valueArray = value.split(",");
-
-      if (Array.isArray(valueArray) && !valueArray.some(isNaN)) {
-        valueArray = $.map(value, function (code) {
-          return self.formattingReference.purpose_other[code];
-        });
-
-        value = valueArray.join(", ");
-      }
-
-      return value;
-    }
+    } 
+    else if (codeIndex === "3") {
+     return this.formattingReference.purpose_other[value];
+    } 
+   
   },
   adFormat_icons: function (value, index, row, columnReference, columnDetails) {
     let returnHtml = "";
@@ -780,7 +818,21 @@ $.extend(UIOWA_AdminDash, {
     return returnHtml;
   },
   csvTo2dArray: function (parseMe) {
-    const splitFinder = /,|\r?\n|"(\\"|[^"])*?"/g;
+    let delimiter = ",";
+    if (UIOWA_AdminDash.delimiter === "SPACE") {
+      delimiter = " ";
+    } else if (UIOWA_AdminDash.delimiter === "TAB") {
+      delimiter = "\t";
+    } else if (UIOWA_AdminDash.delimiter === "|") {
+      delimiter = "[|]";
+    } else if (UIOWA_AdminDash.delimiter === "^") {
+      delimiter = "[/\^]";
+    } else {
+      delimiter = UIOWA_AdminDash.delimiter;
+    }
+
+    const splitFinder = new RegExp(`${delimiter}|\r?\n|"(\\"|[^"])*?"`, `g`);
+
     let currentRow = [];
     const rowsOut = [currentRow];
     let lastIndex = (splitFinder.lastIndex = 0);
@@ -835,25 +887,25 @@ $.extend(UIOWA_AdminDash, {
       if (columnConfig.code_type === "4") {
         researchPurposeIndex = columnName;
 
-        for (let j = 0; j < UIOWA_AdminDash.codeTypeLabelMap["3"].length; j++) {
+        for (let j = 0; j < UIOWA_AdminDash.formattingReference.purpose_other.length; j++) {
           const tempColConfig = {
             ...columnConfig,
-            ["column_name"]: UIOWA_AdminDash.codeTypeLabelMap["3"][j],
+            ["column_name"]: UIOWA_AdminDash.formattingReference.purpose_other[j],
             // ["link_source_column"]: "purpose_other",
             ["code_type"]: "",
             ["dashboard_display_header"]:
-              UIOWA_AdminDash.codeTypeLabelMap["3"][j],
+              UIOWA_AdminDash.formattingReference.purpose_other[j],
           };
 
           newColumns = {
             ...newColumns,
-            [JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][j])]:
+            [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j])]:
               tempColConfig,
           };
 
           finalColumns = [
             ...finalColumns,
-            JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][j]),
+            JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j]),
           ];
         }
 
@@ -877,35 +929,44 @@ $.extend(UIOWA_AdminDash, {
 
     const newArray = columns.toSpliced(removeIndex, 1);
 
-    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.codeTypeLabelMap[3]);
+    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.formattingReference.purpose_other);
     return newArray;
   },
   generateMultiColumnResearchPurposeData: function (newJson, columnFormatting) {
     tempFormatting = UIOWA_AdminDash.loadedReport.meta.column_formatting;
     for (let i7 = 0; i7 < newJson.length; i7++) {
       let row = newJson[i7];
-
       let newData = {};
       const rowProps = Object.entries(columnFormatting);
 
       for (let i8 = 0; i8 < rowProps.length; i8++) {
-        // const propName = rowProps[i8][0];
         const propConfig = rowProps[i8][1];
 
         if (propConfig.code_type === "4") {
-          const purposeOtherValues = row.purpose_other.split(",");
+
+          let purposeOtherValues = []
+
+          if(row[propConfig.column_name] != undefined && row[propConfig.column_name].includes(",")) {
+            purposeOtherValues = row[propConfig.column_name].split(",");
+          } else {
+            purposeOtherValues = [row[propConfig.column_name]]
+          }
 
           for (
             let idx10 = 0;
-            idx10 < UIOWA_AdminDash.codeTypeLabelMap["3"].length;
+            idx10 < UIOWA_AdminDash.formattingReference.purpose_other.length;
             idx10++
           ) {
+
+            let dataValue = "FALSE";
+            if(purposeOtherValues.includes(JSON.stringify(idx10))) {
+              dataValue = "TRUE"
+            }
+
             newData = {
               ...newData,
-              [JSON.stringify(UIOWA_AdminDash.codeTypeLabelMap["3"][idx10])]:
-                purposeOtherValues.includes(JSON.stringify(idx10))
-                  ? "TRUE"
-                  : "FALSE",
+              [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[idx10])]:
+                dataValue
             };
           }
 
@@ -915,6 +976,7 @@ $.extend(UIOWA_AdminDash, {
           newJson[i7] = row;
         }
       }
+
     }
     return newJson;
   },
@@ -1055,7 +1117,10 @@ $(document).ready(function () {
             const finalQuery = data
               .replaceAll("&gt;", ">")
               .replaceAll("&lt;", "<")
-              .replaceAll("&#039;", "'");
+              .replaceAll("&#039;", "'")
+              .replaceAll("&#40;", "(")
+              .replaceAll("&#41;", ")")
+              .replaceAll("&#46;", ".")
 
             getData.append("query", finalQuery);
 
@@ -1068,24 +1133,10 @@ $(document).ready(function () {
                 if (data.startsWith('<p class="red">')) {
                   self.loadedReport.error = "Database Query Tool disabled.";
                   self.loadedReport.ready = false;
-
+              
                   $("#reportLoading").html("");
                 } else {
-                  // const rawData = shift(self.csvTo2dArray(data))
                   const dataArrayized = self.csvTo2dArray(data);
-
-                  // if (
-                  //   data.startsWith("<script") &&
-                  //   data.includes("CustomQueryFolders") &&
-                  //   !data.includes("<style")
-                  // ) {
-                  //   //  In some REDCap version 14.x, db query tool now returns an extra row of data with a script tag and prevents reports from loading
-                  //   dataArrayized.shift();
-                  // } else {
-                  //   self.loadedReport.error =
-                  //     "Something went wrong.  Query likely malformed, possibly due to php htmlentities()";
-                  //   self.loadedReport.ready = false;
-                  // }
 
                   let newJson = [];
                   const headers = dataArrayized[0];
@@ -1109,6 +1160,8 @@ $(document).ready(function () {
                     let hasMultiColumnResearchPurpose = false;
                     if (columnFormatting) {
                       columns = Object.keys(columnFormatting);
+
+
 
                       const parseColumnFormatting =
                         Object.entries(columnFormatting);
@@ -1135,7 +1188,7 @@ $(document).ready(function () {
                           ) {
                             return columnMeta.dashboard_show_column === "0"
                               ? null
-                              : [...self.codeTypeLabelMap[3]];
+                              : [...self.formattingReference.purpose_other];
                           } else {
                             return columnMeta.dashboard_show_column === "0"
                               ? null
@@ -1154,6 +1207,16 @@ $(document).ready(function () {
 
                     columns = self.generateMultiColumnResearchPurpose();
 
+                    if(UIOWA_AdminDash.delimiter == "SPACE" || UIOWA_AdminDash.delimiter == "TAB") {
+                      for(const dataRow of newJson) {
+                        for(const column of columns) {
+                          if(dataRow[column] == undefined) {
+                            dataRow[column] = ""
+                          }
+                        }
+                      }
+                    }
+                  
                     $.extend(self.loadedReport, {
                       columns: columns,
                       data: newJson,
@@ -1181,7 +1244,9 @@ $(document).ready(function () {
         .then((data) => {
           if (data !== "" && !data.toLowerCase().startsWith("error")) {
             data = data.replaceAll("&quot;", '"');
-
+            data = data.replaceAll("&#40;", '(');
+            data = data.replaceAll("&#41;", ')');
+            data = data.replaceAll("&#46;", ".")
             data = JSON.parse(data);
 
             let columns = [];
@@ -1215,6 +1280,9 @@ $(document).ready(function () {
           !data.startsWith("<")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
+          newJson = data.replaceAll("&#40;", '(');
+          newJson = data.replaceAll("&#41;", ')');
+          newJson = data.replaceAll("&#46;", ".")
           newJson = JSON.parse(newJson);
 
           let columns = [];
@@ -1248,7 +1316,7 @@ $(document).ready(function () {
                 ) {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
-                    : [...self.codeTypeLabelMap[3]];
+                    : [...self.formattingReference.purpose_other];
                 } else {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
@@ -1292,6 +1360,9 @@ $(document).ready(function () {
           !data.toLowerCase().startsWith("{&quot")
         ) {
           let newJson = data.replaceAll("&quot;", '"');
+          newJson = data.replaceAll("&#40;", '(');
+          newJson = data.replaceAll("&#41;", ')');
+          newJson = data.replaceAll("&#46;", ".")
           newJson = JSON.parse(newJson);
 
           let columns = [];
@@ -1325,7 +1396,7 @@ $(document).ready(function () {
                 ) {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
-                    : [...self.codeTypeLabelMap[3]];
+                    : [...self.formattingReference.purpose_other];
                 } else {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
