@@ -11,7 +11,7 @@
     "4.1.1": "Updated external module version to 10 and redcap minimum version to 12.4.6",
     "4.1.2": "Added compatibility for new redcap_data(#) tables.  When enabling the module on a project, the config pid can now only be set as a project that has a field named link_source_column.",
     "4.1.3": "Fixed Executive View.  Fixed REDCap 14.x issue preventing reports from loading.  Fixed issue with some symbols being removed by htmlentities() causing malformed queries.  Updated to EM Framework version 13 and minimum REDCap version 13.7.3.",
-    "4.1.4": "Change: Update to EM version 15.  Fix: Reports now use user delimiter character.  Fix: Reports no longer fail when column names have period character.  Change/Fix: Reports now use Formatting Reference instrument properly.  Improvement: Can now dropdown filter by any value in the column.  Improvement: Dropdown filter can now parse column values with commas and offer a filter for each individual value/data part."
+    "4.1.4": "Change: Update to EM version 15.  Fix/Enhancement: Reports now use user delimiter character.  Fix: Reports no longer fail when column names have period character.  Change/Fix: Reports now use Formatting Reference instrument properly.  Improvement: Dropdown filter can now parse column values with commas and offer a filter for each individual value/data part."
   },
 
   "authors": [

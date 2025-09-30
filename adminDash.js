@@ -972,11 +972,11 @@ $.extend(UIOWA_AdminDash, {
 
           row = { ...row, ...newData };
 
-          // delete row["purpose_other"];
+          delete row["purpose_other"];
           newJson[i7] = row;
         }
       }
-      delete row["purpose_other"];
+
     }
     return newJson;
   },
