@@ -705,21 +705,21 @@ In most cases you should NOT need to edit these fields. Please leave them be unl
 		<CodeListItem CodedValue="2"><Decode><TranslatedText>Analysis/Cleanup</TranslatedText></Decode></CodeListItem>
 	</CodeList>
 	<CodeList OID="purpose_code_lookup.choices" Name="purpose_code_lookup" DataType="text" redcap:Variable="purpose_code_lookup">
-		<CodeListItem CodedValue="1"><Decode><TranslatedText>Practice / Just for fun</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="2"><Decode><TranslatedText>Other</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="3"><Decode><TranslatedText>Research</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="4"><Decode><TranslatedText>Quality Improvement</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="5"><Decode><TranslatedText>Operational Support</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Practice / Just for fun</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Other</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Research</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Quality Improvement</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>Operational Support</TranslatedText></Decode></CodeListItem>
 	</CodeList>
 	<CodeList OID="research_code_lookup.choices" Name="research_code_lookup" DataType="text" redcap:Variable="research_code_lookup">
-		<CodeListItem CodedValue="1"><Decode><TranslatedText>Basic or Bench Research</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="2"><Decode><TranslatedText>Clinical Research Study or Trial</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="3"><Decode><TranslatedText>Translational Research 1</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="4"><Decode><TranslatedText>Translational Research 2</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="5"><Decode><TranslatedText>Behavioral or Psychosocial Research Study</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="6"><Decode><TranslatedText>Epidemiology</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="7"><Decode><TranslatedText>Repository</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="8"><Decode><TranslatedText>Other</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Basic or Bench Research</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Clinical Research Study or Trial</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Translational Research 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Translational Research 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>Behavioral or Psychosocial Research Study</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="5"><Decode><TranslatedText>Epidemiology</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="6"><Decode><TranslatedText>Repository</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="7"><Decode><TranslatedText>Other</TranslatedText></Decode></CodeListItem>
 	</CodeList>
 	<CodeList OID="icon_lookup.choices" Name="icon_lookup" DataType="text" redcap:Variable="icon_lookup">
 		<CodeListItem CodedValue="1"><Decode><TranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;User suspended&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-ban fa-fw&quot; style=&quot;color: red;&quot;&gt;&lt;/i&gt;&lt;/span&gt;</TranslatedText><redcap:FormattedTranslatedText>&lt;span class=&quot;user-detail&quot; title=&quot;User suspended&quot; data-toggle=&quot;tooltip&quot; data-placement=&quot;left&quot;&gt;&lt;i class=&quot;fas fa-ban fa-fw&quot; style=&quot;color: red;&quot;&gt;&lt;/i&gt;&lt;/span&gt;</redcap:FormattedTranslatedText></Decode></CodeListItem>
