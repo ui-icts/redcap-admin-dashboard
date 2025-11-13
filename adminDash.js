@@ -1,7 +1,6 @@
 $.extend(UIOWA_AdminDash, {
 
   sanitizeCellData: function (cellData) {
-    // TODO https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
     return cellData.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
   },
 
@@ -52,14 +51,14 @@ $.extend(UIOWA_AdminDash, {
           for (let j = 0; j < self.formattingReference.purpose_other.length; j++) {
             const tempColumnConfig = {
               ...columnConfig,
-              ["column_name"]: self.formattingReference.purpose_other[j],
+              ["column_name"]: self.formattingReference.purpose_other[j].trim(),
               ["code_type"]: "",
-              ["dashboard_display_header"]: self.formattingReference.purpose_other[j],
+              ["dashboard_display_header"]: self.formattingReference.purpose_other[j].trim(),
             };
 
             newColumns = {
               ...newColumns,
-              [JSON.stringify(self.formattingReference.purpose_other[j])]: tempColumnConfig,
+              [JSON.stringify(self.formattingReference.purpose_other[j]).trim()]: tempColumnConfig,
             };
           }
 
@@ -386,7 +385,7 @@ $.extend(UIOWA_AdminDash, {
             columnDetails.code_type !== "" && idx === 0 && columnDetails.code_type != "4") {
               $.each(labels, function (idx2, option) {
                 $select.append(
-                  '<option value="' + option + '">' + option + "</option>"
+                  '<option value="' + option.trim() + '">' + option.trim() + "</option>"
                 );
               });
             }
@@ -577,9 +576,9 @@ $.extend(UIOWA_AdminDash, {
                 const index = self.formattingReference.purpose_other.indexOf(value);
             
                 if (idx === arrayOfFormattedVals.length - 1) {
-                  codesAsLabels += self.formattingReference.purpose_other[value];
+                  codesAsLabels += self.formattingReference.purpose_other[value].trim();
                 } else {
-                  codesAsLabels += self.formattingReference.purpose_other[value] + ", ";
+                  codesAsLabels += self.formattingReference.purpose_other[value].trim() + ", ";
                   
                 }
               });
@@ -687,10 +686,11 @@ $.extend(UIOWA_AdminDash, {
     }
     // set redcap url
     else {
+
       try {
         url =
           this.urlLookup.redcapBase +
-          this.formattingReference.links[linkIndex - 1].trim() +
+          this.formattingReference.links[linkIndex].trim() +
           sourceValue;
       } catch (error) {
         // invalid link index
@@ -707,10 +707,10 @@ $.extend(UIOWA_AdminDash, {
       return this.formattingReference.status[value];
     } else if (codeIndex === "2") {
       // Project Purpose
-      return this.formattingReference.purpose[value];
+      return this.formattingReference.purpose[value].trim();
     } 
     else if (codeIndex === "3") {
-     return this.formattingReference.purpose_other[value];
+     return this.formattingReference.purpose_other[value].trim();
     } 
    
   },
@@ -890,22 +890,22 @@ $.extend(UIOWA_AdminDash, {
         for (let j = 0; j < UIOWA_AdminDash.formattingReference.purpose_other.length; j++) {
           const tempColConfig = {
             ...columnConfig,
-            ["column_name"]: UIOWA_AdminDash.formattingReference.purpose_other[j],
+            ["column_name"]: UIOWA_AdminDash.formattingReference.purpose_other[j].trim(),
             // ["link_source_column"]: "purpose_other",
             ["code_type"]: "",
             ["dashboard_display_header"]:
-              UIOWA_AdminDash.formattingReference.purpose_other[j],
+              UIOWA_AdminDash.formattingReference.purpose_other[j].trim(),
           };
 
           newColumns = {
             ...newColumns,
-            [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j])]:
+            [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j]).trim()]:
               tempColConfig,
           };
 
           finalColumns = [
             ...finalColumns,
-            JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j]),
+            JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[j].trim()),
           ];
         }
 
@@ -929,7 +929,7 @@ $.extend(UIOWA_AdminDash, {
 
     const newArray = columns.toSpliced(removeIndex, 1);
 
-    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.formattingReference.purpose_other);
+    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.formattingReference.purpose_other.trim());
     return newArray;
   },
   generateMultiColumnResearchPurposeData: function (newJson, columnFormatting) {
@@ -965,7 +965,7 @@ $.extend(UIOWA_AdminDash, {
 
             newData = {
               ...newData,
-              [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[idx10])]:
+              [JSON.stringify(UIOWA_AdminDash.formattingReference.purpose_other[idx10].trim())]:
                 dataValue
             };
           }
@@ -1188,7 +1188,7 @@ $(document).ready(function () {
                           ) {
                             return columnMeta.dashboard_show_column === "0"
                               ? null
-                              : [...self.formattingReference.purpose_other];
+                              : [...self.formattingReference.purpose_other.trim()];
                           } else {
                             return columnMeta.dashboard_show_column === "0"
                               ? null
@@ -1216,6 +1216,9 @@ $(document).ready(function () {
                         }
                       }
                     }
+
+                    console.log('newJson')
+                    console.log(newJson)
                   
                     $.extend(self.loadedReport, {
                       columns: columns,
@@ -1316,7 +1319,7 @@ $(document).ready(function () {
                 ) {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
-                    : [...self.formattingReference.purpose_other];
+                    : [...self.formattingReference.purpose_other.trim()];
                 } else {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
@@ -1396,7 +1399,7 @@ $(document).ready(function () {
                 ) {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
-                    : [...self.formattingReference.purpose_other];
+                    : [...self.formattingReference.purpose_other.trim()];
                 } else {
                   return columnMeta.dashboard_show_column === "0"
                     ? null
@@ -1413,6 +1416,8 @@ $(document).ready(function () {
             );
             columns = self.generateMultiColumnResearchPurpose();
           }
+
+ 
 
           self.loadedReport.ready = true;
           $.extend(self.loadedReport, {

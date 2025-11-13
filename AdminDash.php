@@ -208,7 +208,7 @@ class AdminDash extends AbstractExternalModule
 
 
     // todo get rid of report_id probably
-    public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
+public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
 
         $configPID = $this->getSystemSetting("config-pid");
