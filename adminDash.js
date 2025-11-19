@@ -380,6 +380,8 @@ $.extend(UIOWA_AdminDash, {
               labels = self.formattingReference.purpose_other
             }
           }
+
+          console.log(labels)
         
           if(columnDetails !== undefined &&
             columnDetails.code_type !== "" && idx === 0 && columnDetails.code_type != "4") {
@@ -392,6 +394,11 @@ $.extend(UIOWA_AdminDash, {
             else if(columnDetails !== undefined &&
             columnDetails.code_type == "" && idx === 0 ) {
 
+              console.log("is code " + columnDetails.code_type)
+
+              let valuesInColumn = []
+
+              // if(columnDetails.code_type == "4") {
               $select.append(
                   '<option value="' + "FALSE" + '">' + "FALSE" + "</option>"
                 );
@@ -399,41 +406,86 @@ $.extend(UIOWA_AdminDash, {
                 $select.append(
                   '<option value="' + "TRUE" + '">' + "TRUE" + "</option>"
                 );
-              
-              // let valuesWithComma = []
+              // } else {
+                let valuesWithComma = []
 
-              //  $.each(self.loadedReport.data, function (idx2, dataRow) {
+               $.each(self.loadedReport.data, function (idx2, dataRow) {
               
-                // let columnName = columnDetails.column_name
+                let columnName = columnDetails.column_name
 
-                // if(columnDetails.column_name.includes(" ")) {
-                // let columnName = JSON.stringify(columnDetails.column_name)
+                if(columnDetails.column_name.includes(" ")) {
+                let columnName = JSON.stringify(columnDetails.column_name)
+                } else {
+                  console.log(columnName)
+                }
+
+                const dataValue = dataRow[columnName]
+
+                if(dataValue != undefined && dataValue.includes(",")) {
+                  const dataValues = dataValue.split(",")
+
+                  for(const dataPart of dataValues) {
+                    const dataPartTrimmed = dataPart.trim()
+                    if(!valuesWithComma.includes(dataPartTrimmed)) {
+                      valuesWithComma = [...valuesWithComma, dataPartTrimmed]
+
+                          valuesInColumn = [...valuesInColumn, dataPartTrimmed]
+
+                      // $select.append(
+                      //   '<option value="' + dataPartTrimmed + '">' + dataPartTrimmed + "</option>"
+                      // );
+                    }
+
+                    
+                  }
+
+     
                 // } else {
-                //   console.log(columnName)
-                // }
-
-                // const dataValue = dataRow[columnName]
-
-                // if(dataValue != undefined && dataValue.includes(",")) {
-                //   const dataValues = dataValue.split(",")
-
-                //   for(const dataPart of dataValues) {
-                //     const dataPartTrimmed = dataPart.trim()
-                //     if(!valuesWithComma.includes(dataPartTrimmed)) {
-                //       valuesWithComma = [...valuesWithComma, dataPartTrimmed]
-
-                //       $select.append(
-                //         '<option value="' + dataPartTrimmed + '">' + dataPartTrimmed + "</option>"
-                //       );
-                //     }
+                //   console.log('dataRow[columnName]')
+                //   console.log(dataRow[columnName])
+                //   if(!valuesInColumn.includes(dataRow[columnName])) {
+                //     valuesInColumn = [...valuesInColumn, dataRow[columnName]]
                 //   }
-                // }
+                    
+                }
 
                 // $select.append(
                 //   '<option value="' + dataRow[columnName] + '">' + dataRow[columnName] + "</option>"
                 // );
+
+
+              
+              // }
+     
+        
                 
-              // });
+              });
+
+
+              if(valuesInColumn.length == 0) {
+                  // $select.append(
+              //     '<option value="' + "FALSE" + '">' + "FALSE" + "</option>"
+              //   );
+
+              //   $select.append(
+              //     '<option value="' + "TRUE" + '">' + "TRUE" + "</option>"
+              //   );
+              } else {
+              console.log('valuesInColumn')
+                console.log(valuesInColumn)
+                $.each(valuesInColumn, function (idx2, dataRow) {
+                  console.log(valuesInColumn)
+                  console.log(dataRow)
+                     $select.append(
+                  '<option value="' + dataRow + '">' + dataRow + "</option>"
+                );
+                })
+              }
+
+               
+              
+              
+
             }
         
         } 
@@ -560,14 +612,36 @@ $.extend(UIOWA_AdminDash, {
           if (type === "export" && columnDetails.export_codes === "0") {
             formattedVal = item;
           } else {
-            if (columnDetails.code_type === "1") {
+            if (columnDetails.code_type == "1") {
               formattedVal = self.adFormat_code(item, columnDetails.code_type);
             }
-            if (columnDetails.code_type === "2") {
+            else if (columnDetails.code_type == "2") {
               formattedVal = self.adFormat_code(item, columnDetails.code_type);
-            } else if (
-              columnDetails.code_type === "3" ||
-              columnDetails.code_type === "4"
+            } 
+            else if(columnDetails.code_type == "3") {
+                // formattedVal = self.adFormat_code(item, columnDetails.code_type);
+                
+
+              const arrayOfFormattedVals = item.split(",");
+              let codesAsLabels = "";
+              $.each(arrayOfFormattedVals, function (idx, value) {
+                const index = self.formattingReference.purpose_other.indexOf(value);
+            
+                if (idx === arrayOfFormattedVals.length - 1) {
+                  codesAsLabels += self.formattingReference.purpose_other[value].trim();
+                } else {
+                  codesAsLabels += self.formattingReference.purpose_other[value].trim() + ", ";
+                  
+                }
+              });
+
+              formattedVal = codesAsLabels;
+
+
+            }
+            else if (
+              
+              columnDetails.code_type == "4"
             ) {
 
               const arrayOfFormattedVals = item.split(",");
@@ -585,6 +659,7 @@ $.extend(UIOWA_AdminDash, {
 
               formattedVal = codesAsLabels;
             } else {
+              console.log("labels else")
               formattedVal = self.adFormat_code(item, columnDetails.code_type);
             }
           }
@@ -929,7 +1004,7 @@ $.extend(UIOWA_AdminDash, {
 
     const newArray = columns.toSpliced(removeIndex, 1);
 
-    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.formattingReference.purpose_other.trim());
+    newArray.splice(removeIndex, 0, ...UIOWA_AdminDash.formattingReference.purpose_other);
     return newArray;
   },
   generateMultiColumnResearchPurposeData: function (newJson, columnFormatting) {
