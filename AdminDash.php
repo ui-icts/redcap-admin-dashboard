@@ -30,19 +30,16 @@ class AdminDash extends AbstractExternalModule
 
                         if($field["field_name"] == "purpose_code_lookup") {
                             $fieldName = "purpose_code_lookup";
-                            
                             $choices = "0, Practice / Just for fun\\n1, Other\\n2, Research\\n3, Quality Improvement\\n4, Operational Support";
-                            // $choices2 = \DataEntry::autoCodeEnum($choices);
-                            $choices2 = html_entity_decode(trim($choices), ENT_QUOTES);
+                  
                         } else if($field["field_name"] == "research_code_lookup") {
                             $fieldName = "research_code_lookup";
                             $choices = "0, Basic or Bench Research\\n1, Clinical Research Study or Trial\\n2, Translational Research 1\\n3, Translational Research 2\\n4, Behavioral or Psychosocial Research Study\\n5, Epidemiology\\n6, Repository\\n7, Other";
-                            // $choices2 = \DataEntry::autoCodeEnum($choices);
-                            $choices2 = html_entity_decode(trim($choices), ENT_QUOTES);
+                     
                         }
                         
 
-                        if(!is_null($fieldName) && !is_null($choices2) && !is_null($configPID)) {
+                        if(!is_null($fieldName) && !is_null($choices) && !is_null($configPID)) {
                             $sql = "UPDATE redcap_metadata SET element_enum = ? WHERE field_name = ? AND project_id = ?";
                             $sqlExecute = $this->query($sql, [$choices, $fieldName, $configPID]);
                         }

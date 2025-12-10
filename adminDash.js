@@ -730,7 +730,7 @@ $.extend(UIOWA_AdminDash, {
       try {
         url =
           this.urlLookup.redcapBase +
-          this.formattingReference.links[linkIndex].trim() +
+          this.formattingReference.links[linkIndex - 1].trim() +
           sourceValue;
       } catch (error) {
         // invalid link index
