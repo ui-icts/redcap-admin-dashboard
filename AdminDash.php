@@ -7,6 +7,49 @@ use ExternalModules\AbstractExternalModule;
 class AdminDash extends AbstractExternalModule
 {
 
+
+
+    function redcap_module_system_enable($version) {
+
+        $configPID = $this->getSystemSetting("config-pid");
+
+        if(!is_null($configPID)) {
+            
+            $getFormattingReference = json_decode(\REDCap::getDataDictionary(
+                $configPID, 'json', true,
+                ['purpose_code_lookup', 'research_code_lookup']
+                ),true);
+
+            if(count($getFormattingReference) == 2) {
+                foreach($getFormattingReference AS $field) {
+
+                    if(!str_starts_with($field["select_choices_or_calculations"], 0)) {
+
+                        $fieldName = null;
+                        $choices = null;
+
+                        if($field["field_name"] == "purpose_code_lookup") {
+                            $fieldName = "purpose_code_lookup";
+                            $choices = "0, Practice / Just for fun\\n1, Other\\n2, Research\\n3, Quality Improvement\\n4, Operational Support";
+                  
+                        } else if($field["field_name"] == "research_code_lookup") {
+                            $fieldName = "research_code_lookup";
+                            $choices = "0, Basic or Bench Research\\n1, Clinical Research Study or Trial\\n2, Translational Research 1\\n3, Translational Research 2\\n4, Behavioral or Psychosocial Research Study\\n5, Epidemiology\\n6, Repository\\n7, Other";
+                     
+                        }
+                        
+
+                        if(!is_null($fieldName) && !is_null($choices) && !is_null($configPID)) {
+                            $sql = "UPDATE redcap_metadata SET element_enum = ? WHERE field_name = ? AND project_id = ?";
+                            $sqlExecute = $this->query($sql, [$choices, $fieldName, $configPID]);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
     function redcap_module_system_change_version($version, $old_version) {
         $result = $this->query('SELECT value FROM redcap_config WHERE field_name = \'auth_meth_global\'', []);
         $authMethod = db_fetch_assoc($result)['value'];
@@ -168,7 +211,7 @@ class AdminDash extends AbstractExternalModule
 
 
     // todo get rid of report_id probably
-    public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
+public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $execPreviewUser = null)
     {
 
         $configPID = $this->getSystemSetting("config-pid");
