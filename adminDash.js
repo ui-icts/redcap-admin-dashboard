@@ -31,17 +31,21 @@ $.extend(UIOWA_AdminDash, {
           columnName = columnName.replaceAll(".", replacePeriod)
         }
 
-        for (let i2 = 0; i2 < self.loadedReport.columns.length; i2++) {
-          if (self.loadedReport.columns[i2].includes(".")) {
-            columnsContainingPeriods = [...columnsContainingPeriods, self.loadedReport.columns[i2]]
-            const newColumnName = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
-            self.loadedReport.columns[i2] = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
-            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName] = { ...self.loadedReport.meta.column_formatting[originalColumnName] }
-            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].column_name = newColumnName
-            UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].dashboard_display_header = newColumnName
-            delete self.loadedReport.meta.column_formatting[originalColumnName]
+        if (self.loadedReport.columns && self.loadedReport.columns.length >= 1) {
+
+          for (let i2 = 0; i2 < self.loadedReport.columns.length; i2++) {
+            if (self.loadedReport.columns[i2].includes(".")) {
+              columnsContainingPeriods = [...columnsContainingPeriods, self.loadedReport.columns[i2]]
+              const newColumnName = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
+              self.loadedReport.columns[i2] = self.loadedReport.columns[i2].replaceAll(".", replacePeriod)
+              UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName] = { ...self.loadedReport.meta.column_formatting[originalColumnName] }
+              UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].column_name = newColumnName
+              UIOWA_AdminDash.loadedReport.meta.column_formatting[newColumnName].dashboard_display_header = newColumnName
+              delete self.loadedReport.meta.column_formatting[originalColumnName]
+            }
           }
         }
+
 
         let newColumns = {};
 
@@ -578,11 +582,17 @@ $.extend(UIOWA_AdminDash, {
           if (type === "export" && columnDetails.export_codes === "0") {
             formattedVal = item;
           } else {
+
             if (columnDetails.code_type == "1") {
               formattedVal = self.adFormat_code(item, columnDetails.code_type);
             }
             else if (columnDetails.code_type == "2") {
-              formattedVal = self.adFormat_code(item, columnDetails.code_type);
+              if (!item) {
+                formattedVal = ""
+              } else {
+                formattedVal = self.adFormat_code(item, columnDetails.code_type);
+              }
+
             }
             else if (columnDetails.code_type == "3") {
               // formattedVal = self.adFormat_code(item, columnDetails.code_type);
@@ -624,7 +634,10 @@ $.extend(UIOWA_AdminDash, {
               });
 
               formattedVal = codesAsLabels;
-            } else {
+            }
+
+
+            else {
               formattedVal = self.adFormat_code(item, columnDetails.code_type);
             }
           }

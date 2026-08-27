@@ -105,7 +105,7 @@ class AdminDash extends AbstractExternalModule
 
     function redcap_module_project_enable($version, $project_id) {
 
-        if(SUPER_USER === "1") {
+        if(SUPER_USER == 1) {
        
             $configPid = $this->getSystemSetting("config-pid");
 
@@ -156,7 +156,7 @@ class AdminDash extends AbstractExternalModule
                     
                 }
     
-                if(SUPER_USER === "1" && $hasLinkSourceColumnField) {
+                if(SUPER_USER == 1 && $hasLinkSourceColumnField) {
                     $this->setSystemSetting("config-pid", $project_id);
                 }
               
@@ -267,7 +267,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
             $accessDetails = $reportAccess[$report['report_id']];
 
             if (  
-                (SUPER_USER != '1' || $execPreviewUser) &&
+                (SUPER_USER != 1 || $execPreviewUser) &&
                 !$accessDetails['sync_project_access'] &&
                 !$accessDetails['executive_view']
             ) {
@@ -320,6 +320,28 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
                 }
             }
 
+
+        $getFormattingReference = json_decode(\REDCap::getDataDictionary(
+            $configPID, 'json', true,
+            ['purpose_code_lookup', 'research_code_lookup']
+        ),true);
+
+            $codesAsLabelsCorrect = false;
+            if(count($getFormattingReference) == 2) {
+                foreach($getFormattingReference AS $field) {
+                    
+                    if(($field["field_name"] == "purpose_code_lookup" && !str_starts_with($field["select_choices_or_calculations"], 0)) || ($field["field_name"] == "research_code_lookup" && !str_starts_with($field["select_choices_or_calculations"], 0))) {
+                        $codesAsLabelsCorrect = false;
+                        break;
+                    } else {
+                        $codesAsLabelsCorrect = true;
+                
+                    }
+                        
+
+                }
+            }
+
             $jsObject = array_merge($jsObject, array(
                 'loadedReport' => array(
                     'meta' => $formattedMeta,
@@ -333,7 +355,8 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
                 'executiveExport' => $reportAccess[$report_id]['executive_export'],
                 'syncView' => $reportAccess[$report_id]['project_view'],
                 'redcap_csrf_token' => $this->getCSRFToken(),
-                'redcap_version_url' => APP_PATH_WEBROOT
+                'redcap_version_url' => APP_PATH_WEBROOT,
+                'codesCorrect' => $codesAsLabelsCorrect
             ));
 
         }
@@ -367,7 +390,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
 
 
     public function getQuery($params) {  
-        if(SUPER_USER === "1") {
+        if(SUPER_USER == 1) {
             $configPID = $this->getSystemSetting("config-pid");
             $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $report_id = $params['id']; // user-facing call - lookup query by record id
@@ -382,8 +405,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
                     'return_format' => 'json',
                     'records' => $report_id,
                     'fields' => 'report_sql'
-                ));
-    
+                ));    
         
                 $sql = json_decode($data, true)[0]['report_sql'];
             } else {
@@ -442,7 +464,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
 
     public function runExecutiveReport($params) {
    
-        if(SUPER_USER != "1") {  //  prevent super users from viewing executive dashboard
+        if(SUPER_USER != 1) {  //  prevent super users from viewing executive dashboard
             $configPID = $this->getSystemSetting("config-pid");
             $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $reportProps = json_decode($this->getReportProps($params),true);
@@ -507,7 +529,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
 
     public function runProjectViewReport($params) {
    
-        if(SUPER_USER != "1") {  //  prevent super users from viewing project sync dashboard
+        if(SUPER_USER != 1) {  //  prevent super users from viewing project sync dashboard
             $configPID = $this->getSystemSetting("config-pid");
             $currentPID = isset($_GET['pid']) ? $_GET['pid'] : $configPID;
             $reportProps = json_decode($this->getReportProps($params),true);
@@ -967,7 +989,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
     }
 
     public function getAdditionalInfo($params) { // params - type, whereVal
-        if(SUPER_USER === "1") {
+        if(SUPER_USER == 1) {
             $queries = array(
                 'user' => '
                     select user_email, user_firstname, user_lastname

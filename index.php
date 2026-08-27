@@ -3,10 +3,10 @@
 // $baseData = $module->getBaseData();
 // module not yet configured
 $configPID = $module->getSystemSetting("config-pid");
-if (!isset($configPID) && SUPER_USER === '1') {
+if (!isset($configPID) && SUPER_USER == 1) {
     include 'setup.php';
     die();
-} elseif(!isset($configPID) && SUPER_USER != '1') {
+} elseif(!isset($configPID) && SUPER_USER != 1) {
     die();
 }
 
@@ -54,9 +54,9 @@ if(SUPER_USER == 1 || (SUPER_USER != 1 && ($reportRights[$report_id]['project_vi
 //     die('You do not have access to this page.');
 // }
 
-$executiveView = SUPER_USER != "1" && ($reportRights[$report_id]['executive_view'] || isset($_GET['asUser'])) ? 1 : 0;
+$executiveView = SUPER_USER != 1 && ($reportRights[$report_id]['executive_view'] || isset($_GET['asUser'])) ? 1 : 0;
 $syncProjectView = $reportRights[$report_id]['project_view'];
-$exportEnabled = SUPER_USER === "1" || $reportRights[$report_id]['export_access'];
+$exportEnabled = SUPER_USER == 1 || $reportRights[$report_id]['export_access'];
 
 if ($syncProjectView) {
     require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
@@ -126,7 +126,7 @@ else {
         to { transform: rotate(360deg); }
     }
     /* This is the class name given by the Font Awesome component when icon contains 'spinner' */
-    .fa-sync {
+    .fa-spin {
         /* Apply 'spinner' keyframes looping once every second (1s)  */
         animation: spinner 1s linear infinite;
     }
@@ -154,7 +154,7 @@ else {
 <div id="adminDashApp">
     <?php if(!$syncProjectView): ?>
     <h2 v-cloak style="text-align: center; color: #106CD6; font-weight: bold; padding-top: 75px; padding-bottom: 10px">
-        <?php if((SUPER_USER === "1" && isset($_GET['asUser'])) || (SUPER_USER != "1" && $executiveView)): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
+        <?php if((SUPER_USER == 1 && isset($_GET['asUser'])) || (SUPER_USER != 1 && $executiveView)): ?>Executive<?php else: ?>Admin<?php endif; ?> Dashboard
     </h2>
     <div id="nav" v-cloak v-if="Object.keys(reportLookup).length > 0">
         <ul class="nav nav-tabs border-bottom">
@@ -196,6 +196,31 @@ else {
     </div>
     <?php endif; ?>
 
+       <div v-cloak v-if="UIOWA_AdminDash.codesCorrect != true">
+            <div class="alert alert-warning" style="border-color: black !important; margin-top: 10%; width: 30%; text-align: center">
+                
+                    <i class="fas fa-exclamation-triangle fa-2x" style="vertical-align: sub">&nbsp;</i>
+                    WARNING:  Some choice codes may be incorrect in the project configuration data dictionary.  This will cause Admin Dashboard to display data incorrectly if you're displaying codes as labels.  
+                    <br/>Please check the 'Formatting Reference' instrument and drafted changes in the configuration project, specifically the 'purpose_code_lookup' and 'research_code_lookup' fields.  They should be:
+
+                    <table>
+                        <tr>
+                            <th style="border:1px solid black;">purpose_code_lookup</th>
+                            <th style="border:1px solid black;">research_code_lookup</th>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid black;">
+                                0,Practice / Just for fun<br/>1,Other<br/>2,Research<br/>3,Quality Improvement<br/>4,Operational Support
+                            </td>
+                            <td style="border:1px solid black;">
+                                0,Basic or Bench Research<br/>1,Clinical Research Study or Trial<br/>2,Translational Research 1<br/>3,Translational Research 2<br/>4,Behavioral or Psychosocial Research Study<br/>5,Epidemiology<br/>6,Repository<br/>7,Other
+                            </td>
+                        </tr>
+                    </table>
+                
+            </div>
+        </div>
+
     <div id="reportContent" v-cloak v-if="loadedReport" style="width: 98%">
         <div style="padding: 25px">
             <div style="float: left">
@@ -211,8 +236,8 @@ else {
         <div style="text-align: center; clear: both;">
             <h3 id="reportTitle">
                 <span class="report-icon" :class="getReportIcon(loadedReport.meta.config.report_icon)">&nbsp;</span>{{ loadedReport.meta.config.report_title ? loadedReport.meta.config.report_title : 'Untitled Report' }}
-                <?php if(SUPER_USER === "1" || !$executiveView): ?>
-                <button v-if="showAdminControls === '1'" class="btn-sm edit-report btn-admindash-edit-report" style="margin: 5px; vertical-align: text-top">
+                <?php if(SUPER_USER == 1 || !$executiveView): ?>
+                <button v-if="showAdminControls == '1'" class="btn-sm edit-report btn-admindash-edit-report" style="margin: 5px; vertical-align: text-top">
                     <span class="fas fa-edit"></span>
                 </button>
                 <?php endif; ?>
@@ -241,9 +266,8 @@ else {
 
     <div style="text-align: center; padding: 50px" v-cloak>
         <h4 v-if="loadedReport">
-            <div v-if="!loadedReport.ready" id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px">
-                <i class="fas fa-sync fa-pulse"></i>
-                <!-- <font-awesome-icon icon="spinner" class="fa-spin" /> -->
+            <div v-if="!loadedReport.ready" id="reportLoading" class="fa-10x" style="text-align: center; padding: 50px; display:block;">
+                <i class="fas fa-spinner fa-spin"></i>
             </div>
         </h4>
         <span v-else>
