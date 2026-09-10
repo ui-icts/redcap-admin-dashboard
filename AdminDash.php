@@ -326,7 +326,7 @@ public function getJavascriptObject($report_id = -1, $isDataEntryForm = false, $
             ['purpose_code_lookup', 'research_code_lookup']
         ),true);
 
-            $codesAsLabelsCorrect = false;
+            $codesAsLabelsCorrect = true;
             if(count($getFormattingReference) == 2) {
                 foreach($getFormattingReference AS $field) {
                     

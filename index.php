@@ -146,6 +146,7 @@ else {
 
 <script>
     let UIOWA_AdminDash = <?= str_replace(array("&quot;", "&amp;", "&lt;", "&gt;"), array('"', "&", "<", ">"), $sanitizedJavascriptObject); ?>;
+
 </script>
 
 <script src="<?= $module->getUrl("/adminDash.js") ?>"></script>
@@ -196,7 +197,7 @@ else {
     </div>
     <?php endif; ?>
 
-       <div v-cloak v-if="UIOWA_AdminDash.codesCorrect != true">
+       <div v-cloak v-if="UIOWA_AdminDash.codesCorrect == false">
             <div class="alert alert-warning" style="border-color: black !important; margin-top: 10%; width: 30%; text-align: center">
                 
                     <i class="fas fa-exclamation-triangle fa-2x" style="vertical-align: sub">&nbsp;</i>
